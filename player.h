@@ -15,9 +15,11 @@
 #define PLAYER_MAX		(1)		// プレイヤーのMax人数
 
 
+
 //*****************************************************************************
 // 構造体定義
 //*****************************************************************************
+struct EFFECT;
 
 struct PLAYER
 {
@@ -28,10 +30,15 @@ struct PLAYER
 	float			countAnim;		// アニメーションカウント
 	int				patternAnim;	// アニメーションパターンナンバー
 	int				texNo;			// テクスチャ番号
-	D3DXVECTOR3		move;			// 移動速度
 
+	int				state;			// current movement
+	int				orient;			// 0left 1right
+	int				atkOrient;		// 0right 1down 2left 3up
+	BOOL			atkDetected;	// 0 not yet 1 had
+	int				verticalSpeed;	// vertical movement per frame
+	int				actCount;		// used for dash / attack count down
+	EFFECT*			atk;
 };
-
 
 
 //*****************************************************************************

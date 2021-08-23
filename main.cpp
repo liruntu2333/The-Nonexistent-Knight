@@ -19,6 +19,7 @@
 #include "fade.h"
 #include "tutorial.h"
 #include "file.h"
+#include "effect.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -54,7 +55,7 @@ char	g_DebugStr[2048] = WINDOW_NAME;		// デバッグ文字表示用
 
 #endif
 
-int g_Mode = MODE_TITLE;					// 起動時の画面を設定
+int g_Mode = MODE_GAME;						 // 起動時の画面を設定
 BOOL g_LoadGame = FALSE;					// NewGame
 
 
@@ -108,7 +109,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	BOOL mode = TRUE;
 
-	/*int id = MessageBox(NULL, "ウィンドウモードでプレイしますか？", "起動モード", MB_YESNOCANCEL | MB_ICONQUESTION);
+	int id = MessageBox(NULL, "Display in window mode?", "Display mode", MB_YESNOCANCEL | MB_ICONQUESTION);
 
 	switch (id)
 	{
@@ -128,7 +129,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		return -1;
 		break;
 	}
-	}*/
+	}
 
 	// DirectXの初期化(ウィンドウを作成してから行う)
 	if(FAILED(Init(hInstance, hWnd, mode)))
@@ -309,6 +310,7 @@ void Update(void)
 	case MODE_GAME:			// ゲーム画面の更新
 		UpdateBG();
 		UpdatePlayer();
+		UpdateEffect();
 		UpdateBullet();
 		UpdateEnemy();
 		CheckGameover();
@@ -352,6 +354,7 @@ void Draw(void)
 		DrawBullet();
 		DrawScore();
 		DrawPlayer();
+		DrawEffect();
 
 		if (g_LoadGame == TRUE)
 		{
@@ -388,6 +391,7 @@ void SetMode(int mode)
 	// タイトルの終了処理
 	UninitTitle();
 	UninitBG();
+	UninitEffect();
 	UninitPlayer();
 	UninitEnemy();
 	UninitBullet();
@@ -414,6 +418,7 @@ void SetMode(int mode)
 	case MODE_GAME:
 		// ゲーム画面の初期化
 		InitBG();
+		InitEffect();
 		InitPlayer();
 		InitEnemy();
 		InitBullet();
@@ -437,7 +442,7 @@ bool CheckGameover()
 {
 	ENEMY* enemy = GetEnemy();
 
-	bool flag = true;
+	bool flag = false;
 	for (int i = 0; i < ENEMY_MAX; i++)
 	{
 		if ((enemy + i)->use)

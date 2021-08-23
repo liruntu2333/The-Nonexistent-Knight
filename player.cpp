@@ -10,6 +10,7 @@
 #include "bg.h"
 #include "bullet.h"
 #include "file.h"
+#include "effect.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -21,16 +22,62 @@
 #define TEXTURE_PATTERN_DIVIDE_X	(5)		// アニメパターンのテクスチャ内分割数（X)
 #define TEXTURE_PATTERN_DIVIDE_Y	(2)		// アニメパターンのテクスチャ内分割数（Y)
 #define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X*TEXTURE_PATTERN_DIVIDE_Y)	// アニメーションパターン数
-#define ANIM_WAIT					(8)		// アニメーションの切り替わるWait値
+#define ANIM_WAIT					(5)		// アニメーションの切り替わるWait値
+
+#define ILLUSION_MAX				(20)
 
 // プレイヤーの画面内配置座標
 #define PLAYER_DISP_X				(SCREEN_WIDTH/2)
 #define PLAYER_DISP_Y				(SCREEN_HEIGHT/2 + TEXTURE_HEIGHT)
 
+//#define PLAYER_FALLING_SPEED		(6)
+//#define PLAYER_JUMPING_SPEED		(12)
+#define RUN_SPEED					(8.0f)
+#define GRAVITATIONAL_CONST			(1)
+#define JUMP_SPEED					(-25)
+#define FALL_LIMIT					(30)
+#define DASH_SPEED					(10)
+#define DASH_FRAME					(20)
+#define ATK_FRAME					(15)
+#define ATK_DETECTION				(3)
+#define ATK_END						(9)
+#define	ILLUSION_LIFE_SPAN			(30)
+#define ILLUSION_GEN_LAG			(4)
+
+enum State
+{
+	STAND,
+	RUN,
+	DASH,
+	ATTACK,
+	FALL,
+	JUMP,
+	BIG_JUMP,
+};
+
+enum Orientation
+{
+	RIGHT,
+	DOWN,
+	LEFT,
+	UP,
+};
+
+enum DETECTION
+{
+	LIGHT_ATK,
+	DETECTION_MAX,
+};
+
 
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
+struct ILLUSION
+{
+	PLAYER illusion;
+	int life;
+};
 
 
 //*****************************************************************************
@@ -48,6 +95,7 @@ static char *g_TexturName[TEXTURE_MAX] = {
 static BOOL		g_Load = FALSE;			// 初期化を行ったかのフラグ
 static PLAYER	g_Player[PLAYER_MAX];	// プレイヤー構造体
 
+static ILLUSION	g_Illusion[ILLUSION_MAX];
 
 //=============================================================================
 // 初期化処理
@@ -82,18 +130,32 @@ HRESULT InitPlayer(void)
 	// プレイヤー構造体の初期化
 	for (int i = 0; i < PLAYER_MAX; i++)
 	{
-		g_Player[i].use = TRUE;
-		g_Player[i].pos = D3DXVECTOR3(TEXTURE_WIDTH/2, SCREEN_HEIGHT /2 , 0.0f);	// 中心点から表示
-		g_Player[i].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		g_Player[i].w   = TEXTURE_WIDTH;
-		g_Player[i].h   = TEXTURE_HEIGHT;
-		g_Player[i].texNo = 1;
+		PLAYER* s_Player = g_Player + i;
 
-		g_Player[i].countAnim = 0;
-		g_Player[i].patternAnim = 0;
+		s_Player->use = TRUE;
+		s_Player->pos = D3DXVECTOR3(TEXTURE_WIDTH/2 + 50, SCREEN_HEIGHT /2 , 0.0f);	// 中心点から表示
+		s_Player->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		s_Player->w   = TEXTURE_WIDTH;
+		s_Player->h   = TEXTURE_HEIGHT;
+		s_Player->texNo = 1;
 
-		g_Player[i].move = D3DXVECTOR3(4.0f, 0.0f, 0.0f);		// 移動量
+		s_Player->countAnim = 0;
+		s_Player->patternAnim = 0;
 
+		s_Player->state = STAND;
+		s_Player->orient = RIGHT;
+		s_Player->atkOrient = RIGHT;
+		s_Player->atkDetected = TRUE;
+		s_Player->verticalSpeed = 0;
+		s_Player->actCount = 0;
+		s_Player->atk = NULL;
+	}
+
+	for (int i = 0; i < ILLUSION_MAX; i++)
+	{
+		ILLUSION* s_Illusion = g_Illusion + i;
+
+		s_Illusion->illusion.use = FALSE;
 	}
 
 	g_Load = TRUE;	// データの初期化を行った
@@ -132,106 +194,325 @@ void UpdatePlayer(void)
 {
 	for (int i = 0; i < PLAYER_MAX; i++)
 	{
+		PLAYER* s_Player = g_Player + i;
 		// 生きてるプレイヤーだけ処理をする
-		if (g_Player[i].use == TRUE)
+		if (s_Player->use == TRUE)
 		{
-			// 地形との当たり判定用に座標のバックアップを取っておく
-			D3DXVECTOR3 pos_old = g_Player[i].pos;
-
 			// アニメーション  
-			g_Player[i].countAnim += 1.0f;
-			if (g_Player[i].countAnim > ANIM_WAIT)
+			s_Player->countAnim += 1.0f;
+			if (s_Player->countAnim > ANIM_WAIT)
 			{
-				g_Player[i].countAnim = 0.0f;
+				s_Player->countAnim = 0.0f;
 				// パターンの切り替え
-				g_Player[i].patternAnim = (g_Player[i].patternAnim + 1) % ANIM_PATTERN_NUM;
+				s_Player->patternAnim = (s_Player->patternAnim + 1) % ANIM_PATTERN_NUM;
 			}
 
 			// キー入力で移動 
 			{
-				float speed = g_Player[i].move.x;
-
-				if (GetKeyboardPress(DIK_C))
-				{
-					speed *= 4;
-				}
+				//if (GetKeyboardPress(DIK_C))
+				//{
+				//	speed *= 4;
+				//}
 
 
-				if (GetKeyboardPress(DIK_DOWN))
+				//if (GetKeyboardPress(DIK_DOWN))
+				//{
+				//	s_Player->pos.y += speed;
+				//}
+				//else if (GetKeyboardPress(DIK_UP))
+				//{
+				//	s_Player->pos.y -= speed;
+				//}
+
+				// While DASH ~ ATTACK, you can't do anything until act finished.
+				if (s_Player->state < DASH || s_Player->state > ATTACK)
 				{
-					g_Player[i].pos.y += speed;
-				}
-				else if (GetKeyboardPress(DIK_UP))
-				{
-					g_Player[i].pos.y -= speed;
+					// Move right.
+					if (GetKeyboardPress(DIK_D))
+					{
+						s_Player->orient = RIGHT;
+
+						if (!GetBGData(s_Player->pos.x + s_Player->w / 2, s_Player->pos.y))
+						{
+							s_Player->pos.x += RUN_SPEED;
+						}
+					}
+					// Move left.
+					else if (GetKeyboardPress(DIK_A))
+					{
+						s_Player->orient = LEFT;
+						if (!GetBGData(s_Player->pos.x - s_Player->w / 2, s_Player->pos.y))
+						{
+							s_Player->pos.x -= RUN_SPEED;
+						}
+					}
+					// Dash trigger.
+					if (GetKeyboardTrigger(DIK_LSHIFT))
+					{
+						s_Player->state = DASH;
+						s_Player->actCount = DASH_FRAME;
+					}
+					// Attack trigger.
+					else if (GetKeyboardTrigger(DIK_J))
+					{
+						s_Player->state = ATTACK;
+						s_Player->actCount = ATK_FRAME;
+					}
+					// Jump only triggers when player's on the ground(STAND ~ RUN).
+					if (s_Player->state < DASH && GetKeyboardTrigger(DIK_SPACE))
+					{
+						s_Player->state = JUMP;
+						s_Player->verticalSpeed = JUMP_SPEED;
+					}
+					if (s_Player->state == JUMP && GetKeyboardPress(DIK_SPACE) &&
+						s_Player->verticalSpeed <= JUMP_SPEED * 1 / 2 && s_Player->verticalSpeed >= JUMP_SPEED * 4 / 7)
+					{
+						s_Player->state = BIG_JUMP;
+						s_Player->verticalSpeed += JUMP_SPEED / 5;
+					}
 				}
 
-				if (GetKeyboardPress(DIK_RIGHT))
+				//// ゲームパッドでで移動処理
+				//if (IsButtonPressed(0, BUTTON_DOWN))
+				//{
+				//	s_Player->pos.y += speed;
+
+				//}
+				//else if (IsButtonPressed(0, BUTTON_UP))
+				//{
+				//	s_Player->pos.y -= speed;
+				//}
+
+				// L&R Movement
+				if (s_Player->state < DASH || s_Player->state > ATTACK)
 				{
-					g_Player[i].pos.x += speed;
-				}
-				else if (GetKeyboardPress(DIK_LEFT))
-				{
-					g_Player[i].pos.x -= speed;
+					if (IsButtonPressed(0, BUTTON_RIGHT))
+					{
+						s_Player->pos.x += RUN_SPEED;
+					}
+					else if (IsButtonPressed(0, BUTTON_LEFT))
+					{
+						s_Player->pos.x -= RUN_SPEED;
+					}
 				}
 
-				// ゲームパッドでで移動処理
-				if (IsButtonPressed(0, BUTTON_DOWN))
+				// Vertical speed effected by gravity when in the air.
+				if (s_Player->state > ATTACK)
 				{
-					g_Player[i].pos.y += speed;
-
-				}
-				else if (IsButtonPressed(0, BUTTON_UP))
-				{
-					g_Player[i].pos.y -= speed;
-				}
-
-				if (IsButtonPressed(0, BUTTON_RIGHT))
-				{
-					g_Player[i].pos.x += speed;
-				}
-				else if (IsButtonPressed(0, BUTTON_LEFT))
-				{
-					g_Player[i].pos.x -= speed;
-				}
-
-				// MAP外チェック
-				BG *bg = GetBG();
-
-				if (g_Player[i].pos.x < 0.0f)
-				{
-					g_Player[i].pos.x = 0.0f;
+					s_Player->pos.y += s_Player->verticalSpeed;
+					s_Player->verticalSpeed += GRAVITATIONAL_CONST;
+					if (s_Player->verticalSpeed > FALL_LIMIT)
+					{
+						s_Player->verticalSpeed = FALL_LIMIT;
+					}
+					if (s_Player->verticalSpeed >= 0)
+					{
+						s_Player->state = FALL;
+					}
+					// If there is block above player, reverse vertical speed to plus.
+					if (GetBGData(s_Player->pos.x, s_Player->pos.y - s_Player->h / 2))
+					{
+						s_Player->pos.y += 5.0f;
+						s_Player->verticalSpeed = 1;
+					}
 				}
 
-				if (g_Player[i].pos.x > bg->w)
+				// If there is block under player, stand still & stop falling.
+				if (GetBGData(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2))
 				{
-					g_Player[i].pos.x = bg->w;
+					if (s_Player->state == FALL)
+					{
+						s_Player->verticalSpeed = 0;
+						s_Player->state = STAND;
+						s_Player->pos = ReloacteObj(s_Player->pos.x, s_Player->pos.y, s_Player->w, s_Player->h);
+					}
+				}
+				else if (s_Player->state == RUN || s_Player->state == STAND)
+				{
+					// Start to fall when walk across the edge.
+					s_Player->state = FALL;
 				}
 
-				if (g_Player[i].pos.y < 0.0f)
+				// Dash process.
+				if (s_Player->state == DASH)
 				{
-					g_Player[i].pos.y = 0.0f;
+					// Copy player's data to illusion array. Illusion generates every 10 frames.
+					if ((s_Player->actCount % ILLUSION_GEN_LAG) == 0) // Check if it's time to generate illusion
+					{
+						for (int i = 0; i < ILLUSION_MAX; i++)
+						{
+							if (!(g_Illusion + i)->illusion.use)
+							{
+								(g_Illusion + i)->illusion = *s_Player;
+								(g_Illusion + i)->life = ILLUSION_LIFE_SPAN;
+								g_Illusion->illusion.use = TRUE;
+								break;
+							}
+						}
+					}
+
+					switch (s_Player->orient)
+					{
+					case LEFT:								// Dash to left
+						if (!GetBGData(s_Player->pos.x - s_Player->w / 2, s_Player->pos.y))
+						{
+							s_Player->pos.x -= DASH_SPEED;
+						}
+						break;					
+					case RIGHT:								// Dash to right
+						if (!GetBGData(s_Player->pos.x + s_Player->w / 2, s_Player->pos.y))
+						{
+							s_Player->pos.x += DASH_SPEED;
+						}
+						break;
+					default:
+						break;
+					}
+
+					// While dashing, dashCount degresses per frame until reaches 0
+					if (!--s_Player->actCount) 
+					{
+						s_Player->state = FALL;
+					}
 				}
 
-				if (g_Player[i].pos.y > bg->h)
+				// Attack process.
+				if (s_Player->state == ATTACK)
 				{
-					g_Player[i].pos.y = bg->h;
+					if (s_Player->actCount == ATK_FRAME)
+					{
+						// Check atk direction.
+						if (GetKeyboardPress(DIK_W))
+						{
+							s_Player->atkOrient = UP;
+						}
+						else if (GetKeyboardPress(DIK_S))
+						{
+							s_Player->atkOrient = DOWN;
+						}
+						else if (GetKeyboardPress(DIK_D))
+						{
+							s_Player->atkOrient = RIGHT;
+						}
+						else if (GetKeyboardPress(DIK_A))
+						{
+							s_Player->atkOrient = LEFT;
+						}
+						else 
+						{
+							s_Player->atkOrient = s_Player->orient;
+						}
+						s_Player->atk = SetEffect(s_Player->pos.x, s_Player->pos.y, 
+							PLAYER_BLADE, s_Player->atkOrient);
+						s_Player->verticalSpeed = 0;
+						s_Player->atkDetected = FALSE;
+					}
+					// Attack dectecting process, hit detection should do only once.
+					if (!s_Player->atkDetected && 
+						s_Player->actCount > ATK_DETECTION && s_Player->actCount <= ATK_END)
+					{
+						EFFECT* s_Effect = s_Player->atk;
+						float cof = -1.0f;
+						float radius = s_Effect->w / 2;
+						// Math use to find hit point in enviroment.
+						const float rcosrot = radius * (float)cos(s_Effect->rot.z);
+						const float rsinrot = radius * (float)sin(s_Effect->rot.z);
+						while (cof <= 1.0f)
+						{
+							// Check if hit on undestroyable object (enviroment bloack).
+							if (GetBGData(s_Effect->pos.x + cof * rcosrot, s_Effect->pos.y + cof * rsinrot))
+							{
+								// Reflect effect.
+								SetEffect(s_Player->pos.x + cof * rcosrot, s_Player->pos.y + cof * rsinrot,
+									PLAYER_REFLECT, s_Player->atkOrient);
+								switch (s_Player->atkOrient)
+								{
+								case RIGHT:
+									break;
+								case DOWN:
+									if (!GetBGData(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2))
+									{
+										s_Player->verticalSpeed = -20;
+										s_Player->state = BIG_JUMP;
+									}
+									break;
+								case LEFT:
+									s_Player->verticalSpeed = 0;
+									s_Player->atk->use = FALSE;
+									break;
+								case UP:
+									s_Player->verticalSpeed = 0;
+									break;
+								default:
+									break;
+								}
+								s_Player->atkDetected = TRUE;
+								break;
+							}
+							cof += 0.5f;
+						}
+					}
+					
+					// While dashing, dashCount degresses per frame until reaches 0
+					if (!--s_Player->actCount)
+					{
+						s_Player->atkOrient = s_Player->orient;
+						s_Player->atk = NULL;
+						s_Player->state = FALL;
+					}
 				}
+
+				// Illusion's life decrease to 0
+				for (int i = 0; i < ILLUSION_MAX; i++)
+				{
+					if ((g_Illusion + i)->illusion.use)
+					{
+						if (!--(g_Illusion + i)->life)
+							(g_Illusion + i)->illusion.use = FALSE;
+					}
+				}
+
+				//// MAP外チェック
+
+				//if (s_Player->pos.x < 0.0f + TEXTURE_WIDTH/2)
+				//{
+				//	s_Player->pos.x = 0.0f + TEXTURE_WIDTH / 2;
+				//}
+
+				//if (s_Player->pos.x > bg->w - TEXTURE_WIDTH/2)
+				//{
+				//	s_Player->pos.x = bg->w - TEXTURE_WIDTH / 2;
+				//}
+
+				//if (s_Player->pos.y < 0.0f + TEXTURE_HEIGHT/2)
+				//{
+				//	s_Player->pos.y = 0.0f + TEXTURE_HEIGHT / 2;
+
+				//}
+
+				//if (s_Player->pos.y > bg->h - TEXTURE_HEIGHT/2)
+				//{
+				//	s_Player->pos.y = bg->h - TEXTURE_HEIGHT / 2;
+				//	s_Player->falling = FALSE;
+				//}
 
 				// 移動が終わったらエネミーとの当たり判定
 
-				// プレイヤーの立ち位置からMAPのスクロール座標を計算する
-				bg->pos.x = g_Player[i].pos.x - PLAYER_DISP_X;
-				if (bg->pos.x < 0) bg->pos.x = 0;
-				if (bg->pos.x > bg->w - SCREEN_WIDTH) bg->pos.x = bg->w - SCREEN_WIDTH;
 
-				bg->pos.y = g_Player[i].pos.y - PLAYER_DISP_Y;
-				if (bg->pos.y < 0) bg->pos.y = 0;
-				if (bg->pos.y > bg->h - SCREEN_HEIGHT) bg->pos.y = bg->h - SCREEN_HEIGHT;
+				// プレイヤーの立ち位置からMAPのスクロール座標を計算する
+				BG* s_BG = GetBG();
+				s_BG->pos.x = s_Player->pos.x - PLAYER_DISP_X;
+				if (s_BG->pos.x < 0) s_BG->pos.x = 0;
+				if (s_BG->pos.x > s_BG->w - SCREEN_WIDTH) s_BG->pos.x = s_BG->w - SCREEN_WIDTH;
+
+				s_BG->pos.y = s_Player->pos.y - PLAYER_DISP_Y;
+				if (s_BG->pos.y < 0) s_BG->pos.y = 0;
+				if (s_BG->pos.y > s_BG->h - SCREEN_HEIGHT) s_BG->pos.y = s_BG->h - SCREEN_HEIGHT;
 
 				// バレット処理
 				if (GetKeyboardPress(DIK_SPACE))
 				{
+
 
 				}
 				if (IsButtonTriggered(0, BUTTON_B))
@@ -240,21 +521,26 @@ void UpdatePlayer(void)
 
 				}
 
-				if (GetKeyboardTrigger(DIK_S))
+				if (GetKeyboardTrigger(DIK_1))
 				{
 					SaveData();
 				}
-
 			}
-		}
 
 #ifdef _DEBUG
-		// デバッグ表示
-		PrintDebugProc("Player No%d  X:%f Y:%f\n", i, g_Player[i].pos.x, g_Player[i].pos.y);
+			// デバッグ表示
+			PrintDebugProc("X:%f Y:%f vS: %d BGd: %d Orient: %d State: %d \n", 
+				s_Player->pos.x, 
+				s_Player->pos.y, 
+				s_Player->verticalSpeed, 
+				GetBGData(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2),
+				s_Player->orient, 
+				s_Player->state);
 #endif
 
+		}
+
 	}
-	
 }
 
 
@@ -283,32 +569,68 @@ void DrawPlayer(void)
 	BG* bg = GetBG();
 	for (int i = 0; i < PLAYER_MAX; i++)
 	{
-		if (g_Player[i].use == TRUE)		// このプレイヤーが使われている？
+		PLAYER* s_Player = g_Player + i;
+		if (s_Player->use == TRUE && s_Player->state != DASH)		// このプレイヤーが使われている？
 		{									// Yes
 			// テクスチャ設定
-			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_Player[i].texNo]);
+			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[s_Player->texNo]);
 
 			//プレイヤーの位置やテクスチャー座標を反映
-			float px = g_Player[i].pos.x - bg->pos.x;	// プレイヤーの表示位置X
-			float py = g_Player[i].pos.y - bg->pos.y;	// プレイヤーの表示位置Y
-			float pw = g_Player[i].w;		// プレイヤーの表示幅
-			float ph = g_Player[i].h;		// プレイヤーの表示高さ
+			float px = s_Player->pos.x - bg->pos.x;	// プレイヤーの表示位置X
+			float py = s_Player->pos.y - bg->pos.y;	// プレイヤーの表示位置Y
+			float pw = s_Player->w;		// プレイヤーの表示幅
+			float ph = s_Player->h;		// プレイヤーの表示高さ
 
 			// アニメーション用
 			float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// テクスチャの幅
 			float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// テクスチャの高さ
-			float tx = (float)(g_Player[i].patternAnim % TEXTURE_PATTERN_DIVIDE_X) * tw;	// テクスチャの左上X座標
-			float ty = (float)(g_Player[i].patternAnim / TEXTURE_PATTERN_DIVIDE_X) * th;	// テクスチャの左上Y座標
+			float tx = (float)(s_Player->patternAnim % TEXTURE_PATTERN_DIVIDE_X) * tw;	// テクスチャの左上X座標
+			float ty = (float)(s_Player->patternAnim / TEXTURE_PATTERN_DIVIDE_X) * th;	// テクスチャの左上Y座標
 
 			//float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// テクスチャの幅
 			//float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// テクスチャの高さ
-			//float tx = g_Player[i].patternAnim * tw;	// テクスチャの左上X座標
-			//float ty = g_Player[i].patternAnim * th;	// テクスチャの左上Y座標
+			//float tx = s_Player->patternAnim * tw;	// テクスチャの左上X座標
+			//float ty = s_Player->patternAnim * th;	// テクスチャの左上Y座標
 
 			// １枚のポリゴンの頂点とテクスチャ座標を設定
 			SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
 				D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
-				g_Player[i].rot.z);
+				s_Player->rot.z);
+
+			// ポリゴン描画
+			GetDeviceContext()->Draw(4, 0);
+		}
+	}
+
+	for (int i = 0; i < ILLUSION_MAX; i++)
+	{
+		ILLUSION* s_Illusion = g_Illusion + i;
+		if (s_Illusion->illusion.use)
+		{
+			// テクスチャ設定
+			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[s_Illusion->illusion.texNo]);
+
+			//プレイヤーの位置やテクスチャー座標を反映
+			float px = s_Illusion->illusion.pos.x - bg->pos.x;	// プレイヤーの表示位置X
+			float py = s_Illusion->illusion.pos.y - bg->pos.y;	// プレイヤーの表示位置Y
+			float pw = s_Illusion->illusion.w;		// プレイヤーの表示幅
+			float ph = s_Illusion->illusion.h;		// プレイヤーの表示高さ
+
+			// アニメーション用
+			float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// テクスチャの幅
+			float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// テクスチャの高さ
+			float tx = (float)(s_Illusion->illusion.patternAnim % TEXTURE_PATTERN_DIVIDE_X) * tw;	// テクスチャの左上X座標
+			float ty = (float)(s_Illusion->illusion.patternAnim / TEXTURE_PATTERN_DIVIDE_X) * th;	// テクスチャの左上Y座標
+
+			//float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// テクスチャの幅
+			//float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// テクスチャの高さ
+			//float tx = s_Player->patternAnim * tw;	// テクスチャの左上X座標
+			//float ty = s_Player->patternAnim * th;	// テクスチャの左上Y座標
+
+			// １枚のポリゴンの頂点とテクスチャ座標を設定
+			SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
+				D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f / ILLUSION_LIFE_SPAN * s_Illusion->life),
+				s_Illusion->illusion.rot.z);
 
 			// ポリゴン描画
 			GetDeviceContext()->Draw(4, 0);

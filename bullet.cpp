@@ -131,7 +131,7 @@ void UninitBullet()
 //=============================================================================
 void UpdateBullet(void)
 {
-	if (GetKeyboardTrigger(DIK_SPACE))
+	if (GetKeyboardTrigger(DIK_K))
 	{
 		SetBullet(GetPlayer()->pos);
 	}
@@ -190,7 +190,7 @@ void UpdateBullet(void)
 
 #ifdef _DEBUG
 		// デバッグ表示
-		PrintDebugProc("Bullet No%d  X:%f Y:%f\n", i, g_Bullet[i].pos.x, g_Bullet[i].pos.y);
+		//PrintDebugProc("Bullet No%d  X:%f Y:%f\n", i, g_Bullet[i].pos.x, g_Bullet[i].pos.y);
 #endif
 
 	}

@@ -111,7 +111,7 @@ HRESULT InitEnemy(void)
 	// エネミー構造体の初期化
 	for (int i = 0; i < ENEMY_MAX; i++)
 	{
-		g_Enemy[i].use = TRUE;
+		g_Enemy[i].use = FALSE;
 		g_Enemy[i].pos = D3DXVECTOR3(50.0f + i * 150, 100.0f, 0.0f);	// 中心点から表示
 		g_Enemy[i].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		g_Enemy[i].scl = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
@@ -302,7 +302,7 @@ void UpdateEnemy(void)
 
 #ifdef _DEBUG
 		// デバッグ表示
-		PrintDebugProc("Enemy No%d  X:%f Y:%f\n", i, g_Enemy[i].pos.x, g_Enemy[i].pos.y);
+		//PrintDebugProc("Enemy No%d  X:%f Y:%f\n", i, g_Enemy[i].pos.x, g_Enemy[i].pos.y);
 #endif
 
 	}
