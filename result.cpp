@@ -15,7 +15,7 @@
 // マクロ定義
 //*****************************************************************************
 #define TEXTURE_WIDTH				(SCREEN_WIDTH)	// 背景サイズ
-#define TEXTURE_HEIGHT				(SCREEN_HEIGHT)	// 
+#define MAP_HEIGHT				(SCREEN_HEIGHT)	// 
 #define TEXTURE_MAX					(2)				// テクスチャの数
 
 
@@ -74,7 +74,7 @@ HRESULT InitResult(void)
 
 	// 変数の初期化
 	g_Result.w     = TEXTURE_WIDTH;
-	g_Result.h     = TEXTURE_HEIGHT;
+	g_Result.h     = MAP_HEIGHT;
 	g_Result.pos   = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	g_Result.texNo = 0;
 

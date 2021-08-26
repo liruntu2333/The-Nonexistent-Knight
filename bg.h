@@ -20,7 +20,12 @@ struct BG
 
 };
 
-
+enum TERRAIN
+{
+	AIR,
+	EARTH,
+	GROUND,
+};
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -31,5 +36,5 @@ void UpdateBG(void);
 void DrawBG(void);
 
 BG* GetBG(void);
-int GetBGData(float x, float y);
+int GetTerrain(float x, float y);
 D3DXVECTOR3 ReloacteObj(float x, float y, float w, float h);

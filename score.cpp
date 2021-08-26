@@ -11,7 +11,7 @@
 // マクロ定義
 //*****************************************************************************
 #define TEXTURE_WIDTH				(SCORE_DW)	// 数字のサイズ
-#define TEXTURE_HEIGHT				(SCORE_DH)	// 
+#define MAP_HEIGHT				(SCORE_DH)	// 
 #define TEXTURE_MAX					(1)			// テクスチャの数
 
 
@@ -66,7 +66,7 @@ HRESULT InitScore(void)
 
 	// 変数の初期化
 	g_Score.w = TEXTURE_WIDTH;
-	g_Score.h = TEXTURE_HEIGHT;
+	g_Score.h = MAP_HEIGHT;
 	g_Score.pos = D3DXVECTOR3(SCORE_DX, SCORE_DY, 0.0f);
 	g_Score.texNo = 0;
 	g_Score.score = 0;	// 得点を初期化

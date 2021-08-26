@@ -17,15 +17,19 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define TEXTURE_WIDTH				(800/8)	// キャラサイズ
-#define TEXTURE_HEIGHT				(800/8)	// 
+#define MAP_WIDTH				(800/8)	// キャラサイズ
+#define MAP_HEIGHT				(800/8)	// 
 #define TEXTURE_MAX					(3)		// テクスチャの数
 
 #define TEXTURE_PATTERN_DIVIDE_X	(2)		// アニメパターンのテクスチャ内分割数（X)
 #define TEXTURE_PATTERN_DIVIDE_Y	(2)		// アニメパターンのテクスチャ内分割数（Y)
 #define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X*TEXTURE_PATTERN_DIVIDE_Y)	// アニメーションパターン数
 #define ANIM_WAIT					(8)		// アニメーションの切り替わるWait値
-#define PI							acos(-1)
+#define PI							(acos(-1))
+
+#define	RUN_SPEED					(4.0f)
+#define HIT_STUN_FRAME				(30)
+#define HIT_STUN_HSPD				(20)
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -111,33 +115,36 @@ HRESULT InitEnemy(void)
 	// エネミー構造体の初期化
 	for (int i = 0; i < ENEMY_MAX; i++)
 	{
-		g_Enemy[i].use = FALSE;
-		g_Enemy[i].pos = D3DXVECTOR3(50.0f + i * 150, 100.0f, 0.0f);	// 中心点から表示
-		g_Enemy[i].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		g_Enemy[i].scl = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
-		g_Enemy[i].w = TEXTURE_WIDTH;
-		g_Enemy[i].h = TEXTURE_HEIGHT;
-		g_Enemy[i].texNo = i;
+		ENEMY* s_Enemy = g_Enemy + i;
 
-		g_Enemy[i].countAnim = 0;
-		g_Enemy[i].patternAnim = 0;
+		s_Enemy->use = TRUE;
+		s_Enemy->pos = D3DXVECTOR3(MAP_WIDTH / 2 + 500.0f, SCREEN_HEIGHT / 2, 0.0f);	// 中心点から表示
+		s_Enemy->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		s_Enemy->w = MAP_WIDTH;
+		s_Enemy->h = MAP_HEIGHT;
+		s_Enemy->texNo = 1;
 
-		g_Enemy[i].move = D3DXVECTOR3(4.0f, 0.0f, 0.0f);
+		s_Enemy->countAnim = 0;
+		s_Enemy->patternAnim = 0;
 
-		// 行動パターンを初期化
-		g_Enemy[i].time = 0.0f;			// 線形補間用
-		g_Enemy[i].moveTblNo = 0;			// データテーブル
-		g_Enemy[i].tblMax = sizeof(g_MoveTbl0) / sizeof(LINEAR_INTERPOLATION);// 線形補間用
+		s_Enemy->state = STAND;
+		s_Enemy->orient = RIGHT;
+		s_Enemy->atkOrient = RIGHT;
+		s_Enemy->atkDetect = TRUE;
+		s_Enemy->vertSpd = 0;
+		s_Enemy->horzSpd = 0;
+		s_Enemy->actCount = 0;
+		s_Enemy->atk = NULL;
+
+		s_Enemy->stamina = 0;
+
+		//// 行動パターンを初期化
+		//g_Enemy[i].time = 0.0f;			// 線形補間用
+		//g_Enemy[i].moveTblNo = 0;			// データテーブル
+		//g_Enemy[i].tblMax = sizeof(g_MoveTbl0) / sizeof(LINEAR_INTERPOLATION);// 線形補間用
 
 	}
 
-	// ２番目の奴の行動パターンをセット
-	g_Enemy[1].moveTblNo = 1;				// データテーブル
-	g_Enemy[1].tblMax = sizeof(g_MoveTbl1) / sizeof(LINEAR_INTERPOLATION);	// 線形補間用
-
-	// ３番目の奴の行動パターンをセット
-	g_Enemy[2].moveTblNo = 2;				// データテーブル
-	g_Enemy[2].tblMax = sizeof(g_MoveTbl2) / sizeof(LINEAR_INTERPOLATION);	// 線形補間用
 
 	g_Load = TRUE;	// データの初期化を行った
 	return S_OK;
@@ -175,13 +182,141 @@ void UpdateEnemy(void)
 {
 	for (int i = 0; i < ENEMY_MAX; i++)
 	{
-		// 生きてるプレイヤーだけ処理をする
-		if (g_Enemy[i].use == TRUE)
-		{
-			// 地形との当たり判定用に座標のバックアップを取っておく
-			D3DXVECTOR3 pos_old = g_Enemy[i].pos;
+		ENEMY* s_Enemy = g_Enemy + i;
 
-			// アニメーション  
+		// Only proceed with active enemy.
+		if (s_Enemy->use == TRUE)
+		{
+			if (s_Enemy->state < DASH || s_Enemy->state > ATTACK)
+			{
+				// Vertical speed effected by gravity when in the air.
+				if (s_Enemy->state > ATTACK)
+				{
+					s_Enemy->pos.y += s_Enemy->vertSpd;
+					s_Enemy->vertSpd += GRAVITATIONAL_CONST;
+					if (s_Enemy->vertSpd > FALL_LIMIT)
+					{
+						s_Enemy->vertSpd = FALL_LIMIT;
+					}
+					if (s_Enemy->vertSpd >= 0)
+					{
+						s_Enemy->state = FALL;
+					}
+					// If there is block above enemy, reverse vertical speed to plus.
+					if (GetTerrain(s_Enemy->pos.x, s_Enemy->pos.y - s_Enemy->h / 2))
+					{
+						s_Enemy->pos.y += 5.0f;
+						s_Enemy->vertSpd = 1;
+					}
+				}
+
+				if (s_Enemy->orient == RIGHT)
+				{
+					// Move right.
+					s_Enemy->pos.x += RUN_SPEED;
+					if (GetTerrain(s_Enemy->pos.x + s_Enemy->w / 2, s_Enemy->pos.y))
+					{
+						s_Enemy->orient = LEFT;
+					}
+				}
+				else
+				{
+					// Move left.
+					s_Enemy->pos.x -= RUN_SPEED;
+					if (GetTerrain(s_Enemy->pos.x - s_Enemy->w / 2, s_Enemy->pos.y))
+					{
+						s_Enemy->orient = RIGHT;
+					}
+				}
+
+				// If there is block under player, stand still & stop falling.
+				if (GetTerrain(s_Enemy->pos.x, s_Enemy->pos.y + s_Enemy->h / 2))
+				{
+					if (s_Enemy->state == FALL)
+					{
+						s_Enemy->vertSpd = 0;
+						s_Enemy->state = STAND;
+						s_Enemy->pos = ReloacteObj(s_Enemy->pos.x, s_Enemy->pos.y, s_Enemy->w, s_Enemy->h);
+					}
+				}
+				else if (s_Enemy->state == RUN || s_Enemy->state == STAND)
+				{
+					// Start to fall when walk across the edge.
+					s_Enemy->state = FALL;
+				}
+			}
+
+			// Stun process.
+			if (s_Enemy->state == STUN)
+			{
+				if (s_Enemy->actCount--)
+				{
+					// Bounce to right.
+					if (s_Enemy->horzSpd > 0)
+					{
+						if (!GetTerrain(s_Enemy->pos.x + s_Enemy->w / 2, s_Enemy->pos.y))
+						{
+							s_Enemy->pos.x += s_Enemy->horzSpd;
+						}
+					}
+					// Bouce to left.
+					else if (s_Enemy->horzSpd < 0)
+					{
+						if (!GetTerrain(s_Enemy->pos.x - s_Enemy->w / 2, s_Enemy->pos.y))
+						{
+							s_Enemy->pos.x += s_Enemy->horzSpd;
+						}
+					}
+
+					s_Enemy->horzSpd = (int)(0.9f * s_Enemy->horzSpd);
+
+					if (!GetTerrain(s_Enemy->pos.x, s_Enemy->pos.y + s_Enemy->h / 2))
+					{
+						s_Enemy->pos.y += s_Enemy->vertSpd;
+						s_Enemy->vertSpd += GRAVITATIONAL_CONST;
+						if (s_Enemy->vertSpd > FALL_LIMIT)
+						{
+							s_Enemy->vertSpd = FALL_LIMIT;
+						}
+					}
+				}
+				else
+				{
+					s_Enemy->state = FALL;
+				}
+			}
+
+			for (int i = 0; i < PLAYER_MAX; i++)
+			{
+				PLAYER* s_Player = GetPlayer() + i;
+				if (s_Player->use)
+				{
+					if (BBCollision(&s_Enemy->pos, &s_Player->pos,
+						s_Enemy->w, s_Player->w,
+						s_Enemy->h, s_Player->h))
+					{
+						if (s_Player->pos.y < s_Enemy->pos.y)
+						{
+							s_Enemy->atkOrient = UP;
+						}
+						else if (s_Player->pos.y > s_Enemy->pos.y)
+						{
+							s_Enemy->atkOrient = DOWN;
+						}
+						else if (s_Player->pos.x < s_Enemy->pos.x)
+						{
+							s_Enemy->atkOrient = LEFT;
+						}
+						else if (s_Player->pos.x > s_Enemy->pos.x)
+						{
+							s_Enemy->atkOrient = RIGHT;
+						}
+						HitPlayer(s_Player, 0, s_Enemy->atkOrient);
+					}
+				}
+			}
+
+			// Animation
 			g_Enemy[i].countAnim += 1.0f;
 			if (g_Enemy[i].countAnim > ANIM_WAIT)
 			{
@@ -190,121 +325,11 @@ void UpdateEnemy(void)
 				g_Enemy[i].patternAnim = (g_Enemy[i].patternAnim + 1) % ANIM_PATTERN_NUM;
 			}
 
-			//static float s_enemy_move_x = 4.0f;
-			//static float s_enemy_move_y = 4.0f;
-			//g_Enemy[i].pos.x += s_enemy_move_x;
-			//g_Enemy[i].pos.y += s_enemy_move_y;
-			//if (g_Enemy[i].pos.x < 0 || g_Enemy[i].pos.x >(SCREEN_WIDTH - TEXTURE_WIDTH))
-			//	s_enemy_move_x = -s_enemy_move_x;
-			//if (g_Enemy[i].pos.y < 0 || g_Enemy[i].pos.y >(SCREEN_HEIGHT - TEXTURE_HEIGHT))
-			//	s_enemy_move_y = -s_enemy_move_y;
-
-			//static float s_enemy_move_x_1 = 2.0f;
-			//static float s_enemy_move_y_2 = 4.0f;
-			//static double s_enemy_move_t_3 = 0.0;
-			//D3DXVECTOR3 pos = GetPlayer()->pos - g_Enemy[0].pos;
-			////	float angle = atan2(GetPlayer()->pos.y - g_Enemy[0].pos.y, GetPlayer()->pos.x - g_Enemy[0].pos.x) + D3DX_PI;
-
-			//switch (i)
-			//{
-			//case 0:
-			//	//g_Enemy[i].pos.x += s_enemy_move_x_1;
-			//	//if (g_Enemy[i].pos.x < 0 || g_Enemy[i].pos.x >(SCREEN_WIDTH - TEXTURE_WIDTH / 2))
-			//	//	s_enemy_move_x_1 = -s_enemy_move_x_1;
-			//	g_Enemy[i].pos += pos * 0.01f;
-			//	//	g_Enemy[i].pos.x += static_cast<float> (cos(angle) * s_enemy_move_x_1);
-			//	//	g_Enemy[i].pos.y += static_cast<float> (sin(angle) * s_enemy_move_x_1);
-
-			//	break;
-			//case 1:
-			//	g_Enemy[i].pos.y += s_enemy_move_y_2;
-			//	if (g_Enemy[i].pos.y - TEXTURE_HEIGHT / 2 < 0 || g_Enemy[i].pos.y > (SCREEN_HEIGHT - TEXTURE_HEIGHT / 2))
-			//		s_enemy_move_y_2 = -s_enemy_move_y_2;
-			//	break;
-			//case 2:
-			//	g_Enemy[i].pos.x = 500.0f + 100.0f * cos(s_enemy_move_t_3);
-			//	g_Enemy[i].pos.y = 300.0f + 100.0f * sin(s_enemy_move_t_3);
-			//	s_enemy_move_t_3 += PI / 30;
-			//	break;
-			//default:
-			//	break;
-			//}
-
-			// 移動処理 
-			{
-				// 行動テーブルに従って座標移動（線形補間）
-				int nowNo = (int)g_Enemy[i].time;			// 整数分であるテーブル番号を取り出している
-				int maxNo = g_Enemy[i].tblMax;				// 登録テーブル数を数えている
-				int nextNo = (nowNo + 1) % maxNo;			// 移動先テーブルの番号を求めている
-				LINEAR_INTERPOLATION* tbl = g_MoveTblAdr[g_Enemy[i].moveTblNo];	// 行動テーブルのアドレスを取得
-				D3DXVECTOR3	pos = tbl[nextNo].pos - tbl[nowNo].pos;	// XYZ移動量を計算している
-				D3DXVECTOR3	rot = tbl[nextNo].rot - tbl[nowNo].rot;	// XYZ回転量を計算している
-				D3DXVECTOR3	scl = tbl[nextNo].scl - tbl[nowNo].scl;	// XYZ拡大率を計算している
-				float nowTime = g_Enemy[i].time - nowNo;	// 時間部分である少数を取り出している
-				pos *= nowTime;								// 現在の移動量を計算している
-				rot *= nowTime;								// 現在の回転量を計算している
-				scl *= nowTime;								// 現在の拡大率を計算している
-
-				// 計算して求めた移動量を現在の移動テーブルXYZに足している＝表示座標を求めている
-				g_Enemy[i].pos = tbl[nowNo].pos + pos;
-
-				// 計算して求めた回転量を現在の移動テーブルに足している
-				g_Enemy[i].rot = tbl[nowNo].rot + rot;
-
-				// 計算して求めた拡大率を現在の移動テーブルに足している
-				g_Enemy[i].scl = tbl[nowNo].scl + scl;
-				g_Enemy[i].w = TEXTURE_WIDTH * g_Enemy[i].scl.x;
-				g_Enemy[i].h = TEXTURE_HEIGHT * g_Enemy[i].scl.y;
-
-				// frameを使て時間経過処理をする
-				g_Enemy[i].time += tbl[nowNo].time;			// 時間を進めている
-				if ((int)g_Enemy[i].time >= maxNo)			// 登録テーブル最後まで移動したか？
-				{
-					g_Enemy[i].time -= maxNo;				// ０番目にリセットしつつも小数部分を引き継いでいる
-				}
-			}
-
-			BG* bg = GetBG();
-
-			if (g_Enemy[i].pos.x < 0.0f)
-			{
-				g_Enemy[i].pos.x = 0.0f;
-			}
-
-			if (g_Enemy[i].pos.x > bg->w)
-			{
-				g_Enemy[i].pos.x = bg->w;
-			}
-
-			if (g_Enemy[i].pos.y < 0.0f)
-			{
-				g_Enemy[i].pos.y = 0.0f;
-			}
-
-			if (g_Enemy[i].pos.y > bg->h)
-			{
-				g_Enemy[i].pos.y = bg->h;
-			}
-
-			for (int j = 0; j < PLAYER_MAX; j++)
-			{
-				if ((GetPlayer() + j)->use)
-				{
-					if (BBCollision(&(g_Enemy + i)->pos, &(GetPlayer() + j)->pos,
-						(g_Enemy + i)->w, (GetPlayer() + j)->w,
-						(g_Enemy + i)->h, (GetPlayer() + j)->h))
-					{
-						DestructEnemy(g_Enemy + i);
-					}
-				}
-			}
-		}
-
 #ifdef _DEBUG
-		// デバッグ表示
-		//PrintDebugProc("Enemy No%d  X:%f Y:%f\n", i, g_Enemy[i].pos.x, g_Enemy[i].pos.y);
+			// デバッグ表示
+			PrintDebugProc("Enemy X:%f Y:%f\n", g_Enemy[i].pos.x, g_Enemy[i].pos.y);
 #endif
-
+		}
 	}
 
 }
@@ -384,4 +409,32 @@ void DestructEnemy(ENEMY* ep)
 	PlaySound(SOUND_LABEL_SE_hit000);
 	if (ep->use) ep->use = FALSE;
 	return;
+}
+
+// 
+// @brief	Decrease ENEMY's health and switch state to STUN
+void HitEnemy(ENEMY* enemy, int damge, int orient)
+{
+	enemy->state = STUN;
+	enemy->actCount = HIT_STUN_FRAME;
+	switch (orient)
+	{
+	case RIGHT:
+	case LEFT:
+
+		enemy->state = STUN;
+		if (orient % 4)
+			enemy->horzSpd = -HIT_STUN_HSPD;
+		else
+			enemy->horzSpd = HIT_STUN_HSPD;
+		break;
+
+	case DOWN:
+	case UP:
+		enemy->horzSpd = 0;
+		break;
+
+	default:
+		break;
+	}
 }

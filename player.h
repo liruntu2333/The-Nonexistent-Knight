@@ -12,9 +12,31 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define PLAYER_MAX		(1)		// プレイヤーのMax人数
+#define PLAYER_MAX					(1)		// プレイヤーのMax人数
+#define GRAVITATIONAL_CONST			(1)
+#define FALL_LIMIT					(30)
 
+enum Orientation
+{
+	RIGHT,
+	DOWN,
+	LEFT,
+	UP,
+};
 
+enum State
+{
+	STAND,
+	RUN,
+
+	DASH,
+	STUN,
+	ATTACK,
+
+	FALL,
+	JUMP,
+	BIG_JUMP,
+};
 
 //*****************************************************************************
 // 構造体定義
@@ -34,10 +56,14 @@ struct PLAYER
 	int				state;			// current movement
 	int				orient;			// 0left 1right
 	int				atkOrient;		// 0right 1down 2left 3up
-	BOOL			atkDetected;	// 0 not yet 1 had
-	int				verticalSpeed;	// vertical movement per frame
-	int				actCount;		// used for dash / attack count down
-	EFFECT*			atk;
+	BOOL			atkDetect;		// 0 not yet 1 had
+	int				vertSpd;		// vertical movement per frame
+	int				horzSpd;		// horizontal movement per frame, only used when stunned
+	int				actCount;		// used for dash / attack / stun count down
+	EFFECT*			atk;			// initiated effect
+	int				godCount;		// god mode count down
+
+	int				stamina;		// dash / attack need enough stamina to trigger
 };
 
 
@@ -51,5 +77,5 @@ void DrawPlayer(void);
 
 PLAYER *GetPlayer(void);
 
-
+void HitPlayer(PLAYER* player, int damge, int orient);
 

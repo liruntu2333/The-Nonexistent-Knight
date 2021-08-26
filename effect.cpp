@@ -16,18 +16,9 @@
 // マクロ定義
 //*****************************************************************************
 #define M_PI				3.14159265358979323846
-#define ANIM_WAIT			3
-#define EFFECT_PNG_W		800
-#define EFFECT_PNG_H		200
-
-
-enum ORIENTATION
-{
-	RIGHT,
-	DOWN,
-	LEFT,
-	UP,
-};
+#define ANIM_WAIT			2
+#define EFFECT_PNG_W		2400
+#define EFFECT_PNG_H		500
 
 enum TEXTURE_INFO
 {
@@ -56,7 +47,8 @@ static const int PARTICLE_GEN = 1;
 static const float c_TextureInfo[EFFECT_TYPE_MAX][INFO_MAX] =
 {
 	{200.0f,	100.0f,		100.0f,		4.0f},
-	{100.0f,	100.0f,		50.0f,		5.0f}	
+	{100.0f,	100.0f,		50.0f,		5.0f},
+	{600.0f,	300.0f,		50.0f,		4.0f},
 };
 
 static ID3D11Buffer* g_VertexBuffer = NULL;		// 頂点情報
@@ -188,11 +180,10 @@ void UpdateEffect(void)
 
 #ifdef _DEBUG
 			// デバッグ表示
-			PrintDebugProc("X:%f Y:%f texNo: %d %s patternAnim: %d \n",
+			PrintDebugProc("X:%f Y:%f texNo: %d patternAnim: %d \n",
 				s_Effect->pos.x,
 				s_Effect->pos.y,
 				s_Effect->texNo,
-				g_TexturName[s_Effect->texNo],
 				s_Effect->patternAnim);
 #endif
 		}

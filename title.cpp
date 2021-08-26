@@ -17,12 +17,12 @@
 // マクロ定義
 //*****************************************************************************
 static const float TEXTURE_WIDTH			= SCREEN_WIDTH;// 背景サイズ
-static const float TEXTURE_HEIGHT			= SCREEN_HEIGHT;// 
+static const float MAP_HEIGHT			= SCREEN_HEIGHT;// 
 static const int TEXTURE_MAX				= 4;// テクスチャの数
 											  
 static const int LOGO_MAX					= 2;
 static const float LOGO_WIDTH				= TEXTURE_WIDTH / 2;
-static const float LOGO_HEIGHT				= TEXTURE_HEIGHT / 2;
+static const float LOGO_HEIGHT				= MAP_HEIGHT / 2;
 static const int LOGO_DIVIDE_X				= 100;
 static const int LOGO_DIVIDE_Y				= 50;
 											  
@@ -90,7 +90,7 @@ HRESULT InitTitle(void)
 
 	// 変数の初期化
 	g_Title.w     = TEXTURE_WIDTH;
-	g_Title.h     = TEXTURE_HEIGHT;
+	g_Title.h     = MAP_HEIGHT;
 	g_Title.pos   = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	g_Title.texNo = 1;
 	//g_Title.move = 3.7f;
@@ -100,7 +100,7 @@ HRESULT InitTitle(void)
 	{
 		g_Logo[i].w = LOGO_WIDTH;
 		g_Logo[i].h = LOGO_HEIGHT;
-		g_Logo[i].pos = D3DXVECTOR3(TEXTURE_WIDTH / 4, TEXTURE_HEIGHT / LOGO_MAX * i, 0.0f);
+		g_Logo[i].pos = D3DXVECTOR3(TEXTURE_WIDTH / 4, MAP_HEIGHT / LOGO_MAX * i, 0.0f);
 		g_Logo[i].texNo = 3;
 	}
 

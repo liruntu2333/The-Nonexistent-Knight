@@ -12,7 +12,7 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define ENEMY_MAX		(3)		// エネミーのMax人数
+#define ENEMY_MAX		(1)		// エネミーのMax人数
 
 
 //*****************************************************************************
@@ -27,6 +27,7 @@ struct	LINEAR_INTERPOLATION		// 線形補間データの構造体
 	float			time;			// 移動フレーム数
 };
 
+struct EFFECT;
 
 struct ENEMY
 {
@@ -38,11 +39,22 @@ struct ENEMY
 	float			countAnim;		// アニメーションカウント
 	int				patternAnim;	// アニメーションパターンナンバー
 	int				texNo;			// テクスチャ番号
-	D3DXVECTOR3		move;			// 移動速度
+	//D3DXVECTOR3		move;			// 移動速度
 
-	float			time;			// 線形補間用
-	int				moveTblNo;		// 行動データのテーブル番号
-	int				tblMax;			// そのテーブルのデータ数
+	int				state;			// current movement
+	int				orient;			// 0left 1right
+	int				atkOrient;		// 0right 1down 2left 3up
+	BOOL			atkDetect;		// 0 not yet 1 had
+	int				vertSpd;		// vertical movement per frame
+	int				horzSpd;		// horizontal movement per frame, only used when stunned
+	int				actCount;		// used for dash / attack / STUN count down
+	EFFECT*         atk;			// initiated effect
+
+	int				stamina;		// dash / attack need enough stamina to trigger
+
+	//float			time;			// 線形補間用
+	//int				moveTblNo;		// 行動データのテーブル番号
+	//int				tblMax;			// そのテーブルのデータ数
 };
 
 
@@ -57,5 +69,6 @@ void DrawEnemy(void);
 
 ENEMY *GetEnemy(void);
 
-void DestructEnemy(ENEMY* ep);
+void HitEnemy(ENEMY* enemy, int damge, int orient);
+
 

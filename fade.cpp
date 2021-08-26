@@ -9,8 +9,8 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define TEXTURE_WIDTH				(SCREEN_WIDTH)	// 背景サイズ
-#define TEXTURE_HEIGHT				(SCREEN_HEIGHT)	// 
+#define MAP_WIDTH				(SCREEN_WIDTH)	// 背景サイズ
+#define MAP_HEIGHT				(SCREEN_HEIGHT)	// 
 #define TEXTURE_MAX					(1)				// テクスチャの数
 
 #define	FADE_RATE					(0.02f)			// フェード係数
@@ -67,8 +67,8 @@ HRESULT InitFade(void)
 
 
 	// 変数の初期化
-	g_Fade.w = TEXTURE_WIDTH;
-	g_Fade.h = TEXTURE_HEIGHT;
+	g_Fade.w = MAP_WIDTH;
+	g_Fade.h = MAP_HEIGHT;
 	g_Fade.pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	g_Fade.texNo = 0;
 

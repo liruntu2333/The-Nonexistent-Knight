@@ -18,8 +18,8 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define TEXTURE_WIDTH				(800/16)	// キャラサイズ
-#define TEXTURE_HEIGHT				(800/16)	// 
+#define MAP_WIDTH				(800/16)	// キャラサイズ
+#define MAP_HEIGHT				(800/16)	// 
 #define TEXTURE_MAX					(1)		// テクスチャの数
 
 #define TEXTURE_PATTERN_DIVIDE_X	(1)		// アニメパターンのテクスチャ内分割数（X)
@@ -84,8 +84,8 @@ HRESULT InitBullet(void)
 		g_Bullet[i].use = FALSE;
 		g_Bullet[i].pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);	// 中心点から表示
 		g_Bullet[i].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		g_Bullet[i].w = TEXTURE_WIDTH;
-		g_Bullet[i].h = TEXTURE_HEIGHT;
+		g_Bullet[i].w = MAP_WIDTH;
+		g_Bullet[i].h = MAP_HEIGHT;
 		g_Bullet[i].texNo = 0;
 	
 
@@ -180,7 +180,7 @@ void UpdateBullet(void)
 				{
 					if (BBCollision(&(g_Bullet + i)->pos, &ep->pos, g_Bullet[i].w, ep->w, g_Bullet[i].h, ep->h))
 					{
-						DestructEnemy(ep);
+						//DestructEnemy(ep);
 						break;
 					}
 				}
@@ -274,7 +274,7 @@ void SetBullet(D3DXVECTOR3 pos)
 		if (g_Bullet[i].use == FALSE)
 		{
 			g_Bullet[i].use = TRUE;
-			g_Bullet[i].pos = pos + D3DXVECTOR3(TEXTURE_WIDTH, 0.0F, 0.0F);
+			g_Bullet[i].pos = pos + D3DXVECTOR3(MAP_WIDTH, 0.0F, 0.0F);
 			PlaySound(SOUND_LABEL_SE_laser000);
 			return;
 		}
