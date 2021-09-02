@@ -135,7 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="bg.cpp" />
+    <ClCompile Include="map.cpp" />
     <ClCompile Include="bullet.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="collision.cpp" />
@@ -157,7 +157,7 @@
     <ClCompile Include="tutorial.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bg.h" />
+    <ClInclude Include="map.h" />
     <ClInclude Include="bullet.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="collision.h" />

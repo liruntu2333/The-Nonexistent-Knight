@@ -9,7 +9,7 @@
 #include "camera.h"
 #include "input.h"
 #include "title.h"
-#include "bg.h"
+#include "map.h"
 #include "player.h"
 #include "enemy.h"
 #include "bullet.h"
@@ -20,12 +20,13 @@
 #include "tutorial.h"
 #include "file.h"
 #include "effect.h"
+#include "elevator.h"
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
 #define CLASS_NAME			"AppClass"				// ウインドウのクラス名
-#define WINDOW_NAME			"DirectX11 35 李子臻"		// ウインドウのキャプション名
+#define WINDOW_NAME			"Nonexistent Knight"		// ウインドウのキャプション名
 
 //*****************************************************************************
 // 構造体定義
@@ -308,7 +309,8 @@ void Update(void)
 		break;
 
 	case MODE_GAME:			// ゲーム画面の更新
-		UpdateBG();
+		UpdateMap();
+		UpdateElev();
 		UpdatePlayer();
 		UpdateEffect();
 		UpdateBullet();
@@ -349,7 +351,8 @@ void Draw(void)
 		break;
 
 	case MODE_GAME:			// ゲーム画面の描画
-		DrawBG();
+		DrawMap();
+		DrawElev();
 		DrawEnemy();
 		DrawBullet();
 		DrawScore();
@@ -390,7 +393,8 @@ void SetMode(int mode)
 	
 	// タイトルの終了処理
 	UninitTitle();
-	UninitBG();
+	UninitElev();
+	UninitMap();
 	UninitEffect();
 	UninitPlayer();
 	UninitEnemy();
@@ -407,28 +411,29 @@ void SetMode(int mode)
 	case MODE_TITLE:
 		// タイトル画面の初期化
 		InitTitle();
-		PlaySound(SOUND_LABEL_BGM_sample003);
+		PlaySound(SOUND_LABEL_BGM_DrunkStar);
 		break;
 
 	case MODE_TUTORIAL:
 		InitTutorial();
-		PlaySound(SOUND_LABEL_BGM_sample003);
+		PlaySound(SOUND_LABEL_BGM_DrunkStar);
 		break;
 
 	case MODE_GAME:
 		// ゲーム画面の初期化
-		InitBG();
+		InitMap();
+		InitElev();
 		InitEffect();
 		InitPlayer();
 		InitEnemy();
 		InitBullet();
 		InitScore();
-		PlaySound(SOUND_LABEL_BGM_sample001);
+		PlaySound(SOUND_LABEL_BGM_EoS);
 		break;
 
 	case MODE_RESULT:
 		InitResult();
-		PlaySound(SOUND_LABEL_BGM_sample002);
+		PlaySound(SOUND_LABEL_BGM_DrunkStar);
 		break;
 		
 		// ゲーム終了時の処理

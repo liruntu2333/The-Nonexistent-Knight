@@ -7,12 +7,13 @@
 #include "enemy.h"
 #include "sprite.h"
 #include "input.h"
-#include "bg.h"
+#include "map.h"
 #include <math.h>
 #include "player.h"
 #include "collision.h"
 #include "score.h"
 #include "sound.h"
+#include "effect.h"
 
 //*****************************************************************************
 // ƒ}ƒNƒ’è‹`
@@ -202,7 +203,7 @@ void UpdateEnemy(void)
 					{
 						s_Enemy->state = FALL;
 					}
-					// If there is block above enemy, reverse vertical speed to plus.
+					// If there is obstacle above enemy, reverse vertical speed to plus.
 					if (GetTerrain(s_Enemy->pos.x, s_Enemy->pos.y - s_Enemy->h / 2))
 					{
 						s_Enemy->pos.y += 5.0f;
@@ -229,7 +230,7 @@ void UpdateEnemy(void)
 					}
 				}
 
-				// If there is block under player, stand still & stop falling.
+				// If there is obstacle under player, stand still & stop falling.
 				if (GetTerrain(s_Enemy->pos.x, s_Enemy->pos.y + s_Enemy->h / 2))
 				{
 					if (s_Enemy->state == FALL)
@@ -239,7 +240,7 @@ void UpdateEnemy(void)
 						s_Enemy->pos = ReloacteObj(s_Enemy->pos.x, s_Enemy->pos.y, s_Enemy->w, s_Enemy->h);
 					}
 				}
-				else if (s_Enemy->state == RUN || s_Enemy->state == STAND)
+				else if (s_Enemy->state <= STAND_ELEV)
 				{
 					// Start to fall when walk across the edge.
 					s_Enemy->state = FALL;
@@ -357,7 +358,7 @@ void DrawEnemy(void)
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 
-	BG* bg = GetBG();
+	BG* bg = GetMap();
 
 	for (int i = 0; i < ENEMY_MAX; i++)
 	{
@@ -437,4 +438,6 @@ void HitEnemy(ENEMY* enemy, int damge, int orient)
 	default:
 		break;
 	}
+
+	SetEffect(enemy->pos.x, enemy->pos.y, COIN, RIGHT);
 }

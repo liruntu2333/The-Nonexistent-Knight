@@ -22,6 +22,10 @@ struct EFFECT
 	int				patternAnim;	// アニメーションパターンナンバー
 	int				texNo;			// テクスチャ番号
 
+	float			vertSpd;
+	float			horzSpd;
+	int				bounce;			// bounced time
+
 	int				type;
 };
 
@@ -30,6 +34,7 @@ enum EFFECT_TYPE
 	PLAYER_BLADE,
 	PLAYER_REFLECT,
 	PLAYER_HIT,
+	COIN,
 	EFFECT_TYPE_MAX,
 };
 

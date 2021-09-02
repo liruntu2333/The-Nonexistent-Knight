@@ -7,8 +7,9 @@
 #include "effect.h"
 #include "sprite.h"
 #include "main.h"
-#include "bg.h"
+#include "map.h"
 #include "player.h"
+#include "collision.h"
 
 #include <math.h>
 
@@ -18,7 +19,7 @@
 #define M_PI				3.14159265358979323846
 #define ANIM_WAIT			2
 #define EFFECT_PNG_W		2400
-#define EFFECT_PNG_H		500
+#define EFFECT_PNG_H		564
 
 enum TEXTURE_INFO
 {
@@ -49,6 +50,7 @@ static const float c_TextureInfo[EFFECT_TYPE_MAX][INFO_MAX] =
 	{200.0f,	100.0f,		100.0f,		4.0f},
 	{100.0f,	100.0f,		50.0f,		5.0f},
 	{600.0f,	300.0f,		50.0f,		4.0f},
+	{64.0f,		64.0f,		0.0f,		16.0f}	
 };
 
 static ID3D11Buffer* g_VertexBuffer = NULL;		// 頂点情報
@@ -160,6 +162,7 @@ void UpdateEffect(void)
 			}
 		}
 	}*/
+	PLAYER* s_Player = GetPlayer();
 
 	for (int i = 0; i < EFFECT_MAX; i++)
 	{
@@ -167,16 +170,81 @@ void UpdateEffect(void)
 		//	Only proceed when effect been using
 		if (s_Effect->use)
 		{
-			// Animation
-			if (++s_Effect->countAnim > ANIM_WAIT)
+			switch (s_Effect->type)
 			{
-				s_Effect->countAnim = 0.0f;
-				// Change pattern and check if it's the end of animation.
-				if (++s_Effect->patternAnim >= (int)c_TextureInfo[s_Effect->type][FRAME])
+			case COIN:
+			{
+				if (s_Effect->pos.y - s_Effect->h / 2 < 0 || 
+					s_Effect->pos.y + s_Effect->h / 2 > GetMap()->h)
 				{
 					s_Effect->use = FALSE;
-				};
+				}
+				if (s_Effect->bounce < 2)
+				{
+					// Vertical speed effected by gravity when in the air.
+					s_Effect->pos.y += s_Effect->vertSpd;
+					s_Effect->pos.x += s_Effect->horzSpd;
+
+					s_Effect->vertSpd += GRAVITATIONAL_CONST;
+					if (s_Effect->vertSpd > FALL_LIMIT)
+					{
+						s_Effect->vertSpd = FALL_LIMIT;
+					}
+
+					// If there is obstacle under object, stand still & stop falling.
+					if (GetTerrain(s_Effect->pos.x, s_Effect->pos.y + s_Effect->h / 2))
+					{
+						s_Effect->pos = ReloacteObj(s_Effect->pos.x, s_Effect->pos.y, s_Effect->w, s_Effect->h);
+						if (!s_Effect->bounce)
+						{
+							s_Effect->bounce++;
+							s_Effect->vertSpd *= -0.5f;
+							s_Effect->horzSpd *= -0.5f;
+						}
+						else
+						{
+							s_Effect->bounce++;
+							s_Effect->vertSpd = 0.0f;
+							s_Effect->horzSpd = 0.0f;
+						}
+					}
+				}
+
+				if (s_Effect->countAnim++ > ANIM_WAIT)
+				{
+					s_Effect->countAnim = 0.0f;
+					// Change pattern and check if it's the end of animation.
+					if (++s_Effect->patternAnim >= (int)c_TextureInfo[s_Effect->type][FRAME])
+					{
+						s_Effect->patternAnim = 0;
+					};
+
+					if (BBCollision(&s_Effect->pos, &s_Player->pos,
+						s_Effect->w, s_Player->w, s_Effect->h, s_Player->h))
+					{
+						s_Effect->use = FALSE;
+					}
+				}
+				break;
 			}
+
+			default:
+			{
+				// Animation
+				if (s_Effect->countAnim++ > ANIM_WAIT)
+				{
+					s_Effect->countAnim = 0.0f;
+					// Change pattern and check if it's the end of animation.
+					if (++s_Effect->patternAnim >= (int)c_TextureInfo[s_Effect->type][FRAME])
+					{
+						s_Effect->use = FALSE;
+					};
+				}
+				break; 
+			}
+
+			}
+
 
 #ifdef _DEBUG
 			// デバッグ表示
@@ -217,7 +285,7 @@ void DrawEffect(void)
 	//
 	//SetBlendState(BLEND_MODE_ADD);
 	//SetBlendState(BLEND_MODE_SUBTRACT);
-	BG* s_BG = GetBG();
+	BG* s_Map = GetMap();
 
 	for (int i = 0; i < EFFECT_MAX; i++)
 	{
@@ -226,8 +294,8 @@ void DrawEffect(void)
 		{
 			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
 			// Calculate the relative loacation of effect
-			float ex = s_Effect->pos.x - s_BG->pos.x;
-			float ey = s_Effect->pos.y - s_BG->pos.y;
+			float ex = s_Effect->pos.x - s_Map->pos.x;
+			float ey = s_Effect->pos.y - s_Map->pos.y;
 
 			// Calculate the parameter for animation
 			float tw = 1.0f / EFFECT_PNG_W * s_Effect->w;	
@@ -273,11 +341,24 @@ EFFECT* SetEffect(float X, float Y, int Type, int orient)
 			s_Effect->countAnim = 0.0f;
 			s_Effect->patternAnim = 0;
 			s_Effect->texNo = 0;
+			s_Effect->bounce = 0;
 			s_Effect->use = TRUE;
+
+			switch (s_Effect->type)
+			{
+			case COIN:
+				s_Effect->horzSpd = ((float)(rand() % 200 - 100) / 10);
+				s_Effect->vertSpd = -((float)(rand() % 100) / 10);
+				break;
+			default:
+				s_Effect->horzSpd = 0;
+				s_Effect->vertSpd = 0;
+				break;
+			}
 			return s_Effect;
 		}
 	}
-	return FALSE;
+	return NULL;
 }
 
 

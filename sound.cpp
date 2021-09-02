@@ -32,9 +32,10 @@ DWORD g_aSizeAudio[SOUND_LABEL_MAX] = {};					// オーディオデータサイズ
 // 各音素材のパラメータ
 SOUNDPARAM g_aParam[SOUND_LABEL_MAX] =
 {
-	{ (char*)"data/BGM/sample000.wav", 1 },	// BGM0
+
 	{ (char*)"data/BGM/ember-DrunkStar.wav", 1 },	// BGM1
-	{ (char*)"data/BGM/sample001.wav", 1 },	// BGM2
+	{ (char*)"data/BGM/ember-EoS.wav", 1 },
+
 	{ (char*)"data/SE/bomb000.wav", 0 },		// 弾発射音
 	{ (char*)"data/SE/defend000.wav", 0 },		// 弾発射音
 	{ (char*)"data/SE/defend001.wav", 0 },		// 弾発射音
@@ -44,7 +45,8 @@ SOUNDPARAM g_aParam[SOUND_LABEL_MAX] =
 	{ (char*)"data/SE/shot000.wav", 0 },		// 弾発射音
 	{ (char*)"data/SE/shot001.wav", 0 },		// ヒット音
 
-	{ (char*)"data/BGM/sample002.wav", 1 },
+
+
 };
 
 //=============================================================================

@@ -26,8 +26,9 @@ enum Orientation
 
 enum State
 {
-	STAND,
 	RUN,
+	STAND,
+	STAND_ELEV,
 
 	DASH,
 	STUN,
@@ -42,6 +43,7 @@ enum State
 // ç\ë¢ëÃíËã`
 //*****************************************************************************
 struct EFFECT;
+struct ELEVATOR;
 
 struct PLAYER
 {
@@ -61,6 +63,7 @@ struct PLAYER
 	int				horzSpd;		// horizontal movement per frame, only used when stunned
 	int				actCount;		// used for dash / attack / stun count down
 	EFFECT*			atk;			// initiated effect
+	ELEVATOR*		elev;			// taken elevator
 	int				godCount;		// god mode count down
 
 	int				stamina;		// dash / attack need enough stamina to trigger

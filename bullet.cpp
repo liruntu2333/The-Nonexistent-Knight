@@ -7,7 +7,7 @@
 #include "enemy.h"
 #include "sprite.h"
 #include "input.h"
-#include "bg.h"
+#include "map.h"
 #include <math.h>
 #include "player.h"
 #include "bullet.h"
@@ -220,7 +220,7 @@ void DrawBullet(void)
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 
-	BG *bg = GetBG();
+	BG *bg = GetMap();
 	for (int i = 0; i < BULLET_MAX; i++)
 	{
 		if (g_Bullet[i].use == TRUE)		// このプレイヤーが使われている？
