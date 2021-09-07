@@ -1,6 +1,6 @@
 //
 // @file				elevator.cpp
-// @brief				An elevator object can moves around and 
+// @brief				An elevator object that can move around and 
 //						modifies terrain.
 // @copyright			2021 LI ZIZHEN liruntu2333@gmail.com
 // @lisense				GPL
@@ -144,7 +144,6 @@ void UpdateElev(void)
 			SetTerrain(SPX + i, SPY + j, AIR);
 		}
 	}
-
 	// Construct new elevator in terrain.
 	g_Elevator.pos.y += g_Elevator.vertSpd;
 	SPY = (int)(g_Elevator.pos.y / BLK_LGTH);
@@ -169,10 +168,10 @@ void UpdateElev(void)
 
 #ifdef _DEBUG
 	// デバッグ表示
-	PrintDebugProc("Elevator X:%f Y:%f vSpd\n",
-		g_Elevator.pos.x,
-		g_Elevator.pos.y,
-		g_Elevator.vertSpd);
+	//PrintDebugProc("Elevator X:%f Y:%f vSpd\n",
+	//	g_Elevator.pos.x,
+	//	g_Elevator.pos.y,
+	//	g_Elevator.vertSpd);
 #endif
 }
 

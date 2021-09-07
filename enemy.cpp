@@ -34,11 +34,13 @@
 #define PARRY_STUN_FRAME			(60)
 
 #define PARRY_SM_FRAME				(60)	// slow motion mode triggered by sucessful parry
+#define	HEALTH_MAX					(10)
 
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
 void DestructEnemy(ENEMY* ep);
+void ChekHitPlayer(ENEMY* enemy);
 
 //*****************************************************************************
 // グローバル変数
@@ -120,7 +122,7 @@ HRESULT InitEnemy(void)
 		ENEMY* s_Enemy = g_Enemy + i;
 
 		s_Enemy->use = TRUE;
-		s_Enemy->pos = D3DXVECTOR3(MAP_WIDTH / 2 + 500.0f, SCREEN_HEIGHT / 2, 0.0f);	// 中心点から表示
+		s_Enemy->pos = D3DXVECTOR3(MAP_WIDTH / 2 + 500.0f +100.0f * i, SCREEN_HEIGHT / 2, 0.0f);	// 中心点から表示
 		s_Enemy->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		s_Enemy->w = MAP_WIDTH;
 		s_Enemy->h = MAP_HEIGHT;
@@ -138,6 +140,7 @@ HRESULT InitEnemy(void)
 		s_Enemy->actCount = 0;
 		s_Enemy->atk = NULL;
 		s_Enemy->rddot = NULL;
+		s_Enemy->slashed = FALSE;
 
 		s_Enemy->stamina = 0;
 
@@ -213,24 +216,24 @@ void UpdateEnemy(void)
 					}
 				}
 
-				if (s_Enemy->orient == RIGHT)
-				{
-					// Move right.
-					s_Enemy->pos.x += RUN_SPEED;
-					if (GetTerrain(s_Enemy->pos.x + s_Enemy->w / 2, s_Enemy->pos.y))
-					{
-						s_Enemy->orient = LEFT;
-					}
-				}
-				else
-				{
-					// Move left.
-					s_Enemy->pos.x -= RUN_SPEED;
-					if (GetTerrain(s_Enemy->pos.x - s_Enemy->w / 2, s_Enemy->pos.y))
-					{
-						s_Enemy->orient = RIGHT;
-					}
-				}
+				//if (s_Enemy->orient == RIGHT)
+				//{
+				//	// Move right.
+				//	s_Enemy->pos.x += RUN_SPEED;
+				//	if (GetTerrain(s_Enemy->pos.x + s_Enemy->w / 2, s_Enemy->pos.y))
+				//	{
+				//		s_Enemy->orient = LEFT;
+				//	}
+				//}
+				//else
+				//{
+				//	// Move left.
+				//	s_Enemy->pos.x -= RUN_SPEED;
+				//	if (GetTerrain(s_Enemy->pos.x - s_Enemy->w / 2, s_Enemy->pos.y))
+				//	{
+				//		s_Enemy->orient = RIGHT;
+				//	}
+				//}
 
 				// If there is obstacle under player, stand still & stop falling.
 				if (GetTerrain(s_Enemy->pos.x, s_Enemy->pos.y + s_Enemy->h / 2))
@@ -291,6 +294,7 @@ void UpdateEnemy(void)
 				else
 				{
 					s_Enemy->state = FALL;
+					s_Enemy->slashed = FALSE;
 					// At the end of stunning state, set red dot to false
 					if (s_Enemy->rddot)
 					{
@@ -303,35 +307,8 @@ void UpdateEnemy(void)
 
 			if (s_Enemy->state != STUN)
 			{
-				for (int i = 0; i < PLAYER_MAX; i++)
-				{
-					PLAYER* s_Player = GetPlayer() + i;
-					if (s_Player->use)
-					{
-						if (BBCollision(&s_Enemy->pos, &s_Player->pos,
-							s_Enemy->w, s_Player->w,
-							s_Enemy->h, s_Player->h))
-						{
-							if (s_Player->pos.y < s_Enemy->pos.y)
-							{
-								s_Enemy->atkOrient = UP;
-							}
-							else if (s_Player->pos.y > s_Enemy->pos.y)
-							{
-								s_Enemy->atkOrient = DOWN;
-							}
-							else if (s_Player->pos.x < s_Enemy->pos.x)
-							{
-								s_Enemy->atkOrient = LEFT;
-							}
-							else if (s_Player->pos.x > s_Enemy->pos.x)
-							{
-								s_Enemy->atkOrient = RIGHT;
-							}
-							HitPlayer(s_Enemy, s_Player, 0, s_Enemy->atkOrient);
-						}
-					}
-				}
+				// Check if Hit on Player.
+				ChekHitPlayer(s_Enemy);
 			}
 
 			// Animation
@@ -429,11 +406,82 @@ void DestructEnemy(ENEMY* ep)
 	return;
 }
 
+//
+// @brief	Do attack detection on player. 
+// @param	Enemy pointer and attack effect used as collision box. If effect == NULL,
+//			enemy itself presents as collision box.
+//
+void ChekHitPlayer(ENEMY* enemy)
+{
+	for (int i = 0; i < PLAYER_MAX; i++)
+	{
+		PLAYER* s_Player = GetPlayer() + i;
+		if (s_Player->use)
+		{
+			// This damage is occured by melee attacks which has an effect BB.
+			if (enemy->atk)
+			{
+				if (BBCollision(&enemy->atk->pos, &s_Player->pos,
+					enemy->atk->w, s_Player->w,
+					enemy->atk->h, s_Player->h))
+				{
+					if (s_Player->pos.y < enemy->atk->pos.y)
+					{
+						enemy->atkOrient = UP;
+					}
+					else if (s_Player->pos.y > enemy->atk->pos.y)
+					{
+						enemy->atkOrient = DOWN;
+					}
+					else if (s_Player->pos.x < enemy->atk->pos.x)
+					{
+						enemy->atkOrient = LEFT;
+					}
+					else if (s_Player->pos.x > enemy->atk->pos.x)
+					{
+						enemy->atkOrient = RIGHT;
+					}
+					HitPlayer(enemy, s_Player, 1, enemy->atkOrient);
+				}
+			}
+			else
+			{
+				// This damage is occured by enemy collision 
+				// attacks which doesn't have effect BB.
+				if (BBCollision(&enemy->pos, &s_Player->pos,
+					enemy->w, s_Player->w,
+					enemy->h, s_Player->h))
+				{
+					if (s_Player->pos.y < enemy->pos.y)
+					{
+						enemy->atkOrient = UP;
+					}
+					else if (s_Player->pos.y > enemy->pos.y)
+					{
+						enemy->atkOrient = DOWN;
+					}
+					else if (s_Player->pos.x < enemy->pos.x)
+					{
+						enemy->atkOrient = LEFT;
+					}
+					else if (s_Player->pos.x > enemy->pos.x)
+					{
+						enemy->atkOrient = RIGHT;
+					}
+					HitPlayer(enemy, s_Player, 1, enemy->atkOrient);
+				}
+			}
+			
+		}
+	}
+}
+
 // 
 // @brief	Decrease ENEMY's health and switch state to STUN.
 //			If damage == 0 means enemy get parried.
 // @param	enemy pointer, dam, orient (not used when parrying)
 // @return	
+//
 void HitEnemy(ENEMY* enemy, int damage, int orient)
 {
 	enemy->state = STUN;
@@ -442,8 +490,16 @@ void HitEnemy(ENEMY* enemy, int damage, int orient)
 	{
 		enemy->actCount = PARRY_STUN_FRAME;
 		SetSlowMotion(PARRY_SM_FRAME);
-		enemy->rddot = SetEffect(enemy->pos.x, enemy->pos.y, RED_DOT, 0);
+		enemy->rddot = SetEffect(enemy->pos.x, enemy->pos.y, RED_DOT, RIGHT);
 		return;
+	}
+	else
+	{
+		if (enemy->rddot)
+		{
+			enemy->rddot->use = FALSE;
+			enemy->rddot = NULL;
+		}
 	}
 	enemy->actCount = BIG_STUN_FRAME;
 
@@ -467,6 +523,13 @@ void HitEnemy(ENEMY* enemy, int damage, int orient)
 	default:
 		break;
 	}
+	if (damage == 2)
+	{
+		enemy->slashed = TRUE;
+	}
 
-	//SetEffect(enemy->pos.x, enemy->pos.y, COIN, RIGHT);
+	for (int i = 0; i < damage; i++)
+	{
+		SetEffect(enemy->pos.x, enemy->pos.y, COIN, RIGHT);
+	}
 }

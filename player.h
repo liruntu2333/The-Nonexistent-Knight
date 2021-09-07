@@ -26,12 +26,14 @@ enum Orientation
 
 enum State
 {
-	RUN,
 	STAND,
 	STAND_ELEV,
+	RUN,
+	RUN_ELEV,
 
 	DASH,
 	STUN,
+	DEAD,
 	PARRY,
 	SLASH,
 	ATTACK,
@@ -71,6 +73,7 @@ struct PLAYER
 	int				godCount;		// god mode count down
 
 	int				stamina;		// dash / attack need enough stamina to trigger
+	int				health;			// when health reduces to 0, you die.
 };
 
 

@@ -165,6 +165,7 @@ void UpdateEffect(void)
 			}
 		}
 	}*/
+
 	PLAYER* s_Player = GetPlayer();
 
 	for (int i = 0; i < EFFECT_MAX; i++)

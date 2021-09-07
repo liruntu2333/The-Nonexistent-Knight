@@ -44,7 +44,7 @@ static BG	g_Map;
 static BG	g_BG;
 
 // Data storaged in 2D array. 0 stands for air, 1 earth, 2 ground suface.
-static int g_TerrainDT[MAP_HEIGHT / BLK_LGTH][MAP_WIDTH / BLK_LGTH] = { {0} };
+static unsigned short int g_TerrainDT[MAP_HEIGHT / BLK_LGTH][MAP_WIDTH / BLK_LGTH] = { {0} };
 
 
 // ‰Šú‰»ˆ—

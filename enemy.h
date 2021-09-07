@@ -45,13 +45,16 @@ struct ENEMY
 	int				orient;			// 0left 1right
 	int				atkOrient;		// 0right 1down 2left 3up
 	BOOL			atkDetect;		// 0 not yet 1 had
+	BOOL			slashed;		// 0 not yet 1 had
 	int				vertSpd;		// vertical movement per frame
 	int				horzSpd;		// horizontal movement per frame, only used when stunned
 	int				actCount;		// used for dash / attack / STUN count down
 	EFFECT*         atk;			// initiated effect
 	EFFECT*			rddot;			// red dot
 
+
 	int				stamina;		// dash / attack need enough stamina to trigger
+	int				health;			// when health reduces to 0, enemy die.
 
 	//float			time;			// 線形補間用
 	//int				moveTblNo;		// 行動データのテーブル番号

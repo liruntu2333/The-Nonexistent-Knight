@@ -56,7 +56,7 @@ char	g_DebugStr[2048] = WINDOW_NAME;		// デバッグ文字表示用
 
 #endif
 
-int g_Mode = MODE_GAME;						 // 起動時の画面を設定
+int g_Mode = MODE_TITLE;						 // 起動時の画面を設定
 BOOL g_LoadGame = FALSE;					// NewGame
 unsigned int g_FPS = 60;
 int g_SMcount = 0;							// use to count down slow motion
@@ -460,6 +460,7 @@ void SetMode(int mode)
 
 bool CheckGameover()
 {
+
 	ENEMY* enemy = GetEnemy();
 
 	bool flag = false;
