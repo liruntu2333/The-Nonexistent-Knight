@@ -49,6 +49,7 @@ struct ENEMY
 	int				horzSpd;		// horizontal movement per frame, only used when stunned
 	int				actCount;		// used for dash / attack / STUN count down
 	EFFECT*         atk;			// initiated effect
+	EFFECT*			rddot;			// red dot
 
 	int				stamina;		// dash / attack need enough stamina to trigger
 

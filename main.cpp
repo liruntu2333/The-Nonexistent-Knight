@@ -58,6 +58,8 @@ char	g_DebugStr[2048] = WINDOW_NAME;		// デバッグ文字表示用
 
 int g_Mode = MODE_GAME;						 // 起動時の画面を設定
 BOOL g_LoadGame = FALSE;					// NewGame
+unsigned int g_FPS = 60;
+int g_SMcount = 0;							// use to count down slow motion
 
 
 
@@ -176,7 +178,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 				dwFrameCount = 0;							// カウントをクリア
 			}
 
-			if ((dwCurrentTime - dwExecLastTime) >= (1000 / 60))	// 1/60秒ごとに実行
+			if ((dwCurrentTime - dwExecLastTime) >= (1000 / g_FPS))	// 1/60秒ごとに実行
 			{
 				dwExecLastTime = dwCurrentTime;	// 処理した時刻を保存
 
@@ -309,6 +311,14 @@ void Update(void)
 		break;
 
 	case MODE_GAME:			// ゲーム画面の更新
+		if (g_SMcount != 0)
+		{
+			g_SMcount--;
+			if (g_SMcount == 0)
+			{
+				g_FPS = 60;
+			}
+		}
 		UpdateMap();
 		UpdateElev();
 		UpdatePlayer();
@@ -323,6 +333,11 @@ void Update(void)
 	}
 
 	UpdateFade();
+
+#ifdef _DEBUG
+	// デバッグ表示
+	PrintDebugProc("SMcount: %d \n",g_SMcount);
+#endif
 }
 
 //=============================================================================
@@ -463,6 +478,12 @@ bool CheckGameover()
 		return true;
 	}
 	return false;
+}
+
+void SetSlowMotion(int frame)
+{
+	g_FPS = 30;
+	g_SMcount = frame;
 }
 
 //=============================================================================

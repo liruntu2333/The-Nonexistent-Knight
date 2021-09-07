@@ -72,3 +72,4 @@ void SetMode(int mode);
 int GetMode(void);
 
 void SetLoadGame(BOOL flg);
+void SetSlowMotion(int frame);

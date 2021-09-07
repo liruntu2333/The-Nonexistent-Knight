@@ -19,7 +19,7 @@
 #define M_PI				3.14159265358979323846
 #define ANIM_WAIT			2
 #define EFFECT_PNG_W		2400
-#define EFFECT_PNG_H		564
+#define EFFECT_PNG_H		864
 
 enum TEXTURE_INFO
 {
@@ -50,6 +50,9 @@ static const float c_TextureInfo[EFFECT_TYPE_MAX][INFO_MAX] =
 	{200.0f,	100.0f,		100.0f,		4.0f},
 	{100.0f,	100.0f,		50.0f,		5.0f},
 	{600.0f,	300.0f,		50.0f,		4.0f},
+	{100.0f,	100.0f,		50.0f,		5.0f},
+	{400.0f,	100.0f,		200.0f,		4.0f},
+	{100.0f,	100.0f,		0.0f,		1.0f},
 	{64.0f,		64.0f,		0.0f,		16.0f}	
 };
 
@@ -191,7 +194,7 @@ void UpdateEffect(void)
 						s_Effect->vertSpd = FALL_LIMIT;
 					}
 
-					// If there is obstacle under object, stand still & stop falling.
+					// vertical terrain check
 					if (GetTerrain(s_Effect->pos.x, s_Effect->pos.y + s_Effect->h / 2))
 					{
 						s_Effect->pos = ReloacteObj(s_Effect->pos.x, s_Effect->pos.y, s_Effect->w, s_Effect->h);
@@ -227,7 +230,34 @@ void UpdateEffect(void)
 				}
 				break;
 			}
+			case PLAYER_BLADE:
+			case PLAYER_SLASH:
+			{
+				// Player's blade should present relative stillness to player.
+				PLAYER* s_Player = GetPlayer();
+				float eX = s_Player->pos.x + c_TextureInfo[s_Effect->type][DISTANCE] * (float)cos(s_Effect->rot.z);
+				float eY = s_Player->pos.y + c_TextureInfo[s_Effect->type][DISTANCE] * (float)sin(s_Effect->rot.z);
+				s_Effect->pos = D3DXVECTOR3(eX, eY, 0.0f);
 
+				// Animation
+				if (s_Effect->countAnim++ > ANIM_WAIT)
+				{
+					s_Effect->countAnim = 0.0f;
+					// Change pattern and check if it's the end of animation.
+					if (++s_Effect->patternAnim >= (int)c_TextureInfo[s_Effect->type][FRAME])
+					{
+						s_Effect->use = FALSE;
+					};
+				}
+				break;
+			}
+			case RED_DOT:
+			{
+				// Red dot effect stay on enemy until slash triggers or stun finish
+				
+
+				break;
+			}
 			default:
 			{
 				// Animation

@@ -23,7 +23,7 @@
     <ProjectGuid>{6AC03ABA-9A04-421D-8043-CCE42B5FD915}</ProjectGuid>
     <RootNamespace>sample</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
-    <ProjectName>DX11sample</ProjectName>
+    <ProjectName>Nonexsistent Knight</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

@@ -23,7 +23,7 @@
 #define ELEV_SPD				(1)
 
 #define	ELEV_TOP				(250)
-#define ELEV_BTM				(700)
+#define ELEV_BTM				(600)
 
 //
 //	Function Prototype Declarations
@@ -77,7 +77,7 @@ HRESULT InitElev(void)
 	// Initiate elevator.
 	g_Elevator.w = ELEV_WIDTH;
 	g_Elevator.h = ELEV_HEIGHT;
-	g_Elevator.pos = D3DXVECTOR3(450.0f, 630.0f, 0.0f);
+	g_Elevator.pos = D3DXVECTOR3(250.0f, ELEV_TOP, 0.0f);
 	g_Elevator.texNo = 0;
 
 	int SPX = (int)(g_Elevator.pos.x / BLK_LGTH); // start point x
@@ -94,7 +94,7 @@ HRESULT InitElev(void)
 		SetTerrain(SPX + i, SPY, GROUND);
 	}
 
-	g_Elevator.vertSpd = -ELEV_SPD;
+	g_Elevator.vertSpd = ELEV_SPD;
 
 	g_Load = TRUE;	// データの初期化を行った
 	return S_OK;

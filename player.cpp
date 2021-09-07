@@ -30,27 +30,38 @@
 
 #define RUN_SPEED					(8.0f)
 
-#define JUMP_SPEED					(-25)
-#define HITJUMP_SPD					(-20)
+#define JUMP_SPEED					(-20)
+#define HITJUMP_SPD					(-15)
 
 #define DASH_SPEED					(15)
 #define DASH_FRAME					(20)
 #define DASH_GOD_ST					(0)
 #define DASH_GOD_END				(15)
+
 #define ATK_FRAME					(8)
 #define ATK_DETECTION				(3)
 #define ATK_END						(7)
+
+#define SLASH_FRAME					(8)
+#define SLASH_DETECTION				(0)
+#define SLASH_END					(8)
+#define SLASH_SPD					(15)
+
+#define PARRY_FRAME					(10)
+#define	PARRY_DETECTION				(2)
+#define PARRY_END					(7)
 
 #define STAMINA_MAX					(50)
 #define ATK_COST					(30)
 #define DASH_COST					(20)
 #define JUMP_COST					(10)
+#define PARRY_COST					(15)
 
-#define MINI_STUN_FRAME				(10)
-#define MINI_STUN_HSPD				(10)
-#define HIT_STUN_FRAME				(20)
-#define HIT_STUN_HSPD				(20)
-#define HIT_STUN_VSPD				(10)
+#define MINI_STUN_FRAME				(5)
+#define MINI_STUN_HSPD				(8)
+#define BIG_STUN_FRAME				(20)
+#define BIG_STUN_HSPD				(20)
+#define BIG_STUN_VSPD				(10)
 
 #define GOD_FRAME					(120)
 #define GOD_FLASH					(5)
@@ -60,6 +71,7 @@
 
 #define HIT_SHAKE					(10)
 #define HITBYENEMY_SHAKE			(20)
+#define SLASH_SHAKE					(15)
 
 enum DETECTION
 {
@@ -85,7 +97,8 @@ struct ILLUSION
 static ID3D11Buffer				*g_VertexBuffer = NULL;		// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
-static char *g_TexturName[TEXTURE_MAX] = {
+static char *g_TexturName[TEXTURE_MAX] = 
+{
 	"data/TEXTURE/runningman000.png",
 	"data/TEXTURE/runningman002.png",
 };
@@ -249,13 +262,36 @@ void UpdatePlayer(void)
 					{
 						s_Player->elev = NULL;
 						s_Player->stamina -= ATK_COST;
-						s_Player->state = ATTACK;
-						s_Player->actCount = ATK_FRAME;
+
+
+						// Super slash after successfully parried
+						if (s_Player->pryDetect)
+						{
+							s_Player->state = SLASH;
+							s_Player->actCount = SLASH_FRAME;
+						}
+						// Normal attack.
+						else
+						{
+							s_Player->state = ATTACK;
+							s_Player->actCount = ATK_FRAME;
+						}
+					}
+				}
+				// Parry trigger.
+				else if (GetKeyboardTrigger(DIK_K))
+				{
+					if (s_Player->stamina >= PARRY_COST)
+					{
+						s_Player->elev = NULL;
+						s_Player->stamina -= PARRY_COST;
+						s_Player->state = PARRY;
+						s_Player->actCount = PARRY_FRAME;
 					}
 				}
 
 				// Jump only triggers when player's on the ground(STAND ~ STAND_ELEV).
-				if (s_Player->state < DASH && GetKeyboardTrigger(DIK_SPACE))
+				else if (s_Player->state < DASH && GetKeyboardTrigger(DIK_SPACE))
 				{
 					if (s_Player->stamina >= JUMP_COST)
 					{
@@ -416,6 +452,13 @@ void UpdatePlayer(void)
 					else if (GetKeyboardPress(DIK_S))
 					{
 						s_Player->atkOrient = DOWN;
+						// Player can't attack downward when isn't in air(stand & attack).
+						if (GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2))
+						{
+							s_Player->actCount = 0;
+							s_Player->state = FALL;
+							break;
+						}
 					}
 					else if (GetKeyboardPress(DIK_D))
 					{
@@ -429,6 +472,7 @@ void UpdatePlayer(void)
 					{
 						s_Player->atkOrient = s_Player->orient;
 					}
+					// blade effect
 					s_Player->atk = SetEffect(s_Player->pos.x, s_Player->pos.y,
 						PLAYER_BLADE, s_Player->atkOrient);
 					s_Player->vertSpd = 0;
@@ -452,7 +496,7 @@ void UpdatePlayer(void)
 							SetEffect(s_Player->pos.x, s_Player->pos.y,
 								PLAYER_HIT, s_Player->atkOrient);
 							// Do damage to enemy.
-							HitEnemy(s_Enemy, 0, s_Player->atkOrient);
+							HitEnemy(s_Enemy, 1, s_Player->atkOrient);
 							
 							// Shake effect.
 							SetShake(HIT_SHAKE);
@@ -471,7 +515,7 @@ void UpdatePlayer(void)
 								break;
 
 							case DOWN:
-								s_Player->vertSpd = -20;
+								s_Player->vertSpd = HITJUMP_SPD;
 								s_Player->state = BIG_JUMP;
 								break;
 
@@ -510,6 +554,9 @@ void UpdatePlayer(void)
 									// Reflect effect.
 									SetEffect(s_Player->pos.x + cof * rcosrot, s_Player->pos.y + cof * rsinrot,
 										PLAYER_REFLECT, s_Player->atkOrient);
+									// stop playing Blade effect cause hit on the wall
+									s_Player->atk->use = FALSE;
+									s_Player->atk = NULL;
 
 									s_Player->state = STUN;
 									if (s_Player->atkOrient % 4)
@@ -564,6 +611,97 @@ void UpdatePlayer(void)
 					s_Player->state = FALL;
 				}
 			break;
+			}
+			case SLASH:
+			{
+				// Attack process.
+				if (s_Player->actCount == SLASH_FRAME)
+				{
+					// Super slash after sucessfully parried.
+					// Return to 60 FPS
+					SetSlowMotion(1);
+					// Set next hit to normal attack.
+					s_Player->pryDetect = FALSE;
+					s_Player->atkOrient = s_Player->orient;
+					// slash effect
+					s_Player->atk = SetEffect(s_Player->pos.x, s_Player->pos.y,
+						PLAYER_SLASH, s_Player->atkOrient);
+
+					s_Player->vertSpd = 0;
+					s_Player->atkDetect = FALSE;
+				}
+
+				// Slash dectecting process, hit detection has no limit.
+				if (!s_Player->atkDetect &&
+					s_Player->actCount > ATK_DETECTION && s_Player->actCount <= ATK_END)
+				{
+					EFFECT* s_Effect = s_Player->atk;
+
+					// Do enemy detection first.
+					for (int i = 0; i < ENEMY_MAX; i++)
+					{
+						ENEMY* s_Enemy = GetEnemy() + i;
+						if (BBCollision(&s_Effect->pos, &s_Enemy->pos,
+							s_Effect->w, s_Enemy->w, s_Effect->h, s_Enemy->h)) // Bullseye
+						{
+							if (s_Enemy->rddot)
+							{
+								s_Enemy->rddot->use = FALSE;
+								s_Enemy->rddot = NULL;
+							}
+
+							// Hit effect.
+							SetEffect(s_Player->pos.x, s_Player->pos.y,
+								PLAYER_HIT, s_Player->atkOrient);
+							// Do damage to enemy.
+							HitEnemy(s_Enemy, 2, s_Player->atkOrient);
+
+							// Shake effect.
+							SetShake(SLASH_SHAKE);
+							s_Player->atkDetect = TRUE;
+							break;
+						}
+					}
+				}
+
+				// Dashing while slashing
+				switch (s_Player->orient)
+				{
+				case LEFT:								// Dash to left
+					if (!GetTerrain(s_Player->pos.x - s_Player->w / 2, s_Player->pos.y))
+					{
+						s_Player->pos.x -= SLASH_SPD;
+					}
+					break;
+				case RIGHT:								// Dash to right
+					if (!GetTerrain(s_Player->pos.x + s_Player->w / 2, s_Player->pos.y))
+					{
+						s_Player->pos.x += SLASH_SPD;
+					}
+					break;
+				default:
+					break;
+				}
+
+				// While attacking, dashCount degresses per frame until reaches 0
+				if (!s_Player->actCount--)
+				{
+					s_Player->atk = NULL;
+					s_Player->state = FALL;
+				}
+				break;
+			}
+			case PARRY:
+			{
+				// Parry process.
+
+				// While parrying, actCount degresses per frame until reaches 0
+				if (!--s_Player->actCount)
+				{
+					s_Player->vertSpd = 0;
+					s_Player->state = FALL;
+				}
+				break;
 			}
 			case STUN:
 			{
@@ -749,30 +887,46 @@ PLAYER *GetPlayer(void)
 	return &g_Player[0];
 }
 
-void HitPlayer(PLAYER* player, int damge, int orient)
+void HitPlayer(ENEMY* enemy, PLAYER* player, int damge, int orient)
 {
 	if (!player->godCount)
 	{
+		if (player->state == PARRY && 
+			player->actCount <= PARRY_FRAME - PARRY_DETECTION && 
+			player->actCount >= PARRY_FRAME - PARRY_END)
+		{
+			HitEnemy(enemy, 0, 0);
+			player->pryDetect = TRUE;
+			if (player->pos.x > enemy->pos.x)
+			{
+				SetEffect(player->pos.x, player->pos.y, PLAYER_PARRY, LEFT);
+			}
+			else
+			{
+				SetEffect(player->pos.x, player->pos.y, PLAYER_PARRY, RIGHT);
+			}
+			return;
+		}
 		player->state = STUN;
-		player->actCount = HIT_STUN_FRAME;
+		player->actCount = BIG_STUN_FRAME;
 		switch (orient)
 		{
 		case RIGHT:
-			player->horzSpd = HIT_STUN_HSPD;
+			player->horzSpd = BIG_STUN_HSPD;
 			break;
 
 		case LEFT:
-			player->horzSpd = -HIT_STUN_HSPD;
+			player->horzSpd = -BIG_STUN_HSPD;
 			break;
 
 		case DOWN:
-			player->vertSpd = HIT_STUN_VSPD;
+			player->vertSpd = BIG_STUN_VSPD;
 			player->horzSpd = 0;
 
 			break;
 
 		case UP:
-			player->vertSpd = -HIT_STUN_VSPD;
+			player->vertSpd = -BIG_STUN_VSPD;
 			player->horzSpd = 0;
 
 			break;

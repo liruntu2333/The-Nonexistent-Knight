@@ -32,6 +32,8 @@ enum State
 
 	DASH,
 	STUN,
+	PARRY,
+	SLASH,
 	ATTACK,
 
 	FALL,
@@ -44,6 +46,7 @@ enum State
 //*****************************************************************************
 struct EFFECT;
 struct ELEVATOR;
+struct ENEMY;
 
 struct PLAYER
 {
@@ -59,6 +62,7 @@ struct PLAYER
 	int				orient;			// 0left 1right
 	int				atkOrient;		// 0right 1down 2left 3up
 	BOOL			atkDetect;		// 0 not yet 1 had
+	BOOL			pryDetect;		// Parry Detect
 	int				vertSpd;		// vertical movement per frame
 	int				horzSpd;		// horizontal movement per frame, only used when stunned
 	int				actCount;		// used for dash / attack / stun count down
@@ -80,5 +84,5 @@ void DrawPlayer(void);
 
 PLAYER *GetPlayer(void);
 
-void HitPlayer(PLAYER* player, int damge, int orient);
+void HitPlayer(ENEMY* enmey, PLAYER* player, int damge, int orient);
 

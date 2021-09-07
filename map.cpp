@@ -16,7 +16,7 @@
 
 // プレイヤーの画面内配置座標
 #define PLAYER_DISP_X				(SCREEN_WIDTH/2)
-#define PLAYER_DISP_Y				(SCREEN_HEIGHT*3/4)
+#define PLAYER_DISP_Y				(SCREEN_HEIGHT*1/4)
 
 #define TEXTURE_MAX					(2)				// テクスチャの数
 #define	SHAKE_FRAME					(60)			// screen shake duration
@@ -35,7 +35,7 @@ static ID3D11Buffer				*g_VertexBuffer = NULL;		// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
 static char *g_TexturName[TEXTURE_MAX] = {
-	"data/TEXTURE/map.jpg",
+	"data/TEXTURE/map.png",
 	"data/TEXTURE/background.jpg",
 };
 
@@ -96,7 +96,7 @@ HRESULT InitMap(void)
 		g_TerrainDT[MAP_HEIGHT / BLK_LGTH - 1][i] = 1;
 		g_TerrainDT[MAP_HEIGHT / BLK_LGTH - 2][i] = 1;
 		g_TerrainDT[MAP_HEIGHT / BLK_LGTH - 3][i] = 2;
-		g_TerrainDT[0][i] = 1;
+		g_TerrainDT[0][i] = 2;
 	}
 
 	for (int i = 0; i < 26; i++)

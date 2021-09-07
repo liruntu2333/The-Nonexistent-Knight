@@ -29,8 +29,11 @@
 #define PI							(acos(-1))
 
 #define	RUN_SPEED					(4.0f)
-#define HIT_STUN_FRAME				(30)
-#define HIT_STUN_HSPD				(20)
+#define BIG_STUN_FRAME				(30)
+#define BIG_STUN_HSPD				(20)
+#define PARRY_STUN_FRAME			(60)
+
+#define PARRY_SM_FRAME				(60)	// slow motion mode triggered by sucessful parry
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -73,9 +76,7 @@ static LINEAR_INTERPOLATION* g_MoveTblAdr[] =
 };
 
 static char* g_TexturName[TEXTURE_MAX] = {
-	"data/TEXTURE/enemy01.png",
 	"data/TEXTURE/enemy02.png",
-	"data/TEXTURE/enemy03.png",
 };
 
 
@@ -123,7 +124,7 @@ HRESULT InitEnemy(void)
 		s_Enemy->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		s_Enemy->w = MAP_WIDTH;
 		s_Enemy->h = MAP_HEIGHT;
-		s_Enemy->texNo = 1;
+		s_Enemy->texNo = 0;
 
 		s_Enemy->countAnim = 0;
 		s_Enemy->patternAnim = 0;
@@ -136,6 +137,7 @@ HRESULT InitEnemy(void)
 		s_Enemy->horzSpd = 0;
 		s_Enemy->actCount = 0;
 		s_Enemy->atk = NULL;
+		s_Enemy->rddot = NULL;
 
 		s_Enemy->stamina = 0;
 
@@ -252,6 +254,11 @@ void UpdateEnemy(void)
 			{
 				if (s_Enemy->actCount--)
 				{
+					// red dot occured by parry stick with enemy
+					if (s_Enemy->rddot)
+					{
+						s_Enemy->rddot->pos = s_Enemy->pos;
+					}
 					// Bounce to right.
 					if (s_Enemy->horzSpd > 0)
 					{
@@ -284,35 +291,45 @@ void UpdateEnemy(void)
 				else
 				{
 					s_Enemy->state = FALL;
+					// At the end of stunning state, set red dot to false
+					if (s_Enemy->rddot)
+					{
+						s_Enemy->rddot->use = FALSE;
+						s_Enemy->rddot = NULL;
+						GetPlayer()->pryDetect = FALSE;
+					}
 				}
 			}
 
-			for (int i = 0; i < PLAYER_MAX; i++)
+			if (s_Enemy->state != STUN)
 			{
-				PLAYER* s_Player = GetPlayer() + i;
-				if (s_Player->use)
+				for (int i = 0; i < PLAYER_MAX; i++)
 				{
-					if (BBCollision(&s_Enemy->pos, &s_Player->pos,
-						s_Enemy->w, s_Player->w,
-						s_Enemy->h, s_Player->h))
+					PLAYER* s_Player = GetPlayer() + i;
+					if (s_Player->use)
 					{
-						if (s_Player->pos.y < s_Enemy->pos.y)
+						if (BBCollision(&s_Enemy->pos, &s_Player->pos,
+							s_Enemy->w, s_Player->w,
+							s_Enemy->h, s_Player->h))
 						{
-							s_Enemy->atkOrient = UP;
+							if (s_Player->pos.y < s_Enemy->pos.y)
+							{
+								s_Enemy->atkOrient = UP;
+							}
+							else if (s_Player->pos.y > s_Enemy->pos.y)
+							{
+								s_Enemy->atkOrient = DOWN;
+							}
+							else if (s_Player->pos.x < s_Enemy->pos.x)
+							{
+								s_Enemy->atkOrient = LEFT;
+							}
+							else if (s_Player->pos.x > s_Enemy->pos.x)
+							{
+								s_Enemy->atkOrient = RIGHT;
+							}
+							HitPlayer(s_Enemy, s_Player, 0, s_Enemy->atkOrient);
 						}
-						else if (s_Player->pos.y > s_Enemy->pos.y)
-						{
-							s_Enemy->atkOrient = DOWN;
-						}
-						else if (s_Player->pos.x < s_Enemy->pos.x)
-						{
-							s_Enemy->atkOrient = LEFT;
-						}
-						else if (s_Player->pos.x > s_Enemy->pos.x)
-						{
-							s_Enemy->atkOrient = RIGHT;
-						}
-						HitPlayer(s_Player, 0, s_Enemy->atkOrient);
 					}
 				}
 			}
@@ -413,11 +430,23 @@ void DestructEnemy(ENEMY* ep)
 }
 
 // 
-// @brief	Decrease ENEMY's health and switch state to STUN
-void HitEnemy(ENEMY* enemy, int damge, int orient)
+// @brief	Decrease ENEMY's health and switch state to STUN.
+//			If damage == 0 means enemy get parried.
+// @param	enemy pointer, dam, orient (not used when parrying)
+// @return	
+void HitEnemy(ENEMY* enemy, int damage, int orient)
 {
 	enemy->state = STUN;
-	enemy->actCount = HIT_STUN_FRAME;
+
+	if (!damage)
+	{
+		enemy->actCount = PARRY_STUN_FRAME;
+		SetSlowMotion(PARRY_SM_FRAME);
+		enemy->rddot = SetEffect(enemy->pos.x, enemy->pos.y, RED_DOT, 0);
+		return;
+	}
+	enemy->actCount = BIG_STUN_FRAME;
+
 	switch (orient)
 	{
 	case RIGHT:
@@ -425,9 +454,9 @@ void HitEnemy(ENEMY* enemy, int damge, int orient)
 
 		enemy->state = STUN;
 		if (orient % 4)
-			enemy->horzSpd = -HIT_STUN_HSPD;
+			enemy->horzSpd = -BIG_STUN_HSPD * damage;
 		else
-			enemy->horzSpd = HIT_STUN_HSPD;
+			enemy->horzSpd = BIG_STUN_HSPD * damage;
 		break;
 
 	case DOWN:
@@ -439,5 +468,5 @@ void HitEnemy(ENEMY* enemy, int damge, int orient)
 		break;
 	}
 
-	SetEffect(enemy->pos.x, enemy->pos.y, COIN, RIGHT);
+	//SetEffect(enemy->pos.x, enemy->pos.y, COIN, RIGHT);
 }

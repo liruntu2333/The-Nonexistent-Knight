@@ -131,10 +131,10 @@ void UninitBullet()
 //=============================================================================
 void UpdateBullet(void)
 {
-	if (GetKeyboardTrigger(DIK_K))
-	{
-		SetBullet(GetPlayer()->pos);
-	}
+	//if (GetKeyboardTrigger(DIK_K))
+	//{
+	//	SetBullet(GetPlayer()->pos);
+	//}
 
 
 	for (int i = 0; i < BULLET_MAX; i++)
