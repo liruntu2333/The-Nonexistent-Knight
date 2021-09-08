@@ -281,8 +281,10 @@ void UpdatePlayer(void)
 					for (int i = 0; i < ELEV_MAX; i++)
 					{
 						ELEVATOR* s_Elevator = GetElev() + i;
-						if (BBCollision(&s_Player->pos, &s_Elevator->pos,
-							s_Player->w, s_Elevator->w * 2, s_Player->h, s_Elevator->h))
+						// Elevator's coordinate is start from left up corner,
+						// so cannot directly call BBCollision.
+						if (PECollision(&s_Player->pos, &s_Elevator->pos,
+							s_Player->w, s_Elevator->w, s_Player->h, s_Elevator->h))
 						{
 							s_Player->state = STAND_ELEV;
 							s_Player->elev = s_Elevator;
