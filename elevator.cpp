@@ -20,7 +20,7 @@
 
 #define ELEV_WIDTH				(260)
 #define ELEV_HEIGHT				(60)
-#define ELEV_SPD				(1)
+#define ELEV_SPD				(3)
 
 #define	ELEV_TOP				(250)
 #define ELEV_BTM				(600)
@@ -168,10 +168,9 @@ void UpdateElev(void)
 
 #ifdef _DEBUG
 	// デバッグ表示
-	//PrintDebugProc("Elevator X:%f Y:%f vSpd\n",
-	//	g_Elevator.pos.x,
-	//	g_Elevator.pos.y,
-	//	g_Elevator.vertSpd);
+	PrintDebugProc("Elevator X:%f Y:%f\n",
+		g_Elevator.pos.x,
+		g_Elevator.pos.y);
 #endif
 }
 

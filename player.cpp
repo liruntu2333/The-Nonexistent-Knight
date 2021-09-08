@@ -282,7 +282,7 @@ void UpdatePlayer(void)
 					{
 						ELEVATOR* s_Elevator = GetElev() + i;
 						if (BBCollision(&s_Player->pos, &s_Elevator->pos,
-							s_Player->w, s_Elevator->w, s_Player->h, s_Elevator->h))
+							s_Player->w, s_Elevator->w * 2, s_Player->h, s_Elevator->h))
 						{
 							s_Player->state = STAND_ELEV;
 							s_Player->elev = s_Elevator;

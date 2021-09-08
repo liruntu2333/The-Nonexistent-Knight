@@ -19,3 +19,13 @@ bool BCCollision(D3DXVECTOR3* lpos, D3DXVECTOR3* rpos, float lr, float rr)
 	//TODO: complete BC
 	return false;
 }
+
+bool PEColiision(D3DXVECTOR3* ppos, D3DXVECTOR3* epos, float ew)
+{
+	if (ppos->x > epos->x && 
+		ppos->x < epos->x + ew)
+	{
+		return true;
+	}
+	return false;
+}
