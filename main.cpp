@@ -61,6 +61,8 @@ BOOL g_LoadGame = FALSE;					// NewGame
 unsigned int g_FPS = 60;
 int g_SMcount = 0;							// use to count down slow motion
 
+DWORD g_dwFrameCount = 0;
+
 
 
 //=============================================================================
@@ -196,6 +198,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 #endif
 
 				dwFrameCount++;		// 処理回数のカウントを加算
+				g_dwFrameCount++;
 			}
 		}
 	}
@@ -368,11 +371,13 @@ void Draw(void)
 	case MODE_GAME:			// ゲーム画面の描画
 		DrawMap();
 		DrawElev();
+
 		DrawEnemy();
 		DrawBullet();
 		DrawScore();
-		DrawPlayer();
 		DrawEffect();
+		DrawPlayer();
+
 
 		if (g_LoadGame == TRUE)
 		{
@@ -485,6 +490,11 @@ void SetSlowMotion(int frame)
 {
 	g_FPS = 30;
 	g_SMcount = frame;
+}
+
+DWORD GetFrameCount(void)
+{
+	return g_dwFrameCount;
 }
 
 //=============================================================================

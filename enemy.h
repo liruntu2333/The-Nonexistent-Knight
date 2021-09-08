@@ -49,7 +49,7 @@ struct ENEMY
 	int				vertSpd;		// vertical movement per frame
 	int				horzSpd;		// horizontal movement per frame, only used when stunned
 	int				actCount;		// used for dash / attack / STUN count down
-	EFFECT*         atk;			// initiated effect
+	EFFECT*         effect;			// initiated effect
 	EFFECT*			rddot;			// red dot
 
 

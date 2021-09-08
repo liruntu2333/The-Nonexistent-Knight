@@ -27,11 +27,10 @@ enum Orientation
 enum State
 {
 	STAND,
-	STAND_ELEV,
 	RUN,
-	RUN_ELEV,
 
 	DASH,
+	HEAL,
 	STUN,
 	DEAD,
 	PARRY,
@@ -68,12 +67,13 @@ struct PLAYER
 	int				vertSpd;		// vertical movement per frame
 	int				horzSpd;		// horizontal movement per frame, only used when stunned
 	int				actCount;		// used for dash / attack / stun count down
-	EFFECT*			atk;			// initiated effect
+	EFFECT*			effect;			// initiated attack / heal effect
 	ELEVATOR*		elev;			// taken elevator
 	int				godCount;		// god mode count down
 
 	int				stamina;		// dash / attack need enough stamina to trigger
 	int				health;			// when health reduces to 0, you die.
+	int				money;			// defeat enemy get coin.
 };
 
 

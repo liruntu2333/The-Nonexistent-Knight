@@ -138,7 +138,7 @@ HRESULT InitEnemy(void)
 		s_Enemy->vertSpd = 0;
 		s_Enemy->horzSpd = 0;
 		s_Enemy->actCount = 0;
-		s_Enemy->atk = NULL;
+		s_Enemy->effect = NULL;
 		s_Enemy->rddot = NULL;
 		s_Enemy->slashed = FALSE;
 
@@ -216,24 +216,24 @@ void UpdateEnemy(void)
 					}
 				}
 
-				//if (s_Enemy->orient == RIGHT)
-				//{
-				//	// Move right.
-				//	s_Enemy->pos.x += RUN_SPEED;
-				//	if (GetTerrain(s_Enemy->pos.x + s_Enemy->w / 2, s_Enemy->pos.y))
-				//	{
-				//		s_Enemy->orient = LEFT;
-				//	}
-				//}
-				//else
-				//{
-				//	// Move left.
-				//	s_Enemy->pos.x -= RUN_SPEED;
-				//	if (GetTerrain(s_Enemy->pos.x - s_Enemy->w / 2, s_Enemy->pos.y))
-				//	{
-				//		s_Enemy->orient = RIGHT;
-				//	}
-				//}
+				if (s_Enemy->orient == RIGHT)
+				{
+					// Move right.
+					s_Enemy->pos.x += RUN_SPEED;
+					if (GetTerrain(s_Enemy->pos.x + s_Enemy->w / 2, s_Enemy->pos.y))
+					{
+						s_Enemy->orient = LEFT;
+					}
+				}
+				else
+				{
+					// Move left.
+					s_Enemy->pos.x -= RUN_SPEED;
+					if (GetTerrain(s_Enemy->pos.x - s_Enemy->w / 2, s_Enemy->pos.y))
+					{
+						s_Enemy->orient = RIGHT;
+					}
+				}
 
 				// If there is obstacle under player, stand still & stop falling.
 				if (GetTerrain(s_Enemy->pos.x, s_Enemy->pos.y + s_Enemy->h / 2))
@@ -245,7 +245,7 @@ void UpdateEnemy(void)
 						s_Enemy->pos = ReloacteObj(s_Enemy->pos.x, s_Enemy->pos.y, s_Enemy->w, s_Enemy->h);
 					}
 				}
-				else if (s_Enemy->state <= STAND_ELEV)
+				else if (s_Enemy->state <= RUN)
 				{
 					// Start to fall when walk across the edge.
 					s_Enemy->state = FALL;
@@ -419,25 +419,25 @@ void ChekHitPlayer(ENEMY* enemy)
 		if (s_Player->use)
 		{
 			// This damage is occured by melee attacks which has an effect BB.
-			if (enemy->atk)
+			if (enemy->effect)
 			{
-				if (BBCollision(&enemy->atk->pos, &s_Player->pos,
-					enemy->atk->w, s_Player->w,
-					enemy->atk->h, s_Player->h))
+				if (BBCollision(&enemy->effect->pos, &s_Player->pos,
+					enemy->effect->w, s_Player->w,
+					enemy->effect->h, s_Player->h))
 				{
-					if (s_Player->pos.y < enemy->atk->pos.y)
+					if (s_Player->pos.y < enemy->effect->pos.y)
 					{
 						enemy->atkOrient = UP;
 					}
-					else if (s_Player->pos.y > enemy->atk->pos.y)
+					else if (s_Player->pos.y > enemy->effect->pos.y)
 					{
 						enemy->atkOrient = DOWN;
 					}
-					else if (s_Player->pos.x < enemy->atk->pos.x)
+					else if (s_Player->pos.x < enemy->effect->pos.x)
 					{
 						enemy->atkOrient = LEFT;
 					}
-					else if (s_Player->pos.x > enemy->atk->pos.x)
+					else if (s_Player->pos.x > enemy->effect->pos.x)
 					{
 						enemy->atkOrient = RIGHT;
 					}
@@ -502,7 +502,7 @@ void HitEnemy(ENEMY* enemy, int damage, int orient)
 		}
 	}
 	enemy->actCount = BIG_STUN_FRAME;
-
+	SetEffect(enemy->pos.x, enemy->pos.y, BLOOD_SPLASH, orient);
 	switch (orient)
 	{
 	case RIGHT:

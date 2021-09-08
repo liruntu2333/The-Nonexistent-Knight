@@ -18,8 +18,10 @@
 //*****************************************************************************
 #define M_PI				3.14159265358979323846
 #define ANIM_WAIT			2
-#define EFFECT_PNG_W		2400
-#define EFFECT_PNG_H		864
+#define EFFECT_PNG_W		3780
+#define EFFECT_PNG_H		1664
+
+#define DUST_SPD			3.2f
 
 enum TEXTURE_INFO
 {
@@ -48,11 +50,17 @@ static const int PARTICLE_GEN = 1;
 static const float c_TextureInfo[EFFECT_TYPE_MAX][INFO_MAX] =
 {
 	{200.0f,	100.0f,		100.0f,		4.0f},
+	{200.0f,	100.0f,		100.0f,		4.0f},
 	{100.0f,	100.0f,		50.0f,		5.0f},
+	{600.0f,	300.0f,		50.0f,		4.0f},
 	{600.0f,	300.0f,		50.0f,		4.0f},
 	{100.0f,	100.0f,		50.0f,		5.0f},
 	{400.0f,	100.0f,		200.0f,		4.0f},
 	{100.0f,	100.0f,		0.0f,		1.0f},
+	{140.0f,	200.0f,		0.0f,		27.0f},
+	{100.0f,	100.0f,		0.0f,		6.0f},
+	{50.0f,	    50.0f,		0.0f,		12.0f},
+	{87.0f,	    50.0f,		0.0f,		12.0f},
 	{64.0f,		64.0f,		0.0f,		16.0f}	
 };
 
@@ -226,13 +234,16 @@ void UpdateEffect(void)
 					if (BBCollision(&s_Effect->pos, &s_Player->pos,
 						s_Effect->w, s_Player->w, s_Effect->h, s_Player->h))
 					{
+						GetPlayer()->money++;
 						s_Effect->use = FALSE;
 					}
 				}
 				break;
 			}
 			case PLAYER_BLADE:
+			case PLAYER_BLADE2:
 			case PLAYER_SLASH:
+			case PLAYER_HEAL:
 			{
 				// Player's blade should present relative stillness to player.
 				PLAYER* s_Player = GetPlayer();
@@ -259,6 +270,23 @@ void UpdateEffect(void)
 
 				break;
 			}
+			case DUST:
+				s_Effect->pos.y += s_Effect->vertSpd;
+				s_Effect->pos.x += s_Effect->horzSpd;
+
+				s_Effect->vertSpd *= 0.96f;
+				s_Effect->horzSpd *= 0.96f;
+
+				if (s_Effect->countAnim++ > ANIM_WAIT)
+				{
+					s_Effect->countAnim = 0.0f;
+					// Change pattern and check if it's the end of animation.
+					if (++s_Effect->patternAnim >= (int)c_TextureInfo[s_Effect->type][FRAME])
+					{
+						s_Effect->use = FALSE;
+					};
+				}
+				break;
 			default:
 			{
 				// Animation
@@ -375,11 +403,17 @@ EFFECT* SetEffect(float X, float Y, int Type, int orient)
 			s_Effect->bounce = 0;
 			s_Effect->use = TRUE;
 
+			float rand_angle = ((rand() % 157) + 157) / 100.0f;		// 0.5 PI ~ PI
 			switch (s_Effect->type)
 			{
 			case COIN:
 				s_Effect->horzSpd = ((float)(rand() % 200 - 100) / 10);
 				s_Effect->vertSpd = -((float)(rand() % 100) / 10);
+				break;
+			case DUST:
+				s_Effect->horzSpd = DUST_SPD * sinf(rand_angle);
+				s_Effect->vertSpd = DUST_SPD * cosf(rand_angle);
+				s_Effect->horzSpd *= (GetPlayer()->orient) ? 1: -1;
 				break;
 			default:
 				s_Effect->horzSpd = 0;

@@ -52,7 +52,12 @@
 #define	PARRY_DETECTION				(2)
 #define PARRY_END					(7)
 
-#define STAMINA_MAX					(50)
+#define HEAL_FRAME					(120)
+#define HEAL_START					(60)
+#define HEAL_TAKE_EFFECT			(80)
+#define HEAL_COST					(5)
+
+#define STAMINA_MAX					(100)
 #define HEALTH_MAX					(7)
 
 #define ATK_COST					(30)
@@ -60,8 +65,8 @@
 #define JUMP_COST					(10)
 #define PARRY_COST					(15)
 
-#define MINI_STUN_FRAME				(5)
-#define MINI_STUN_HSPD				(8)
+#define MINI_STUN_FRAME				(3)
+#define MINI_STUN_HSPD				(10)
 #define BIG_STUN_FRAME				(20)
 #define BIG_STUN_HSPD				(20)
 #define BIG_STUN_VSPD				(10)
@@ -77,6 +82,8 @@
 #define HIT_SHAKE					(10)
 #define HITBYENEMY_SHAKE			(20)
 #define SLASH_SHAKE					(15)
+
+#define DUST_GEN_LAG				(30)
 
 enum DETECTION
 {
@@ -168,11 +175,12 @@ HRESULT InitPlayer(void)
 		s_Player->vertSpd = 0;
 		s_Player->horzSpd = 0;
 		s_Player->actCount = 0;
-		s_Player->atk = NULL;
+		s_Player->effect = NULL;
 		s_Player->elev = NULL;
 
 		s_Player->stamina = STAMINA_MAX;
 		s_Player->health = HEALTH_MAX;
+		s_Player->money = 999;
 	}
 
 	for (int i = 0; i < ILLUSION_MAX; i++)
@@ -224,6 +232,11 @@ void UpdatePlayer(void)
 		{
 			if (s_Player->godCount) s_Player->godCount--;
 
+			if (s_Player->elev)
+			{
+				s_Player->pos.y += s_Player->elev->vertSpd;
+			}
+
 			// Input that changes current state of player.
 			GetTrigger(s_Player);
 
@@ -231,8 +244,21 @@ void UpdatePlayer(void)
 			{
 			case RUN:
 			{
+				if (!(GetFrameCount() % DUST_GEN_LAG))
+				{
+					SetEffect(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2, DUST, 0);
+				}
 				// Object is in the air, therefore should start to fall.
-				if (!GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2))
+				if (s_Player->elev)
+				{
+					if (s_Player->pos.x < s_Player->elev->pos.x ||
+						s_Player->pos.x > s_Player->elev->pos.x + s_Player->elev->w)
+					{
+						s_Player->state = FALL;
+						s_Player->elev = NULL;
+					}
+				}
+				else if (!GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2))
 				{
 					// Start to fall when walk across the edge.
 					s_Player->state = FALL;
@@ -243,23 +269,28 @@ void UpdatePlayer(void)
 			{
 				break;
 			}
-			case STAND_ELEV:
-			{
-				s_Player->pos.y += s_Player->elev->vertSpd;
-				break;
-			}
-			case RUN_ELEV:
-			{
-				s_Player->pos.y += s_Player->elev->vertSpd;
+			//case STAND_ELEV:
+			//{
+			//	//s_Player->pos.y += s_Player->elev->vertSpd;
+			//	break;
+			//}
+			//case RUN_ELEV:
+			//{
+			//	if (!(GetFrameCount() % DUST_GEN_LAG))
+			//	{
+			//		SetEffect(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2, DUST, 0);
+			//	}
 
-				if (s_Player->pos.x < s_Player->elev->pos.x ||
-					s_Player->pos.x > s_Player->elev->pos.x + s_Player->elev->w)
-				{
-					s_Player->state = FALL;
-					s_Player->elev = NULL;
-				}
-				break;
-			}
+			////	s_Player->pos.y += s_Player->elev->vertSpd;
+
+			//	if (s_Player->pos.x < s_Player->elev->pos.x ||
+			//		s_Player->pos.x > s_Player->elev->pos.x + s_Player->elev->w)
+			//	{
+			//		s_Player->state = FALL;
+			//		s_Player->elev = NULL;
+			//	}
+			//	break;
+			//}
 			case FALL:
 			{
 				// Vertical speed effected by gravity when in the air.
@@ -286,7 +317,7 @@ void UpdatePlayer(void)
 						if (PECollision(&s_Player->pos, &s_Elevator->pos,
 							s_Player->w, s_Elevator->w, s_Player->h, s_Elevator->h))
 						{
-							s_Player->state = STAND_ELEV;
+							s_Player->state = STAND;
 							s_Player->elev = s_Elevator;
 						}
 					}
@@ -306,6 +337,7 @@ void UpdatePlayer(void)
 				if (s_Player->vertSpd >= 0)
 				{
 					s_Player->state = FALL;
+					s_Player->elev = NULL;
 				}
 				// If there is obstacle above player, reverse vertical speed to +1.
 				if (GetTerrain(s_Player->pos.x, s_Player->pos.y - s_Player->h / 2))
@@ -313,6 +345,7 @@ void UpdatePlayer(void)
 					s_Player->pos.y += 5.0f;
 					s_Player->vertSpd = 1;
 					s_Player->state = FALL;
+					s_Player->elev = NULL;
 				}
 				break;
 			}
@@ -362,6 +395,7 @@ void UpdatePlayer(void)
 				if (!--s_Player->actCount)
 				{
 					s_Player->state = FALL;
+					s_Player->elev = NULL;
 					s_Player->vertSpd = 0;
 				}
 				break;
@@ -379,8 +413,8 @@ void UpdatePlayer(void)
 					else if (GetKeyboardPress(DIK_S))
 					{
 						s_Player->atkOrient = DOWN;
-						// Player can't attack downward when isn't in air(stand & attack).
-						if (GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2))
+						// Player can't attack downward when isn't in air, nor on elevator.
+						if (s_Player->elev || GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2))
 						{
 							s_Player->actCount = 0;
 							s_Player->state = FALL;
@@ -406,16 +440,16 @@ void UpdatePlayer(void)
 				if (s_Player->actCount == ATK_FRAME - ATK_DETECTION)
 				{
 					// blade effect bonds to start frame of detection
-
-					s_Player->atk = SetEffect(s_Player->pos.x, s_Player->pos.y,
-						PLAYER_BLADE, s_Player->atkOrient);
+					int rand_effect = rand() % 2;
+					s_Player->effect = SetEffect(s_Player->pos.x, s_Player->pos.y,
+						PLAYER_BLADE + rand_effect, s_Player->atkOrient);
 				}
 
 				// Attack dectecting process, hit detection should do only once.
 				if (!s_Player->atkDetect &&
-					s_Player->actCount > ATK_DETECTION && s_Player->actCount <= ATK_END)
+					s_Player->actCount < ATK_FRAME - ATK_DETECTION && s_Player->actCount > ATK_FRAME - ATK_END)
 				{
-					EFFECT* s_Effect = s_Player->atk;
+					EFFECT* s_Effect = s_Player->effect;
 
 					// Do enemy detection first.
 					CheckHitEnemy(s_Player, s_Effect);
@@ -428,8 +462,9 @@ void UpdatePlayer(void)
 				if (!s_Player->actCount--)
 				{
 					s_Player->atkOrient = s_Player->orient;
-					s_Player->atk = NULL;
+					s_Player->effect = NULL;
 					s_Player->state = FALL;
+					s_Player->elev = NULL;
 				}
 			break;
 			}
@@ -445,7 +480,7 @@ void UpdatePlayer(void)
 					s_Player->pryDetect = FALSE;
 					s_Player->atkOrient = s_Player->orient;
 					// slash effect
-					s_Player->atk = SetEffect(s_Player->pos.x, s_Player->pos.y,
+					s_Player->effect = SetEffect(s_Player->pos.x, s_Player->pos.y,
 						PLAYER_SLASH, s_Player->atkOrient);
 
 					s_Player->vertSpd = 0;
@@ -455,7 +490,7 @@ void UpdatePlayer(void)
 				// Slash dectecting process, hit detection has no limit.
 				if (s_Player->actCount > SLASH_DETECTION && s_Player->actCount <= SLASH_END)
 				{
-					EFFECT* s_Effect = s_Player->atk;
+					EFFECT* s_Effect = s_Player->effect;
 
 					// Do enemy detection only.
 					for (int i = 0; i < ENEMY_MAX; i++)
@@ -499,8 +534,9 @@ void UpdatePlayer(void)
 				// While attacking, dashCount degresses per frame until reaches 0
 				if (!s_Player->actCount--)
 				{
-					s_Player->atk = NULL;
+					s_Player->effect = NULL;
 					s_Player->state = FALL;
+					s_Player->elev = NULL;
 				}
 				break;
 			}
@@ -513,6 +549,7 @@ void UpdatePlayer(void)
 				{
 					s_Player->vertSpd = 0;
 					s_Player->state = FALL;
+					s_Player->elev = NULL;
 				}
 				break;
 			}
@@ -553,6 +590,7 @@ void UpdatePlayer(void)
 				else
 				{
 					s_Player->state = FALL;
+					s_Player->elev = NULL;
 				}
 				break;
 			}
@@ -562,6 +600,38 @@ void UpdatePlayer(void)
 				if (!s_Player->actCount--)
 				{
 					SetFade(FADE_OUT, MODE_GAME);
+				}
+				break;
+			}
+			case HEAL:
+			{
+				// Heal process.
+				if (s_Player->actCount--)
+				{
+					// Set Heal effect at frame no.60
+					if (s_Player->actCount == HEAL_FRAME - HEAL_START)
+					{
+						if (s_Player->money >= HEAL_COST)
+						{
+							s_Player->effect = SetEffect(s_Player->pos.x, s_Player->pos.y, PLAYER_HEAL, 0);
+							s_Player->money -= HEAL_COST;
+						}
+						else
+						{
+							s_Player->state = FALL;
+						}
+					}
+					if (s_Player->actCount == HEAL_FRAME - HEAL_TAKE_EFFECT)
+					{
+						s_Player->health += (s_Player->health < HEALTH_MAX) ? 1 : 0;
+					}
+				}
+				else
+				{
+					s_Player->effect = NULL;
+					s_Player->vertSpd = 0;
+					s_Player->state = FALL;
+					s_Player->elev = NULL;
 				}
 				break;
 			}
@@ -705,7 +775,6 @@ void DrawPlayer(void)
 //=============================================================================
 PLAYER *GetPlayer(void)
 {
-
 	return &g_Player[0];
 }
 
@@ -738,6 +807,12 @@ void HitPlayer(ENEMY* enemy, PLAYER* player, int damge, int orient)
 		}
 
 		// Enemy deals damage to player, player steps backwards, turn to god mode
+		if (player->effect)
+		{
+			player->effect->use = FALSE;
+			player->effect = NULL;
+		}
+		SetEffect(player->pos.x, player->pos.y, BLOOD_SPLASH, orient);
 		player->state = STUN;
 		player->actCount = BIG_STUN_FRAME;
 		player->health -= damge;
@@ -807,8 +882,8 @@ void CheckHitTerra(PLAYER* player, EFFECT* effect)
 					SetEffect(player->pos.x + cof * rcosrot, player->pos.y + cof * rsinrot,
 						PLAYER_REFLECT, player->atkOrient);
 					// stop playing Blade effect cause hit on the wall
-					player->atk->use = FALSE;
-					player->atk = NULL;
+					player->effect->use = FALSE;
+					player->effect = NULL;
 
 					player->state = STUN;
 					if (player->atkOrient % 4)
@@ -868,8 +943,10 @@ void CheckHitEnemy(PLAYER* player, EFFECT* effect)
 			BBCollision(&effect->pos, &s_Enemy->pos, effect->w, s_Enemy->w, effect->h, s_Enemy->h)) // Bullseye
 		{
 			// Hit effect.
+			int rand_effect = rand() % 2;
 			SetEffect(player->pos.x, player->pos.y,
-				PLAYER_HIT, player->atkOrient);
+				PLAYER_HIT + rand_effect, player->atkOrient);
+
 			// Do damage to enemy.
 			HitEnemy(s_Enemy, 1, player->atkOrient);
 
@@ -937,11 +1014,18 @@ void GetTrigger(PLAYER* player)
 			if (!GetTerrain(player->pos.x + player->w / 2, player->pos.y))
 			{
 				player->pos.x += RUN_SPEED;
+				// Player's state should be RUN / RUN ON ELEV
+				if (player->state == STAND)
+				{
+					player->state = RUN;
+				}
 			}
-			// Player's state should be RUN / RUN ON ELEV
-			if (player->state == STAND || player->state == STAND_ELEV)
+			else
 			{
-				player->state += RUN;
+				if (GetTerrain(player->pos.x, player->pos.y + player->h / 2))
+				{
+					player->state = STAND;
+				}
 			}
 		}
 		else if (GetKeyboardPress(DIK_A))		// Move right overrides move left.
@@ -950,19 +1034,26 @@ void GetTrigger(PLAYER* player)
 			if (!GetTerrain(player->pos.x - player->w / 2, player->pos.y))
 			{
 				player->pos.x -= RUN_SPEED;
+				// Player's state should be RUN / RUN ON ELEV
+				if (player->state == STAND)
+				{
+					player->state = RUN;
+				}
 			}
-			// Player's state should be RUN / RUN ON ELEV
-			if (player->state == STAND || player->state == STAND_ELEV)
+			else
 			{
-				player->state += RUN;
+				if (GetTerrain(player->pos.x, player->pos.y + player->h / 2))
+				{
+					player->state = STAND;
+				}
 			}
 		}
 		else
 		{
 			// No instruction coming from keyboard, player does nothing but stand.
-			if (player->state == RUN || player->state == RUN_ELEV)
+			if (player->state == RUN)
 			{
-				player->state -= RUN;
+				player->state = STAND;
 			}
 		}
 
@@ -971,9 +1062,9 @@ void GetTrigger(PLAYER* player)
 		{
 			if (player->stamina >= DASH_COST)
 			{
-				player->elev = NULL;
 				player->stamina -= DASH_COST;
 				player->state = DASH;
+				player->elev = NULL;
 				player->actCount = DASH_FRAME;
 			}
 		}
@@ -982,7 +1073,6 @@ void GetTrigger(PLAYER* player)
 		{
 			if (player->stamina >= ATK_COST)
 			{
-				player->elev = NULL;
 				player->stamina -= ATK_COST;
 
 
@@ -1005,22 +1095,29 @@ void GetTrigger(PLAYER* player)
 		{
 			if (player->stamina >= PARRY_COST)
 			{
-				player->elev = NULL;
 				player->stamina -= PARRY_COST;
 				player->state = PARRY;
 				player->actCount = PARRY_FRAME;
 			}
+		}
+		// Heal trigger.
+		else if (GetKeyboardTrigger(DIK_R))
+		{
+			player->state = HEAL;
+			player->actCount = HEAL_FRAME;
 		}
 		// Jump only triggers when player's on the ground(STAND ~ STAND_ELEV).
 		else if (player->state < DASH && GetKeyboardTrigger(DIK_SPACE))
 		{
 			if (player->stamina >= JUMP_COST)
 			{
+				player->elev = NULL;
 				player->stamina -= JUMP_COST;
 				player->state = JUMP;
 				player->vertSpd = JUMP_SPEED;
 			}
 		}
+
 		// Big Jump trigger
 		if (player->state == JUMP && GetKeyboardPress(DIK_SPACE) &&
 			player->vertSpd <= JUMP_SPEED * 1 / 2 && player->vertSpd >= JUMP_SPEED * 4 / 7)
