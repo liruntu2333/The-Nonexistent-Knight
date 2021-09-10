@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // タイトル画面処理 [title.cpp]
-// Author : 
+// Author : LI ZIZHEN liruntu2333@gmail.com
 //
 //=============================================================================
 #include "effect.h"
@@ -10,6 +10,7 @@
 #include "map.h"
 #include "player.h"
 #include "collision.h"
+#include "sound.h"
 
 #include <math.h>
 
@@ -19,9 +20,14 @@
 #define M_PI				3.14159265358979323846
 #define ANIM_WAIT			2
 #define EFFECT_PNG_W		3780
-#define EFFECT_PNG_H		1664
+#define EFFECT_PNG_H		1714
 
 #define DUST_SPD			3.2f
+#define COIN_SPD			10.0f
+#define DUST_CIR_SPD		10.0f
+#define MAGIC_CIR_SPD		15.0f
+
+#define PARTICLE_ROT		0.1f
 
 enum TEXTURE_INFO
 {
@@ -42,9 +48,9 @@ enum TEXTURE_INFO
 //*****************************************************************************
 
 static const int TEXTURE_MAX = 1;// テクスチャの数
-static const float ACCELERATION = 0.05f;
+//static const float ACCELERATION = 0.05f;
 static const int EFFECT_MAX = 100;
-static const int PARTICLE_GEN = 1;
+//static const int PARTICLE_GEN = 1;
 
 // WIDTH		HEIGHT		DISTANCE	FRAME
 static const float c_TextureInfo[EFFECT_TYPE_MAX][INFO_MAX] =
@@ -61,6 +67,7 @@ static const float c_TextureInfo[EFFECT_TYPE_MAX][INFO_MAX] =
 	{100.0f,	100.0f,		0.0f,		6.0f},
 	{50.0f,	    50.0f,		0.0f,		12.0f},
 	{87.0f,	    50.0f,		0.0f,		12.0f},
+	{50.0f,	    50.0f,		0.0f,		12.0f},
 	{64.0f,		64.0f,		0.0f,		16.0f}	
 };
 
@@ -230,13 +237,14 @@ void UpdateEffect(void)
 					{
 						s_Effect->patternAnim = 0;
 					};
+				}
 
-					if (BBCollision(&s_Effect->pos, &s_Player->pos,
-						s_Effect->w, s_Player->w, s_Effect->h, s_Player->h))
-					{
-						GetPlayer()->money++;
-						s_Effect->use = FALSE;
-					}
+				if (BBCollision(&s_Effect->pos, &s_Player->pos,
+					s_Effect->w, s_Player->w, s_Effect->h, s_Player->h))
+				{
+					PlaySound(SOUND_LABEL_SE_coin);
+					GetPlayer()->money++;
+					s_Effect->use = FALSE;
 				}
 				break;
 			}
@@ -287,6 +295,45 @@ void UpdateEffect(void)
 					};
 				}
 				break;
+			case DUST_CIRCLE:
+				s_Effect->pos.y += s_Effect->vertSpd;
+				s_Effect->pos.x += s_Effect->horzSpd;
+
+				s_Effect->vertSpd *= 0.96f;
+				s_Effect->horzSpd *= 0.96f;
+				s_Effect->w *= 0.96f;
+				s_Effect->h *= 0.96f;
+				s_Effect->rot += D3DXVECTOR3(0.0f, 0.0f, PARTICLE_ROT);
+
+				if (s_Effect->countAnim++ > ANIM_WAIT)
+				{
+					s_Effect->countAnim = 0.0f;
+					// Change pattern and check if it's the end of animation.
+					if (++s_Effect->patternAnim >= (int)c_TextureInfo[s_Effect->type][FRAME])
+					{
+						s_Effect->use = FALSE;
+					};
+				}
+				break;
+
+			case MAGIC_CIRCLE:
+				s_Effect->pos.y += s_Effect->vertSpd;
+				s_Effect->pos.x += s_Effect->horzSpd;
+
+				s_Effect->vertSpd *= 0.96f;
+				s_Effect->horzSpd *= 0.96f;
+				s_Effect->rot += D3DXVECTOR3(0.0f, 0.0f, PARTICLE_ROT);
+
+				if (s_Effect->countAnim++ > ANIM_WAIT)
+				{
+					s_Effect->countAnim = 0.0f;
+					// Change pattern and check if it's the end of animation.
+					if (++s_Effect->patternAnim >= (int)c_TextureInfo[s_Effect->type][FRAME])
+					{
+						s_Effect->use = FALSE;
+					};
+				}
+				break;
 			default:
 			{
 				// Animation
@@ -306,12 +353,12 @@ void UpdateEffect(void)
 
 
 #ifdef _DEBUG
-			// デバッグ表示
-			PrintDebugProc("X:%f Y:%f texNo: %d patternAnim: %d \n",
-				s_Effect->pos.x,
-				s_Effect->pos.y,
-				s_Effect->texNo,
-				s_Effect->patternAnim);
+			//// デバッグ表示
+			//PrintDebugProc("X:%f Y:%f texNo: %d patternAnim: %d \n",
+			//	s_Effect->pos.x,
+			//	s_Effect->pos.y,
+			//	s_Effect->texNo,
+			//	s_Effect->patternAnim);
 #endif
 		}
 	}
@@ -357,8 +404,8 @@ void DrawEffect(void)
 			float ey = s_Effect->pos.y - s_Map->pos.y;
 
 			// Calculate the parameter for animation
-			float tw = 1.0f / EFFECT_PNG_W * s_Effect->w;	
-			float th = 1.0f / EFFECT_PNG_H * s_Effect->h;	
+			float tw = 1.0f / EFFECT_PNG_W * c_TextureInfo[s_Effect->type][WIDTH];
+			float th = 1.0f / EFFECT_PNG_H * c_TextureInfo[s_Effect->type][HEIGHT];
 			float tx = (float)s_Effect->patternAnim * tw;
 			float sumH = 0.0f;
 			for (int i = 0; i < s_Effect->type; i++)
@@ -404,16 +451,63 @@ EFFECT* SetEffect(float X, float Y, int Type, int orient)
 			s_Effect->use = TRUE;
 
 			float rand_angle = ((rand() % 157) + 157) / 100.0f;		// 0.5 PI ~ PI
+			float rand_cof_x = (rand() % 200 - 100) / 100.0f;		// -1.0 ~ 1.0
+			float rand_cof_y = (rand() % 200 - 100) / 100.0f;		// -1.0 ~ 1.0
 			switch (s_Effect->type)
 			{
 			case COIN:
-				s_Effect->horzSpd = ((float)(rand() % 200 - 100) / 10);
-				s_Effect->vertSpd = -((float)(rand() % 100) / 10);
+				s_Effect->horzSpd = COIN_SPD * rand_cof_x;
+				s_Effect->vertSpd = COIN_SPD * rand_cof_y;
 				break;
 			case DUST:
 				s_Effect->horzSpd = DUST_SPD * sinf(rand_angle);
 				s_Effect->vertSpd = DUST_SPD * cosf(rand_angle);
 				s_Effect->horzSpd *= (GetPlayer()->orient) ? 1: -1;
+				break;
+			case DUST_CIRCLE:
+				s_Effect->horzSpd = DUST_CIR_SPD * rand_cof_x;
+				s_Effect->vertSpd = DUST_CIR_SPD * rand_cof_y;
+				break;
+			case MAGIC_CIRCLE:
+
+				s_Effect->horzSpd = MAGIC_CIR_SPD * rand_cof_x;
+				s_Effect->vertSpd = MAGIC_CIR_SPD * rand_cof_y;
+				switch (orient)
+				{
+					s_Effect->horzSpd = MAGIC_CIR_SPD * rand_cof_x;
+					s_Effect->vertSpd = MAGIC_CIR_SPD * rand_cof_y;
+				case RIGHT:
+					if (s_Effect->horzSpd < 0)
+					{
+						s_Effect->horzSpd = -s_Effect->horzSpd;
+					}
+					s_Effect->vertSpd /= 2;
+					break;
+				case LEFT:
+					if (s_Effect->horzSpd > 0)
+					{
+						s_Effect->horzSpd = -s_Effect->horzSpd;
+					}
+					s_Effect->vertSpd /= 2;
+					break;
+				case UP:
+					if (s_Effect->vertSpd > 0)
+					{
+						s_Effect->vertSpd = -s_Effect->vertSpd;
+					}
+					s_Effect->horzSpd /= 2;
+					break;
+				case DOWN:
+					if (s_Effect->vertSpd < 0)
+					{
+						s_Effect->vertSpd = -s_Effect->vertSpd;
+					}
+					s_Effect->horzSpd /= 2;
+					break;
+				default:
+					break;
+				}
+
 				break;
 			default:
 				s_Effect->horzSpd = 0;

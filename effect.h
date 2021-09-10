@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // É^ÉCÉgÉãâÊñ èàóù [particle.h]
-// Author : 
+// Author : LI ZIZHEN liruntu2333@gmail.com
 //
 //=============================================================================
 #pragma once
@@ -43,6 +43,7 @@ enum EFFECT_TYPE
 	BLOOD_SPLASH,
 	DUST_CIRCLE,
 	DUST,
+	MAGIC_CIRCLE,
 	COIN,
 	EFFECT_TYPE_MAX,
 };

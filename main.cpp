@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // Main処理 [main.cpp]
-// Author : GP11A132 35 lizizhen
+// Author : LI ZIZHEN liruntu2333@gmail.com
 //
 //=============================================================================
 #include "main.h"
@@ -21,6 +21,7 @@
 #include "file.h"
 #include "effect.h"
 #include "elevator.h"
+#include "ui.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -186,14 +187,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 #ifdef _DEBUG	// デバッグ版の時だけFPSを表示する
 				wsprintf(g_DebugStr, WINDOW_NAME);
-				wsprintf(&g_DebugStr[strlen(g_DebugStr)], " FPS:%d", g_CountFPS);
+				//wsprintf(&g_DebugStr[strlen(g_DebugStr)], " FPS:%d", g_CountFPS);
 #endif
 
 				Update();			// 更新処理
 				Draw();				// 描画処理
 
 #ifdef _DEBUG	// デバッグ版の時だけ表示する
-				wsprintf(&g_DebugStr[strlen(g_DebugStr)], " MX:%d MY:%d", GetMousePosX(), GetMousePosY());
+				//wsprintf(&g_DebugStr[strlen(g_DebugStr)], " MX:%d MY:%d", GetMousePosX(), GetMousePosY());
 				SetWindowText(hWnd, g_DebugStr);
 #endif
 
@@ -328,6 +329,7 @@ void Update(void)
 		UpdateEffect();
 		UpdateBullet();
 		UpdateEnemy();
+		UpdateUI();
 		CheckGameover();
 		break;
 
@@ -339,7 +341,7 @@ void Update(void)
 
 #ifdef _DEBUG
 	// デバッグ表示
-	PrintDebugProc("SMcount: %d \n",g_SMcount);
+	//PrintDebugProc("SMcount: %d \n",g_SMcount);
 #endif
 }
 
@@ -374,9 +376,10 @@ void Draw(void)
 
 		DrawEnemy();
 		DrawBullet();
-		DrawScore();
+//		DrawScore();
 		DrawEffect();
 		DrawPlayer();
+		DrawUI();
 
 
 		if (g_LoadGame == TRUE)
@@ -422,6 +425,7 @@ void SetMode(int mode)
 	UninitScore();
 	UninitResult();
 	UninitTutorial();
+	UninitUI();
 	StopSound();
 
 	g_Mode = mode;	// 次のモードをセットしている
@@ -448,6 +452,7 @@ void SetMode(int mode)
 		InitEnemy();
 		InitBullet();
 		InitScore();
+		InitUI();
 		PlaySound(SOUND_LABEL_BGM_EoS);
 		break;
 
@@ -468,7 +473,7 @@ bool CheckGameover()
 
 	ENEMY* enemy = GetEnemy();
 
-	bool flag = false;
+	bool flag = true;
 	for (int i = 0; i < ENEMY_MAX; i++)
 	{
 		if ((enemy + i)->use)
@@ -479,7 +484,7 @@ bool CheckGameover()
 	}
 	if (flag)
 	{
-		SetResult(GetScore());
+		//SetResult(GetScore());
 		SetFade(FADE_OUT, MODE_RESULT);
 		return true;
 	}
@@ -490,6 +495,12 @@ void SetSlowMotion(int frame)
 {
 	g_FPS = 30;
 	g_SMcount = frame;
+}
+
+void SetStunFrame(void)
+{
+	g_FPS = 3;
+	g_SMcount = 1;
 }
 
 DWORD GetFrameCount(void)

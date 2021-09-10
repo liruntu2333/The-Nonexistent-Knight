@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // BGâÊñ èàóù [bg.cpp]
-// Author : 
+// Author : LI ZIZHEN liruntu2333@gmail.com
 //
 //=============================================================================
 #include "map.h"
@@ -120,6 +120,20 @@ HRESULT InitMap(void)
 	{
 		g_TerrainDT[40][i] = 2;
 		for (int j = 41; j < 41 + 5; j++)
+		{
+			g_TerrainDT[j][i] = 1;
+		}
+	}
+	for (int i = 1; i < 3; i++)
+	{
+		for (int j = 0; j < MAP_HEIGHT / BLK_LGTH; j++)
+		{
+			g_TerrainDT[j][i] = 1;
+		}
+	}
+	for (int i = 157; i < 159; i++)
+	{
+		for (int j = 0; j < MAP_HEIGHT / BLK_LGTH; j++)
 		{
 			g_TerrainDT[j][i] = 1;
 		}

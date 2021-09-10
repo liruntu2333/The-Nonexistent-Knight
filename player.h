@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // プレイヤー処理 [player.h]
-// Author : 
+// Author : LI ZIZHEN liruntu2333@gmail.com
 //
 //=============================================================================
 #pragma once
@@ -15,6 +15,8 @@
 #define PLAYER_MAX					(1)		// プレイヤーのMax人数
 #define GRAVITATIONAL_CONST			(1)
 #define FALL_LIMIT					(30)
+#define PLAYER_HEALTH_MAX					(7)
+#define PLAYER_STAMINA_MAX					(100)
 
 enum Orientation
 {
@@ -40,6 +42,7 @@ enum State
 	FALL,
 	JUMP,
 	BIG_JUMP,
+	STATE_MAX
 };
 
 //*****************************************************************************
@@ -60,7 +63,7 @@ struct PLAYER
 	int				texNo;			// テクスチャ番号
 
 	int				state;			// current movement
-	int				orient;			// 0left 1right
+	int				orient;			// 0right 1down 2left 3up
 	int				atkOrient;		// 0right 1down 2left 3up
 	BOOL			atkDetect;		// 0 not yet 1 had
 	BOOL			pryDetect;		// Parry Detect

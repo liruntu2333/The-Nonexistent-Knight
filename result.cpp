@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // リザルト画面処理 [result.cpp]
-// Author : 
+// Author : LI ZIZHEN liruntu2333@gmail.com
 //
 //=============================================================================
 #include "result.h"
@@ -31,7 +31,7 @@ static ID3D11Buffer				*g_VertexBuffer = NULL;		// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
 static char *g_TexturName[TEXTURE_MAX] = {
-	"data/TEXTURE/bg001.jpg",
+	"data/TEXTURE/result.png",
 	"data/TEXTURE/number16x32.png",
 };
 
@@ -166,47 +166,6 @@ void DrawResult(void)
 
 		// ポリゴン描画
 		GetDeviceContext()->Draw(4, 0);
-	}
-
-
-	// 最終スコア表示
-	{
-		// テクスチャ設定
-		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[1]);
-
-		// 桁数分処理する
-		int number = g_ResultScore;
-
-		for (int i = 0; i < SCORE_DIGIT; i++)
-		{
-			// 今回表示する桁の数字
-			float x = (float)(number % 10);
-
-			// 次の桁へ
-			number /= 10;
-
-			// スコアの位置やテクスチャー座標を反映
-			float px = SCORE_DX - SCORE_DW *i;	// スコアの表示位置X
-			float py = SCORE_DY;				// スコアの表示位置Y
-			float pw = SCORE_DW;				// スコアの表示幅
-			float ph = SCORE_DH;				// スコアの表示高さ
-
-			float tw = 1.0f / 10;				// テクスチャの幅
-			float th = 1.0f / 1;				// テクスチャの高さ
-			float tx = x * tw;					// テクスチャの左上X座標
-			float ty = 0.0f;					// テクスチャの左上Y座標
-
-			// １枚のポリゴンの頂点とテクスチャ座標を設定
-			SetSpriteLTColor(g_VertexBuffer,
-				px, py, pw, ph,
-				tx, ty, tw, th,
-				D3DXCOLOR(0.0f, 1.0f, 1.0f, 1.0f));
-
-			// ポリゴン描画
-			GetDeviceContext()->Draw(4, 0);
-
-		}
-
 	}
 
 }

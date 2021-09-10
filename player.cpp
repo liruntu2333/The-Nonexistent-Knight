@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // ƒvƒŒƒCƒ„[ˆ— [player.cpp]
-// Author : 
+// Author : LI ZIZHEN liruntu2333@gmail.com
 //
 //=============================================================================
 #include "player.h"
@@ -14,18 +14,26 @@
 #include "collision.h"
 #include "elevator.h"
 #include "fade.h"
+#include "sound.h"
 
 //*****************************************************************************
 // ƒ}ƒNƒ’è‹`
 //*****************************************************************************
-#define TEXTURE_WIDTH				(800/8)	// ƒLƒƒƒ‰ƒTƒCƒY
-#define TEXTURE_HEIGHT				(800/8)	// 
-#define TEXTURE_MAX					(2)		// ƒeƒNƒXƒ`ƒƒ‚Ì”
+#define TEXTURE_WIDTH				(75.0f)	// ƒLƒƒƒ‰ƒTƒCƒY
+#define TEXTURE_HEIGHT				(75.0f)	// 
+#define TEXTURE_MAX					(1)		// ƒeƒNƒXƒ`ƒƒ‚Ì”
+#define	PLAYER_TEX_NO				(0)
 
-#define TEXTURE_PATTERN_DIVIDE_X	(5)		// ƒAƒjƒƒpƒ^[ƒ“‚ÌƒeƒNƒXƒ`ƒƒ“à•ªŠ„”iX)
-#define TEXTURE_PATTERN_DIVIDE_Y	(2)		// ƒAƒjƒƒpƒ^[ƒ“‚ÌƒeƒNƒXƒ`ƒƒ“à•ªŠ„”iY)
-#define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X*TEXTURE_PATTERN_DIVIDE_Y)	// ƒAƒjƒ[ƒVƒ‡ƒ“ƒpƒ^[ƒ“”
-#define ANIM_WAIT					(5)		// ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌØ‚è‘Ö‚í‚éWait’l
+#define PLAYER_PNG_W				900
+#define PLAYER_PNG_H				1050
+
+#define UP_ATTACK_Y					13
+#define DOWN_ATTACK_Y				12
+
+//#define TEXTURE_PATTERN_DIVIDE_X	(5)		// ƒAƒjƒƒpƒ^[ƒ“‚ÌƒeƒNƒXƒ`ƒƒ“à•ªŠ„”iX)
+//#define TEXTURE_PATTERN_DIVIDE_Y	(2)		// ƒAƒjƒƒpƒ^[ƒ“‚ÌƒeƒNƒXƒ`ƒƒ“à•ªŠ„”iY)
+//#define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X*TEXTURE_PATTERN_DIVIDE_Y)	// ƒAƒjƒ[ƒVƒ‡ƒ“ƒpƒ^[ƒ“”
+#define ANIM_WAIT					(3)		// ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌØ‚è‘Ö‚í‚éWait’l
 
 #define ILLUSION_MAX				(20)
 
@@ -55,10 +63,7 @@
 #define HEAL_FRAME					(120)
 #define HEAL_START					(60)
 #define HEAL_TAKE_EFFECT			(80)
-#define HEAL_COST					(5)
-
-#define STAMINA_MAX					(100)
-#define HEALTH_MAX					(7)
+#define HEAL_COST					(10)
 
 #define ATK_COST					(30)
 #define DASH_COST					(20)
@@ -85,10 +90,13 @@
 
 #define DUST_GEN_LAG				(30)
 
-enum DETECTION
+#define GET_HIT_PARTICLE				(10)
+
+// Starting point in texture & animation frame
+struct TEXTURE_INFO
 {
-	LIGHT_ATK,
-	DETECTION_MAX,
+	float startY;
+	int frame;
 };
 
 struct ILLUSION
@@ -114,14 +122,29 @@ static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// ƒeƒNƒXƒ`ƒ
 
 static char *g_TexturName[TEXTURE_MAX] = 
 {
-	"data/TEXTURE/runningman000.png",
-	"data/TEXTURE/runningman002.png",
+	"data/TEXTURE/player.png",
 };
 
 static BOOL		g_Load = FALSE;			// ‰Šú‰»‚ðs‚Á‚½‚©‚Ìƒtƒ‰ƒO
 static PLAYER	g_Player[PLAYER_MAX];	// ƒvƒŒƒCƒ„[\‘¢‘Ì
 
 static ILLUSION	g_Illusion[ILLUSION_MAX];
+
+static const TEXTURE_INFO c_TexInfo[STATE_MAX] =
+{
+	{0.0f,					12},
+	{TEXTURE_HEIGHT * 2,	8},
+	{TEXTURE_HEIGHT * 8,	4},
+	{TEXTURE_HEIGHT * 6,	2},
+	{TEXTURE_HEIGHT * 2,	8},
+	{TEXTURE_HEIGHT * 2,	8},
+	{TEXTURE_HEIGHT * 4,	4},
+	{TEXTURE_HEIGHT * 8,	4},
+	{TEXTURE_HEIGHT * 4,	4},
+	{TEXTURE_HEIGHT * 6,	2},
+	{TEXTURE_HEIGHT * 6,	2},
+	{TEXTURE_HEIGHT * 6,	2},
+};
 
 //=============================================================================
 // ‰Šú‰»ˆ—
@@ -163,7 +186,7 @@ HRESULT InitPlayer(void)
 		s_Player->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		s_Player->w   = TEXTURE_WIDTH;
 		s_Player->h   = TEXTURE_HEIGHT;
-		s_Player->texNo = 1;
+		s_Player->texNo = PLAYER_TEX_NO;
 
 		s_Player->countAnim = 0;
 		s_Player->patternAnim = 0;
@@ -178,9 +201,9 @@ HRESULT InitPlayer(void)
 		s_Player->effect = NULL;
 		s_Player->elev = NULL;
 
-		s_Player->stamina = STAMINA_MAX;
-		s_Player->health = HEALTH_MAX;
-		s_Player->money = 999;
+		s_Player->stamina = PLAYER_STAMINA_MAX;
+		s_Player->health = PLAYER_HEALTH_MAX;
+		s_Player->money = 0;
 	}
 
 	for (int i = 0; i < ILLUSION_MAX; i++)
@@ -246,6 +269,7 @@ void UpdatePlayer(void)
 			{
 				if (!(GetFrameCount() % DUST_GEN_LAG))
 				{
+					PlaySound(SOUND_LABEL_SE_walk);
 					SetEffect(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2, DUST, 0);
 				}
 				// Object is in the air, therefore should start to fall.
@@ -255,6 +279,7 @@ void UpdatePlayer(void)
 						s_Player->pos.x > s_Player->elev->pos.x + s_Player->elev->w)
 					{
 						s_Player->state = FALL;
+						s_Player->countAnim =0.0f; s_Player->patternAnim = 0;
 						s_Player->elev = NULL;
 					}
 				}
@@ -262,6 +287,7 @@ void UpdatePlayer(void)
 				{
 					// Start to fall when walk across the edge.
 					s_Player->state = FALL;
+					s_Player->countAnim =0.0f; s_Player->patternAnim = 0;
 				}
 				break;
 			}
@@ -306,6 +332,7 @@ void UpdatePlayer(void)
 				{
    					s_Player->vertSpd = 0;
 					s_Player->state = STAND;
+					s_Player->countAnim =0.0f; s_Player->patternAnim = 0;
 					
 					s_Player->pos = ReloacteObj(s_Player->pos.x, s_Player->pos.y, s_Player->w, s_Player->h);
 					// Check if stand on the ground obstacle of elevator.
@@ -318,9 +345,12 @@ void UpdatePlayer(void)
 							s_Player->w, s_Elevator->w, s_Player->h, s_Elevator->h))
 						{
 							s_Player->state = STAND;
+							s_Player->countAnim =0.0f; s_Player->patternAnim = 0;
 							s_Player->elev = s_Elevator;
 						}
 					}
+
+					PlaySound(SOUND_LABEL_SE_bounce);
 				}
 				break;
 			}
@@ -337,6 +367,7 @@ void UpdatePlayer(void)
 				if (s_Player->vertSpd >= 0)
 				{
 					s_Player->state = FALL;
+					s_Player->countAnim =0.0f; s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 				}
 				// If there is obstacle above player, reverse vertical speed to +1.
@@ -345,6 +376,7 @@ void UpdatePlayer(void)
 					s_Player->pos.y += 5.0f;
 					s_Player->vertSpd = 1;
 					s_Player->state = FALL;
+					s_Player->countAnim =0.0f; s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 				}
 				break;
@@ -373,6 +405,11 @@ void UpdatePlayer(void)
 					s_Player->godCount = DASH_GOD_END - DASH_GOD_ST;
 				}
 
+				if (GetFrameCount() % 2)
+				{
+					SetEffect(s_Player->pos.x, s_Player->pos.y, DUST_CIRCLE, 0);
+				}
+
 				switch (s_Player->orient)
 				{
 				case LEFT:								// Dash to left
@@ -392,9 +429,10 @@ void UpdatePlayer(void)
 				}
 
 				// While dashing, dashCount degresses per frame until reaches 0
-				if (!--s_Player->actCount)
+				if (!s_Player->actCount--)
 				{
 					s_Player->state = FALL;
+					s_Player->countAnim =0.0f; s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 					s_Player->vertSpd = 0;
 				}
@@ -416,8 +454,11 @@ void UpdatePlayer(void)
 						// Player can't attack downward when isn't in air, nor on elevator.
 						if (s_Player->elev || GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2))
 						{
+							s_Player->stamina += ATK_COST;
 							s_Player->actCount = 0;
 							s_Player->state = FALL;
+							s_Player->countAnim =0.0f; 
+							s_Player->patternAnim = 0;
 							break;
 						}
 					}
@@ -435,6 +476,8 @@ void UpdatePlayer(void)
 					}
 					s_Player->vertSpd = 0;
 					s_Player->atkDetect = FALSE;
+
+					PlaySound(SOUND_LABEL_SE_attck);
 				}
 
 				if (s_Player->actCount == ATK_FRAME - ATK_DETECTION)
@@ -464,6 +507,8 @@ void UpdatePlayer(void)
 					s_Player->atkOrient = s_Player->orient;
 					s_Player->effect = NULL;
 					s_Player->state = FALL;
+					s_Player->countAnim =0.0f; 
+					s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 				}
 			break;
@@ -476,6 +521,7 @@ void UpdatePlayer(void)
 					// Super slash after sucessfully parried.
 					// Return to 60 FPS
 					SetSlowMotion(1);
+					PlaySound(SOUND_LABEL_SE_pasueReturn);
 					// Set next hit to normal attack.
 					s_Player->pryDetect = FALSE;
 					s_Player->atkOrient = s_Player->orient;
@@ -498,7 +544,7 @@ void UpdatePlayer(void)
 						ENEMY* s_Enemy = GetEnemy() + i;
 						if (BBCollision(&s_Effect->pos, &s_Enemy->pos,
 							s_Effect->w, s_Enemy->w, s_Effect->h, s_Enemy->h) &&
-							s_Enemy->slashed == FALSE) // Bullseye
+							s_Enemy->slashed == FALSE && s_Enemy->state != DEAD) // Bullseye
 						{
 							// Hit effect.
 							SetEffect(s_Enemy->pos.x, s_Enemy->pos.y,
@@ -536,6 +582,8 @@ void UpdatePlayer(void)
 				{
 					s_Player->effect = NULL;
 					s_Player->state = FALL;
+					s_Player->countAnim =0.0f; 
+					s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 				}
 				break;
@@ -545,10 +593,12 @@ void UpdatePlayer(void)
 				// Parry process.
 
 				// While parrying, actCount degresses per frame until reaches 0
-				if (!--s_Player->actCount)
+				if (!s_Player->actCount--)
 				{
 					s_Player->vertSpd = 0;
 					s_Player->state = FALL;
+					s_Player->countAnim =0.0f; 
+					s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 				}
 				break;
@@ -590,6 +640,8 @@ void UpdatePlayer(void)
 				else
 				{
 					s_Player->state = FALL;
+					s_Player->countAnim =0.0f;
+					s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 				}
 				break;
@@ -600,6 +652,10 @@ void UpdatePlayer(void)
 				if (!s_Player->actCount--)
 				{
 					SetFade(FADE_OUT, MODE_GAME);
+				}
+				else
+				{
+					SetEffect(s_Player->pos.x, s_Player->pos.y, DUST_CIRCLE, rand() % 4);
 				}
 				break;
 			}
@@ -619,11 +675,15 @@ void UpdatePlayer(void)
 						else
 						{
 							s_Player->state = FALL;
+							s_Player->vertSpd = 0;
+							s_Player->countAnim =0.0f; 
+							s_Player->patternAnim = 0;
 						}
 					}
 					if (s_Player->actCount == HEAL_FRAME - HEAL_TAKE_EFFECT)
 					{
-						s_Player->health += (s_Player->health < HEALTH_MAX) ? 1 : 0;
+						PlaySound(SOUND_LABEL_SE_heal);
+						s_Player->health += (s_Player->health < PLAYER_HEALTH_MAX) ? 1 : 0;
 					}
 				}
 				else
@@ -631,6 +691,8 @@ void UpdatePlayer(void)
 					s_Player->effect = NULL;
 					s_Player->vertSpd = 0;
 					s_Player->state = FALL;
+					s_Player->countAnim =0.0f; 
+					s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 				}
 				break;
@@ -649,25 +711,26 @@ void UpdatePlayer(void)
 				}
 			}
 
-			// Animation  
-			s_Player->countAnim += 1.0f;
-			if (s_Player->countAnim > ANIM_WAIT)
+			// Animation
+			if (s_Player->countAnim++ > ANIM_WAIT)
 			{
 				s_Player->countAnim = 0.0f;
-				// ƒpƒ^[ƒ“‚ÌØ‚è‘Ö‚¦
-				s_Player->patternAnim = (s_Player->patternAnim + 1) % ANIM_PATTERN_NUM;
+				// Change pattern and check if it's the end of animation.
+				if (++s_Player->patternAnim >= c_TexInfo[s_Player->state].frame)
+				{
+					s_Player->patternAnim = 0;
+				}
 			}
-
 
 #ifdef _DEBUG
 			// ƒfƒoƒbƒO•\Ž¦
-			PrintDebugProc("Player X:%f Y:%f vS: %d BGd: %d Health: %d State: %d \n", 
-				s_Player->pos.x, 
-				s_Player->pos.y, 
-				s_Player->vertSpd, 
-				GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2),
-				s_Player->health, 
-				s_Player->state);
+			//PrintDebugProc("Player X:%f Y:%f vS: %d BGd: %d Health: %d State: %d \n", 
+			//	s_Player->pos.x, 
+			//	s_Player->pos.y, 
+			//	s_Player->vertSpd, 
+			//	GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2),
+			//	s_Player->health, 
+			//	s_Player->state);
 #endif
 		}
 	}
@@ -705,30 +768,50 @@ void DrawPlayer(void)
 			// ƒeƒNƒXƒ`ƒƒÝ’è
 			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[s_Player->texNo]);
 
-			//ƒvƒŒƒCƒ„[‚ÌˆÊ’u‚âƒeƒNƒXƒ`ƒƒ[À•W‚ð”½‰f
+			// Calculate the relative position of player
 			float px = s_Player->pos.x - bg->pos.x;	// ƒvƒŒƒCƒ„[‚Ì•\Ž¦ˆÊ’uX
 			float py = s_Player->pos.y - bg->pos.y;	// ƒvƒŒƒCƒ„[‚Ì•\Ž¦ˆÊ’uY
 			float pw = s_Player->w;		// ƒvƒŒƒCƒ„[‚Ì•\Ž¦•
 			float ph = s_Player->h;		// ƒvƒŒƒCƒ„[‚Ì•\Ž¦‚‚³
 
-			// ƒAƒjƒ[ƒVƒ‡ƒ“—p
-			float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// ƒeƒNƒXƒ`ƒƒ‚Ì•
-			float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// ƒeƒNƒXƒ`ƒƒ‚Ì‚‚³
-			float tx = (float)(s_Player->patternAnim % TEXTURE_PATTERN_DIVIDE_X) * tw;	// ƒeƒNƒXƒ`ƒƒ‚Ì¶ãXÀ•W
-			float ty = (float)(s_Player->patternAnim / TEXTURE_PATTERN_DIVIDE_X) * th;	// ƒeƒNƒXƒ`ƒƒ‚Ì¶ãYÀ•W
+			// Calculate the parameter for animation
+			float tw = 1.0f / PLAYER_PNG_W * TEXTURE_WIDTH;
+			float th = 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT;
+			float tx = tw * s_Player->patternAnim ;
+			float sumH = 0.0f;
+			float ty = 1.0f / PLAYER_PNG_H * c_TexInfo[s_Player->state].startY;
 
-			//float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// ƒeƒNƒXƒ`ƒƒ‚Ì•
-			//float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// ƒeƒNƒXƒ`ƒƒ‚Ì‚‚³
-			//float tx = s_Player->patternAnim * tw;	// ƒeƒNƒXƒ`ƒƒ‚Ì¶ãXÀ•W
-			//float ty = s_Player->patternAnim * th;	// ƒeƒNƒXƒ`ƒƒ‚Ì¶ãYÀ•W
-			float fa = 1.0f;
-			if ((s_Player->godCount / GOD_FLASH) % 2) fa = 0.3f;
-			// ‚P–‡‚Ìƒ|ƒŠƒSƒ“‚Ì’¸“_‚ÆƒeƒNƒXƒ`ƒƒÀ•W‚ðÝ’è
-			SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
-				D3DXCOLOR(1.0f, 1.0f, 1.0f, fa),
+			// Considering state and orient, set the param to right row.
+			switch (s_Player->state)
+			{
+			case HEAL:
+				break;
+
+			case ATTACK:
+				if (s_Player->atkOrient == UP)
+				{
+					ty = 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT * UP_ATTACK_Y;
+				}
+				else if (s_Player->atkOrient == DOWN)
+				{
+					ty = 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT * DOWN_ATTACK_Y;
+				}
+				else
+				{
+					ty += (!s_Player->orient) ? 0 : 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT;
+				}
+				break;
+
+			default:
+				ty += (!s_Player->orient) ?  0 : 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT;
+				break;
+			}
+
+			SetSpriteColorRotation(g_VertexBuffer, px, py, s_Player->w, s_Player->h,
+				tx, ty, tw, th,
+				D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
 				s_Player->rot.z);
 
-			// ƒ|ƒŠƒSƒ“•`‰æ
 			GetDeviceContext()->Draw(4, 0);
 		}
 	}
@@ -741,29 +824,51 @@ void DrawPlayer(void)
 			// ƒeƒNƒXƒ`ƒƒÝ’è
 			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[s_Illusion->illusion.texNo]);
 
-			//ƒvƒŒƒCƒ„[‚ÌˆÊ’u‚âƒeƒNƒXƒ`ƒƒ[À•W‚ð”½‰f
+			// Calculate the relative position of player
 			float px = s_Illusion->illusion.pos.x - bg->pos.x;	// ƒvƒŒƒCƒ„[‚Ì•\Ž¦ˆÊ’uX
 			float py = s_Illusion->illusion.pos.y - bg->pos.y;	// ƒvƒŒƒCƒ„[‚Ì•\Ž¦ˆÊ’uY
 			float pw = s_Illusion->illusion.w;		// ƒvƒŒƒCƒ„[‚Ì•\Ž¦•
 			float ph = s_Illusion->illusion.h;		// ƒvƒŒƒCƒ„[‚Ì•\Ž¦‚‚³
 
-			// ƒAƒjƒ[ƒVƒ‡ƒ“—p
-			float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// ƒeƒNƒXƒ`ƒƒ‚Ì•
-			float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// ƒeƒNƒXƒ`ƒƒ‚Ì‚‚³
-			float tx = (float)(s_Illusion->illusion.patternAnim % TEXTURE_PATTERN_DIVIDE_X) * tw;	// ƒeƒNƒXƒ`ƒƒ‚Ì¶ãXÀ•W
-			float ty = (float)(s_Illusion->illusion.patternAnim / TEXTURE_PATTERN_DIVIDE_X) * th;	// ƒeƒNƒXƒ`ƒƒ‚Ì¶ãYÀ•W
+			// Calculate the parameter for animation
+			float tw = 1.0f / PLAYER_PNG_W * TEXTURE_WIDTH;
+			float th = 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT;
+			float tx = tw * s_Illusion->illusion.patternAnim;
+			float sumH = 0.0f;
+			float ty = 1.0f / PLAYER_PNG_H * c_TexInfo[s_Illusion->illusion.state].startY;
 
-			//float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// ƒeƒNƒXƒ`ƒƒ‚Ì•
-			//float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// ƒeƒNƒXƒ`ƒƒ‚Ì‚‚³
-			//float tx = s_Player->patternAnim * tw;	// ƒeƒNƒXƒ`ƒƒ‚Ì¶ãXÀ•W
-			//float ty = s_Player->patternAnim * th;	// ƒeƒNƒXƒ`ƒƒ‚Ì¶ãYÀ•W
+			// Considering state and orient, set the param to right row.
+			switch (s_Illusion->illusion.state)
+			{
+			case HEAL:
+				break;
 
-			// ‚P–‡‚Ìƒ|ƒŠƒSƒ“‚Ì’¸“_‚ÆƒeƒNƒXƒ`ƒƒÀ•W‚ðÝ’è
-			SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
-				D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f / ILLUSION_LIFE_SPAN * s_Illusion->life),
+			case ATTACK:
+				if (s_Illusion->illusion.atkOrient == UP)
+				{
+					ty = 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT * UP_ATTACK_Y;
+				}
+				else if (s_Illusion->illusion.atkOrient == DOWN)
+				{
+					ty = 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT * DOWN_ATTACK_Y;
+				}
+				else
+				{
+					ty += (!s_Illusion->illusion.orient) ? 0 : 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT;
+				}
+				break;
+
+			default:
+				ty += (!s_Illusion->illusion.orient) ? 0 : 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT;
+				break;
+			}
+
+			float color_fa = 1.0f - 0.3f * ILLUSION_LIFE_SPAN / s_Illusion->life;
+			SetSpriteColorRotation(g_VertexBuffer, px, py, s_Illusion->illusion.w, s_Illusion->illusion.h,
+				tx, ty, tw, th,
+				D3DXCOLOR(1.0f, 1.0f, 1.0f, color_fa),
 				s_Illusion->illusion.rot.z);
 
-			// ƒ|ƒŠƒSƒ“•`‰æ
 			GetDeviceContext()->Draw(4, 0);
 		}
 	}
@@ -795,6 +900,7 @@ void HitPlayer(ENEMY* enemy, PLAYER* player, int damge, int orient)
 		{
 			HitEnemy(enemy, 0, 0);
 			player->pryDetect = TRUE;
+			PlaySound(SOUND_LABEL_SE_timePause);
 			if (player->pos.x > enemy->pos.x)
 			{
 				SetEffect(player->pos.x, player->pos.y, PLAYER_PARRY, LEFT);
@@ -814,12 +920,19 @@ void HitPlayer(ENEMY* enemy, PLAYER* player, int damge, int orient)
 		}
 		SetEffect(player->pos.x, player->pos.y, BLOOD_SPLASH, orient);
 		player->state = STUN;
+		player->countAnim = 0.0f; 
+		player->patternAnim = 0;
 		player->actCount = BIG_STUN_FRAME;
 		player->health -= damge;
+		PlaySound(SOUND_LABEL_SE_hit);
+		SetStunFrame();
+
 		if (player->health <= 0)
 		{
 			player->health = 0;
 			player->state = DEAD;
+			player->countAnim = 0.0f; 
+			player->patternAnim = 0;
 			player->actCount = DEAD_FRAME;
 		}
 		switch (orient)
@@ -849,6 +962,10 @@ void HitPlayer(ENEMY* enemy, PLAYER* player, int damge, int orient)
 		}
 		SetShake(HITBYENEMY_SHAKE);
 		player->godCount = GOD_FRAME;
+		for (int i = 0; i < GET_HIT_PARTICLE; i++)
+		{
+			SetEffect(player->pos.x, player->pos.y, DUST_CIRCLE, RIGHT);
+		}
 	}
 	return;
 }
@@ -873,6 +990,8 @@ void CheckHitTerra(PLAYER* player, EFFECT* effect)
 			// Check if hit on undestroyable object (enviroment bloack).
 			if (GetTerrain(effect->pos.x + cof * rcosrot, effect->pos.y + cof * rsinrot))
 			{
+				PlaySound(SOUND_LABEL_SE_reflect);
+
 				// Varies from direction to direction, step back, jump.
 				switch (player->atkOrient)
 				{
@@ -886,6 +1005,7 @@ void CheckHitTerra(PLAYER* player, EFFECT* effect)
 					player->effect = NULL;
 
 					player->state = STUN;
+					player->countAnim = 0.0f; player->patternAnim = 0;
 					if (player->atkOrient % 4)
 						player->horzSpd = MINI_STUN_HSPD;
 					else
@@ -903,6 +1023,7 @@ void CheckHitTerra(PLAYER* player, EFFECT* effect)
 							PLAYER_REFLECT, player->atkOrient);
 						player->vertSpd = HITJUMP_SPD;
 						player->state = BIG_JUMP;
+						player->countAnim = 0.0f; player->patternAnim = 0;
 						// Screen shake effect
 						SetShake(HIT_SHAKE);
 					}
@@ -914,6 +1035,7 @@ void CheckHitTerra(PLAYER* player, EFFECT* effect)
 						PLAYER_REFLECT, player->atkOrient);
 					player->vertSpd = -HITJUMP_SPD / 2;
 					player->state = FALL;
+					player->countAnim = 0.0f; player->patternAnim = 0;
 					// Screen shake effect
 					SetShake(HIT_SHAKE);
 					break;
@@ -939,7 +1061,7 @@ void CheckHitEnemy(PLAYER* player, EFFECT* effect)
 	for (int i = 0; i < ENEMY_MAX; i++)
 	{
 		ENEMY* s_Enemy = GetEnemy() + i;
-		if (s_Enemy->use && 
+		if (s_Enemy->use && s_Enemy->state != DEAD &&
 			BBCollision(&effect->pos, &s_Enemy->pos, effect->w, s_Enemy->w, effect->h, s_Enemy->h)) // Bullseye
 		{
 			// Hit effect.
@@ -961,6 +1083,7 @@ void CheckHitEnemy(PLAYER* player, EFFECT* effect)
 			case LEFT:
 
 				player->state = STUN;
+				player->countAnim = 0.0f; player->patternAnim = 0;
 				if (player->atkOrient / 2) player->horzSpd = MINI_STUN_HSPD;
 				else player->horzSpd = -MINI_STUN_HSPD;
 				player->actCount = MINI_STUN_FRAME;
@@ -969,11 +1092,13 @@ void CheckHitEnemy(PLAYER* player, EFFECT* effect)
 			case DOWN:
 				player->vertSpd = HITJUMP_SPD;
 				player->state = BIG_JUMP;
+				player->countAnim = 0.0f; player->patternAnim = 0;
 				break;
 
 			case UP:
 				player->vertSpd = 10;
 				player->state = FALL;
+				player->countAnim = 0.0f; player->patternAnim = 0;
 				break;
 
 			default:
@@ -997,7 +1122,7 @@ void GetTrigger(PLAYER* player)
 	if (player->state < DASH || player->state > ATTACK)
 	{
 		// Stanima regen.
-		if (player->stamina < STAMINA_MAX)
+		if (player->stamina < PLAYER_STAMINA_MAX)
 		{
 			player->stamina++;
 		}
@@ -1018,6 +1143,7 @@ void GetTrigger(PLAYER* player)
 				if (player->state == STAND)
 				{
 					player->state = RUN;
+					player->countAnim = 0.0f; player->patternAnim = 0;
 				}
 			}
 			else
@@ -1025,6 +1151,7 @@ void GetTrigger(PLAYER* player)
 				if (GetTerrain(player->pos.x, player->pos.y + player->h / 2))
 				{
 					player->state = STAND;
+					player->countAnim = 0.0f; player->patternAnim = 0;
 				}
 			}
 		}
@@ -1038,6 +1165,7 @@ void GetTrigger(PLAYER* player)
 				if (player->state == STAND)
 				{
 					player->state = RUN;
+					player->countAnim = 0.0f; player->patternAnim = 0;
 				}
 			}
 			else
@@ -1045,6 +1173,7 @@ void GetTrigger(PLAYER* player)
 				if (GetTerrain(player->pos.x, player->pos.y + player->h / 2))
 				{
 					player->state = STAND;
+					player->countAnim = 0.0f; player->patternAnim = 0;
 				}
 			}
 		}
@@ -1054,6 +1183,7 @@ void GetTrigger(PLAYER* player)
 			if (player->state == RUN)
 			{
 				player->state = STAND;
+				player->countAnim = 0.0f; player->patternAnim = 0;
 			}
 		}
 
@@ -1066,6 +1196,8 @@ void GetTrigger(PLAYER* player)
 				player->state = DASH;
 				player->elev = NULL;
 				player->actCount = DASH_FRAME;
+
+				PlaySound(SOUND_LABEL_SE_dash);
 			}
 		}
 		// Attack trigger.
@@ -1080,12 +1212,16 @@ void GetTrigger(PLAYER* player)
 				if (player->pryDetect)
 				{
 					player->state = SLASH;
+					player->countAnim = 0.0f; player->patternAnim = 0;
 					player->actCount = SLASH_FRAME;
+
+					PlaySound(SOUND_LABEL_SE_dash);
 				}
 				// Normal attack.
 				else
 				{
 					player->state = ATTACK;
+					player->countAnim = 0.0f; player->patternAnim = 0;
 					player->actCount = ATK_FRAME;
 				}
 			}
@@ -1097,6 +1233,7 @@ void GetTrigger(PLAYER* player)
 			{
 				player->stamina -= PARRY_COST;
 				player->state = PARRY;
+				player->countAnim = 0.0f; player->patternAnim = 0;
 				player->actCount = PARRY_FRAME;
 			}
 		}
@@ -1104,6 +1241,7 @@ void GetTrigger(PLAYER* player)
 		else if (GetKeyboardTrigger(DIK_R))
 		{
 			player->state = HEAL;
+			player->countAnim = 0.0f; player->patternAnim = 0;
 			player->actCount = HEAL_FRAME;
 		}
 		// Jump only triggers when player's on the ground(STAND ~ STAND_ELEV).
@@ -1114,6 +1252,7 @@ void GetTrigger(PLAYER* player)
 				player->elev = NULL;
 				player->stamina -= JUMP_COST;
 				player->state = JUMP;
+				player->countAnim = 0.0f; player->patternAnim = 0;
 				player->vertSpd = JUMP_SPEED;
 			}
 		}
@@ -1123,6 +1262,8 @@ void GetTrigger(PLAYER* player)
 			player->vertSpd <= JUMP_SPEED * 1 / 2 && player->vertSpd >= JUMP_SPEED * 4 / 7)
 		{
 			player->state = BIG_JUMP;
+
+					player->countAnim =0.0f; player->patternAnim = 0;
 			player->vertSpd += JUMP_SPEED / 3;
 		}
 	}

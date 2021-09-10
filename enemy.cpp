@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // プレイヤー処理 [ENEMY.cpp]
-// Author : 
+// Author : LI ZIZHEN liruntu2333@gmail.com
 //
 //=============================================================================
 #include "enemy.h"
@@ -18,9 +18,9 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define MAP_WIDTH				(800/8)	// キャラサイズ
-#define MAP_HEIGHT				(800/8)	// 
-#define TEXTURE_MAX					(3)		// テクスチャの数
+#define TEXTURE_WIDTH				(800/8)	// キャラサイズ
+#define TEXTURE_HEIGHT				(800/8)	// 
+#define TEXTURE_MAX					(2)		// テクスチャの数
 
 #define TEXTURE_PATTERN_DIVIDE_X	(2)		// アニメパターンのテクスチャ内分割数（X)
 #define TEXTURE_PATTERN_DIVIDE_Y	(2)		// アニメパターンのテクスチャ内分割数（Y)
@@ -34,7 +34,12 @@
 #define PARRY_STUN_FRAME			(60)
 
 #define PARRY_SM_FRAME				(60)	// slow motion mode triggered by sucessful parry
-#define	HEALTH_MAX					(10)
+#define DEAD_FRAME					60
+
+#define ENEMYRHT_TEX_NO				1
+#define ENEMYLFT_TEX_NO				0
+
+#define GET_HIT_PARTICLE			3
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -47,38 +52,39 @@ void ChekHitPlayer(ENEMY* enemy);
 //*****************************************************************************
 static ID3D11Buffer* g_VertexBuffer = NULL;		// 頂点情報
 static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
-
-static LINEAR_INTERPOLATION g_MoveTbl0[] = {
-	//座標									回転率							拡大率							時間
-	{ D3DXVECTOR3(50.0f,  50.0f, 0.0f),	D3DXVECTOR3(0.0f, 0.0f, 0.0f),	D3DXVECTOR3(1.0f, 1.0f, 1.0f),	0.01f },
-	{ D3DXVECTOR3(250.0f,  50.0f, 0.0f),	D3DXVECTOR3(0.0f, 0.0f, 3.14f),	D3DXVECTOR3(0.0f, 0.0f, 1.0f),	0.05f },
-	{ D3DXVECTOR3(250.0f, 250.0f, 0.0f),	D3DXVECTOR3(0.0f, 0.0f, 6.28f),	D3DXVECTOR3(2.0f, 2.0f, 1.0f),	0.005f },
-};
-
-
-static LINEAR_INTERPOLATION g_MoveTbl1[] = {
-	//座標									回転率							拡大率							時間
-	{ D3DXVECTOR3(1700.0f,   0.0f, 0.0f),	D3DXVECTOR3(0.0f, 0.0f, 0.0f),	D3DXVECTOR3(1.0f, 1.0f, 1.0f),	0.01f },
-	{ D3DXVECTOR3(1700.0f,  SCREEN_HEIGHT, 0.0f),D3DXVECTOR3(0.0f, 0.0f, 6.28f),	D3DXVECTOR3(2.0f, 2.0f, 1.0f),	0.01f },
-};
-
-
-static LINEAR_INTERPOLATION g_MoveTbl2[] = {
-	//座標									回転率							拡大率							時間
-	{ D3DXVECTOR3(3000.0f, 100.0f, 0.0f),	D3DXVECTOR3(0.0f, 0.0f, 0.0f),		D3DXVECTOR3(1.0f, 1.0f, 1.0f),	0.01f },
-	{ D3DXVECTOR3(3000 + SCREEN_WIDTH, 100.0f, 0.0f),	D3DXVECTOR3(0.0f, 0.0f, 6.28f),	D3DXVECTOR3(1.0f, 1.0f, 1.0f),	0.01f },
-};
-
-static LINEAR_INTERPOLATION* g_MoveTblAdr[] =
-{
-	g_MoveTbl0,
-	g_MoveTbl1,
-	g_MoveTbl2,
-
-};
+//
+//static LINEAR_INTERPOLATION g_MoveTbl0[] = {
+//	//座標									回転率							拡大率							時間
+//	{ D3DXVECTOR3(50.0f,  50.0f, 0.0f),	D3DXVECTOR3(0.0f, 0.0f, 0.0f),	D3DXVECTOR3(1.0f, 1.0f, 1.0f),	0.01f },
+//	{ D3DXVECTOR3(250.0f,  50.0f, 0.0f),	D3DXVECTOR3(0.0f, 0.0f, 3.14f),	D3DXVECTOR3(0.0f, 0.0f, 1.0f),	0.05f },
+//	{ D3DXVECTOR3(250.0f, 250.0f, 0.0f),	D3DXVECTOR3(0.0f, 0.0f, 6.28f),	D3DXVECTOR3(2.0f, 2.0f, 1.0f),	0.005f },
+//};
+//
+//
+//static LINEAR_INTERPOLATION g_MoveTbl1[] = {
+//	//座標									回転率							拡大率							時間
+//	{ D3DXVECTOR3(1700.0f,   0.0f, 0.0f),	D3DXVECTOR3(0.0f, 0.0f, 0.0f),	D3DXVECTOR3(1.0f, 1.0f, 1.0f),	0.01f },
+//	{ D3DXVECTOR3(1700.0f,  SCREEN_HEIGHT, 0.0f),D3DXVECTOR3(0.0f, 0.0f, 6.28f),	D3DXVECTOR3(2.0f, 2.0f, 1.0f),	0.01f },
+//};
+//
+//
+//static LINEAR_INTERPOLATION g_MoveTbl2[] = {
+//	//座標									回転率							拡大率							時間
+//	{ D3DXVECTOR3(3000.0f, 100.0f, 0.0f),	D3DXVECTOR3(0.0f, 0.0f, 0.0f),		D3DXVECTOR3(1.0f, 1.0f, 1.0f),	0.01f },
+//	{ D3DXVECTOR3(3000 + SCREEN_WIDTH, 100.0f, 0.0f),	D3DXVECTOR3(0.0f, 0.0f, 6.28f),	D3DXVECTOR3(1.0f, 1.0f, 1.0f),	0.01f },
+//};
+//
+//static LINEAR_INTERPOLATION* g_MoveTblAdr[] =
+//{
+//	g_MoveTbl0,
+//	g_MoveTbl1,
+//	g_MoveTbl2,
+//
+//};
 
 static char* g_TexturName[TEXTURE_MAX] = {
 	"data/TEXTURE/enemy02.png",
+	"data/TEXTURE/enemy_reverse.png",
 };
 
 
@@ -122,11 +128,11 @@ HRESULT InitEnemy(void)
 		ENEMY* s_Enemy = g_Enemy + i;
 
 		s_Enemy->use = TRUE;
-		s_Enemy->pos = D3DXVECTOR3(MAP_WIDTH / 2 + 500.0f +100.0f * i, SCREEN_HEIGHT / 2, 0.0f);	// 中心点から表示
+		s_Enemy->pos = D3DXVECTOR3(TEXTURE_WIDTH / 2 + 500.0f +100.0f * i, SCREEN_HEIGHT / 2, 0.0f);	// 中心点から表示
 		s_Enemy->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		s_Enemy->w = MAP_WIDTH;
-		s_Enemy->h = MAP_HEIGHT;
-		s_Enemy->texNo = 0;
+		s_Enemy->w = TEXTURE_WIDTH;
+		s_Enemy->h = TEXTURE_HEIGHT;
+		s_Enemy->texNo = ENEMYRHT_TEX_NO;
 
 		s_Enemy->countAnim = 0;
 		s_Enemy->patternAnim = 0;
@@ -143,6 +149,7 @@ HRESULT InitEnemy(void)
 		s_Enemy->slashed = FALSE;
 
 		s_Enemy->stamina = 0;
+		s_Enemy->health = ENEMY_HEALTH_MAX;
 
 		//// 行動パターンを初期化
 		//g_Enemy[i].time = 0.0f;			// 線形補間用
@@ -223,6 +230,7 @@ void UpdateEnemy(void)
 					if (GetTerrain(s_Enemy->pos.x + s_Enemy->w / 2, s_Enemy->pos.y))
 					{
 						s_Enemy->orient = LEFT;
+						s_Enemy->texNo = ENEMYLFT_TEX_NO;
 					}
 				}
 				else
@@ -232,6 +240,7 @@ void UpdateEnemy(void)
 					if (GetTerrain(s_Enemy->pos.x - s_Enemy->w / 2, s_Enemy->pos.y))
 					{
 						s_Enemy->orient = RIGHT;
+						s_Enemy->texNo = ENEMYRHT_TEX_NO;
 					}
 				}
 
@@ -304,8 +313,26 @@ void UpdateEnemy(void)
 					}
 				}
 			}
+			if (s_Enemy->state == DEAD)
+			{
+				if (s_Enemy->actCount == DEAD_FRAME)
+				{
+					SetStunFrame();
+				}
+				// Death process.
+				if (!s_Enemy->actCount--)
+				{
 
-			if (s_Enemy->state != STUN)
+					s_Enemy->use = FALSE;
+				}
+				else
+				{
+					SetShake(10);
+					SetEffect(s_Enemy->pos.x, s_Enemy->pos.y, MAGIC_CIRCLE, rand() % 4);
+				}
+			}
+
+			if (s_Enemy->state != STUN && s_Enemy->state != DEAD)
 			{
 				// Check if Hit on Player.
 				ChekHitPlayer(s_Enemy);
@@ -322,7 +349,7 @@ void UpdateEnemy(void)
 
 #ifdef _DEBUG
 			// デバッグ表示
-			PrintDebugProc("Enemy X:%f Y:%f\n", g_Enemy[i].pos.x, g_Enemy[i].pos.y);
+			//PrintDebugProc("Enemy X:%f Y:%f\n", g_Enemy[i].pos.x, g_Enemy[i].pos.y);
 #endif
 		}
 	}
@@ -401,7 +428,7 @@ ENEMY* GetEnemy(void)
 void DestructEnemy(ENEMY* ep)
 {
 	AddScore(100);
-	PlaySound(SOUND_LABEL_SE_hit000);
+//	PlaySound(SOUND_LABEL_SE_hit000);
 	if (ep->use) ep->use = FALSE;
 	return;
 }
@@ -425,19 +452,19 @@ void ChekHitPlayer(ENEMY* enemy)
 					enemy->effect->w, s_Player->w,
 					enemy->effect->h, s_Player->h))
 				{
-					if (s_Player->pos.y < enemy->effect->pos.y)
+					if (s_Player->pos.y + s_Player->h / 2 < enemy->effect->pos.y)
 					{
 						enemy->atkOrient = UP;
 					}
-					else if (s_Player->pos.y > enemy->effect->pos.y)
+					else if (s_Player->pos.y - s_Player->h / 2 > enemy->effect->pos.y)
 					{
 						enemy->atkOrient = DOWN;
 					}
-					else if (s_Player->pos.x < enemy->effect->pos.x)
+					if (s_Player->pos.x + s_Player->w / 2 < enemy->effect->pos.x)
 					{
 						enemy->atkOrient = LEFT;
 					}
-					else if (s_Player->pos.x > enemy->effect->pos.x)
+					else if (s_Player->pos.x - s_Player->w / 2 > enemy->effect->pos.x)
 					{
 						enemy->atkOrient = RIGHT;
 					}
@@ -452,19 +479,19 @@ void ChekHitPlayer(ENEMY* enemy)
 					enemy->w, s_Player->w,
 					enemy->h, s_Player->h))
 				{
-					if (s_Player->pos.y < enemy->pos.y)
+					if (s_Player->pos.y + s_Player->h / 2 < enemy->pos.y)
 					{
 						enemy->atkOrient = UP;
 					}
-					else if (s_Player->pos.y > enemy->pos.y)
+					else if (s_Player->pos.y - s_Player->h / 2 > enemy->pos.y)
 					{
 						enemy->atkOrient = DOWN;
 					}
-					else if (s_Player->pos.x < enemy->pos.x)
+					else if (s_Player->pos.x + s_Player->w / 2 < enemy->pos.x)
 					{
 						enemy->atkOrient = LEFT;
 					}
-					else if (s_Player->pos.x > enemy->pos.x)
+					else if (s_Player->pos.x - s_Player->w / 2 > enemy->pos.x)
 					{
 						enemy->atkOrient = RIGHT;
 					}
@@ -527,9 +554,21 @@ void HitEnemy(ENEMY* enemy, int damage, int orient)
 	{
 		enemy->slashed = TRUE;
 	}
+	enemy->health -= damage;
+	if (enemy->health <= 0)
+	{
+		enemy->health = 0;
+		enemy->state = DEAD;
+		enemy->actCount = DEAD_FRAME;
+	}
 
 	for (int i = 0; i < damage; i++)
 	{
 		SetEffect(enemy->pos.x, enemy->pos.y, COIN, RIGHT);
 	}
+	for (int i = 0; i < GET_HIT_PARTICLE; i++)
+	{
+		SetEffect(enemy->pos.x, enemy->pos.y, MAGIC_CIRCLE, orient);
+	}
+	PlaySound(SOUND_LABEL_SE_hit);
 }

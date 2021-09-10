@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // ƒ^ƒCƒgƒ‹‰æ–Êˆ— [title.cpp]
-// Author : 
+// Author : LI ZIZHEN liruntu2333@gmail.com
 //
 //=============================================================================
 #include "title.h"
@@ -47,7 +47,7 @@ static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// ƒeƒNƒXƒ`ƒ
 // ƒeƒNƒXƒ`ƒƒ‚Ìƒtƒ@ƒCƒ‹–¼
 static char *g_TexturName[TEXTURE_MAX] = {
 	"data/TEXTURE/title.png",
-	"data/TEXTURE/bg000.jpg",
+	"data/TEXTURE/background.jpg",
 	"data/TEXTURE/effect000.jpg",
 	"data/TEXTURE/title_logo.png",
 };
@@ -166,22 +166,22 @@ void UpdateTitle(void)
 
 	float speed = 4.0f;
 
-	if (GetKeyboardPress(DIK_DOWN))
+	if (GetKeyboardPress(DIK_S))
 	{
 		effect_dy += speed;
 		g_Mosaic.pos.y += speed;
 	}
-	if (GetKeyboardPress(DIK_UP))
+	if (GetKeyboardPress(DIK_W))
 	{
 		effect_dy -= speed;
 		g_Mosaic.pos.y -= speed;
 	}
-	if (GetKeyboardPress(DIK_RIGHT))
+	if (GetKeyboardPress(DIK_D))
 	{
 		effect_dx += speed;
 		g_Mosaic.pos.x += speed;
 	}
-	if (GetKeyboardPress(DIK_LEFT))
+	if (GetKeyboardPress(DIK_A))
 	{
 		effect_dx -= speed;
 		g_Mosaic.pos.x -= speed;
@@ -260,26 +260,26 @@ void DrawTitle(void)
 		GetDeviceContext()->Draw(4, 0);
 	}
 
-	//
-	// draw additive color mixing effect
-	//
-	SetBlendState(BLEND_MODE_ADD);
-	//SetBlendState(BLEND_MODE_SUBTRACT);
-	for (int i = 0; i < 30; i++)
-	{
-		GetDeviceContext()->PSGetShaderResources(0, 1, &g_Texture[2]);
+	////
+	//// draw additive color mixing effect
+	////
+	//SetBlendState(BLEND_MODE_ADD);
+	////SetBlendState(BLEND_MODE_SUBTRACT);
+	//for (int i = 0; i < 30; i++)
+	//{
+	//	GetDeviceContext()->PSGetShaderResources(0, 1, &g_Texture[2]);
 
-		float dx = (float)effect_dx;
-		float dy = (float)effect_dy;
-		float sx = (float)(rand() % 100);
-		float sy = (float)(rand() % 100);
+	//	float dx = (float)effect_dx;
+	//	float dy = (float)effect_dy;
+	//	float sx = (float)(rand() % 100);
+	//	float sy = (float)(rand() % 100);
 
-		SetSpriteColor(g_VertexBuffer, dx + sx, dy + sy, 50, 50, 0.0f, 0.0f, 1.0f, 1.0f,
-			D3DXCOLOR(1.0f, 0.3f, 0.3f, 0.5f));
+	//	SetSpriteColor(g_VertexBuffer, dx + sx, dy + sy, 50, 50, 0.0f, 0.0f, 1.0f, 1.0f,
+	//		D3DXCOLOR(1.0f, 0.3f, 0.3f, 0.5f));
 
-		GetDeviceContext()->Draw(4, 0);
-	}
-	SetBlendState(BLEND_MODE_ALPHABLEND);
+	//	GetDeviceContext()->Draw(4, 0);
+	//}
+	//SetBlendState(BLEND_MODE_ALPHABLEND);
 
 	//
 	// draw title logo No.0

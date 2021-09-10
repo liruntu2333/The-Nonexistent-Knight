@@ -36,16 +36,17 @@ SOUNDPARAM g_aParam[SOUND_LABEL_MAX] =
 	{ (char*)"data/BGM/ember-DrunkStar.wav", 1 },	// BGM1
 	{ (char*)"data/BGM/ember-EoS.wav", 1 },
 
-	{ (char*)"data/SE/bomb000.wav", 0 },		// ’e”­ŽË‰¹
-	{ (char*)"data/SE/defend000.wav", 0 },		// ’e”­ŽË‰¹
-	{ (char*)"data/SE/defend001.wav", 0 },		// ’e”­ŽË‰¹
-	{ (char*)"data/SE/hit000.wav", 0 },			// ’e”­ŽË‰¹
-	{ (char*)"data/SE/laser000.wav", 0 },		// ’e”­ŽË‰¹
-	{ (char*)"data/SE/lockon000.wav", 0 },		// ’e”­ŽË‰¹
-	{ (char*)"data/SE/shot000.wav", 0 },		// ’e”­ŽË‰¹
-	{ (char*)"data/SE/shot001.wav", 0 },		// ƒqƒbƒg‰¹
 
-
+	{ (char*)"data/SE/attack.wav", 0 },		// ƒqƒbƒg‰¹
+	{ (char*)"data/SE/bounce.wav", 0 },		// ƒqƒbƒg‰¹
+	{ (char*)"data/SE/dash.wav", 0 },		// ƒqƒbƒg‰¹
+	{ (char*)"data/SE/hit.wav", 0 },		// ƒqƒbƒg‰¹
+	{ (char*)"data/SE/reflect.wav", 0 },		// ƒqƒbƒg‰¹
+	{ (char*)"data/SE/coin.wav", 0 },		// ƒqƒbƒg‰¹
+	{ (char*)"data/SE/theworld.wav", 0 },		// ƒqƒbƒg‰¹
+	{ (char*)"data/SE/starplatinum.wav", 0 },		// ƒqƒbƒg‰¹
+	{ (char*)"data/SE/walk.wav", 0 },		// ƒqƒbƒg‰¹
+	{ (char*)"data/SE/heal.wav", 0 },		// ƒqƒbƒg‰¹
 
 };
 

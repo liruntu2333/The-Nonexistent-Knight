@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // MainÉwÉbÉ_Å[ [main.h]
-// Author : 
+// Author : LI ZIZHEN liruntu2333@gmail.com
 //
 //=============================================================================
 #pragma once
@@ -73,5 +73,6 @@ int GetMode(void);
 
 void SetLoadGame(BOOL flg);
 void SetSlowMotion(int frame);
+void SetStunFrame(void);
 
 DWORD GetFrameCount(void);

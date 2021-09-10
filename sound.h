@@ -17,14 +17,17 @@ enum
 	SOUND_LABEL_BGM_DrunkStar,	// BGM1
 	SOUND_LABEL_BGM_EoS,	// BGM3
 
-	SOUND_LABEL_SE_bomb000,		// ”š”­‰¹
-	SOUND_LABEL_SE_defend000,	// 
-	SOUND_LABEL_SE_defend001,	// 
-	SOUND_LABEL_SE_hit000,		// 
-	SOUND_LABEL_SE_laser000,	// 
-	SOUND_LABEL_SE_lockon000,	// 
-	SOUND_LABEL_SE_shot000,		// 
-	SOUND_LABEL_SE_shot001,		// 
+	SOUND_LABEL_SE_attck,		// 
+	SOUND_LABEL_SE_bounce,		// 
+	SOUND_LABEL_SE_dash,		// 
+	SOUND_LABEL_SE_hit,		// 
+	SOUND_LABEL_SE_reflect,		// 
+	SOUND_LABEL_SE_coin,		// 
+	SOUND_LABEL_SE_timePause,		// 
+	SOUND_LABEL_SE_pasueReturn,		// 
+	SOUND_LABEL_SE_walk,		// 
+	SOUND_LABEL_SE_heal,		// 
+
 	SOUND_LABEL_MAX,
 };
 

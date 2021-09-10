@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // ÉvÉåÉCÉÑÅ[èàóù [ENEMY.cpp]
-// Author : 
+// Author : LI ZIZHEN liruntu2333@gmail.com
 //
 //=============================================================================
 #include "enemy.h"
@@ -275,7 +275,7 @@ void SetBullet(D3DXVECTOR3 pos)
 		{
 			g_Bullet[i].use = TRUE;
 			g_Bullet[i].pos = pos + D3DXVECTOR3(MAP_WIDTH, 0.0F, 0.0F);
-			PlaySound(SOUND_LABEL_SE_laser000);
+		//	PlaySound(SOUND_LABEL_SE_laser000);
 			return;
 		}
 	}

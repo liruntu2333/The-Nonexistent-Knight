@@ -168,9 +168,9 @@ void UpdateElev(void)
 
 #ifdef _DEBUG
 	// デバッグ表示
-	PrintDebugProc("Elevator X:%f Y:%f\n",
-		g_Elevator.pos.x,
-		g_Elevator.pos.y);
+	//PrintDebugProc("Elevator X:%f Y:%f\n",
+	//	g_Elevator.pos.x,
+	//	g_Elevator.pos.y);
 #endif
 }
 

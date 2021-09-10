@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // É^ÉCÉgÉãâÊñ èàóù [title.cpp]
-// Author : 
+// Author : LI ZIZHEN liruntu2333@gmail.com
 //
 //=============================================================================
 #include "tutorial.h"
@@ -14,7 +14,7 @@
 //*****************************************************************************
 #define TEXTURE_WIDTH				(SCREEN_WIDTH)	// îwåiÉTÉCÉY
 #define MAP_HEIGHT				(SCREEN_HEIGHT)	// 
-#define TEXTURE_MAX					(3)				// ÉeÉNÉXÉ`ÉÉÇÃêî
+#define TEXTURE_MAX					(1)				// ÉeÉNÉXÉ`ÉÉÇÃêî
 
 
 //*****************************************************************************
@@ -30,9 +30,7 @@ static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = { NULL };	// ÉeÉNÉXÉ`É
 
 // ÉeÉNÉXÉ`ÉÉÇÃÉtÉ@ÉCÉãñº
 static char* g_TexturName[TEXTURE_MAX] = {
-	"data/TEXTURE/title.png",
-	"data/TEXTURE/bg000.jpg",
-	"data/TEXTURE/tex.png",
+	"data/TEXTURE/tutorial.png",
 };
 
 

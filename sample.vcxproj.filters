@@ -75,6 +75,9 @@
     <ClCompile Include="elevator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ui.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -136,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="elevator.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ui.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
