@@ -1,2 +1,2 @@
 # DX11_sample
-A simple 2D graphic testing programme using DX11.
+A Hollow Knight-like 2D action game using DX11.
