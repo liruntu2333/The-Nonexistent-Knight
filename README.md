@@ -1,5 +1,6 @@
 # The Nonexistent Knight
 A Hollow Knight-like 2D action game demo using DX11.
+Please download "demo_play.mp4" for foward information.
 
 1. ゲームの説明
 ＜The Nonexistent Knight＞(不在の騎士)は、自作の2Dプラットフォーム＆格闘ゲームであり、そのプログラムはDirectX11とC言語で作られた。本作品は一般的なプラットフォームゲーム中の仕様を持つ上で綺麗なグラフィックとリアルな物理演算も出来た。戦闘の部分は当たり判定だけでなく、プレーヤーは４方向で攻撃できて、ブロックとその後のストライクの機能もついている。本作品は主に＜ホロウナイト＞からインスピレーションを受けている。名前は同名の小説から付けた。
