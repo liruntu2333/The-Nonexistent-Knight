@@ -42,7 +42,6 @@ enum TEXTURE_INFO
 // ƒvƒƒgƒ^ƒCƒvéŒ¾
 //*****************************************************************************
 
-
 //*****************************************************************************
 // ƒOƒ[ƒoƒ‹•Ï”
 //*****************************************************************************
@@ -68,7 +67,7 @@ static const float c_TextureInfo[EFFECT_TYPE_MAX][INFO_MAX] =
 	{50.0f,	    50.0f,		0.0f,		12.0f},
 	{87.0f,	    50.0f,		0.0f,		12.0f},
 	{50.0f,	    50.0f,		0.0f,		12.0f},
-	{64.0f,		64.0f,		0.0f,		16.0f}	
+	{64.0f,		64.0f,		0.0f,		16.0f}
 };
 
 static ID3D11Buffer* g_VertexBuffer = NULL;		// ’¸“_î•ñ
@@ -78,7 +77,6 @@ static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = { NULL };	// ƒeƒNƒXƒ`ƒ
 static char* g_TexturName[TEXTURE_MAX] = {
 	"data/TEXTURE/effect.png",
 };
-
 
 static BOOL		g_Load = FALSE;		// ‰Šú‰»‚ğs‚Á‚½‚©‚Ìƒtƒ‰ƒO
 static EFFECT	g_Effect[EFFECT_MAX];
@@ -102,7 +100,6 @@ HRESULT InitEffect(void)
 			NULL);
 	}
 
-
 	// ’¸“_ƒoƒbƒtƒ@¶¬
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -111,7 +108,6 @@ HRESULT InitEffect(void)
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
-
 
 	// •Ï”‚Ì‰Šú‰»
 	for (int i = 0; i < EFFECT_MAX; i++)
@@ -193,7 +189,7 @@ void UpdateEffect(void)
 			{
 			case COIN:
 			{
-				if (s_Effect->pos.y - s_Effect->h / 2 < 0 || 
+				if (s_Effect->pos.y - s_Effect->h / 2 < 0 ||
 					s_Effect->pos.y + s_Effect->h / 2 > GetMap()->h)
 				{
 					s_Effect->use = FALSE;
@@ -274,7 +270,6 @@ void UpdateEffect(void)
 			case RED_DOT:
 			{
 				// Red dot effect stay on enemy until slash triggers or stun finish
-				
 
 				break;
 			}
@@ -346,11 +341,9 @@ void UpdateEffect(void)
 						s_Effect->use = FALSE;
 					};
 				}
-				break; 
+				break;
 			}
-
 			}
-
 
 #ifdef _DEBUG
 			//// ƒfƒoƒbƒO•\¦
@@ -369,7 +362,7 @@ void UpdateEffect(void)
 //=============================================================================
 void DrawEffect(void)
 {
-// ’¸“_ƒoƒbƒtƒ@İ’è
+	// ’¸“_ƒoƒbƒtƒ@İ’è
 	UINT stride = sizeof(VERTEX_3D);
 	UINT offset = 0;
 	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
@@ -415,14 +408,13 @@ void DrawEffect(void)
 			float ty = 1.0f / EFFECT_PNG_H * sumH;
 			SetSpriteColorRotation(g_VertexBuffer, ex, ey, s_Effect->w, s_Effect->h,
 				tx, ty, tw, th,
-				D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 
+				D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
 				s_Effect->rot.z);
 
 			GetDeviceContext()->Draw(4, 0);
 		}
 	}
 	//SetBlendState(BLEND_MODE_ALPHABLEND);
-
 }
 
 //
@@ -462,7 +454,7 @@ EFFECT* SetEffect(float X, float Y, int Type, int orient)
 			case DUST:
 				s_Effect->horzSpd = DUST_SPD * sinf(rand_angle);
 				s_Effect->vertSpd = DUST_SPD * cosf(rand_angle);
-				s_Effect->horzSpd *= (GetPlayer()->orient) ? 1: -1;
+				s_Effect->horzSpd *= (GetPlayer()->orient) ? 1 : -1;
 				break;
 			case DUST_CIRCLE:
 				s_Effect->horzSpd = DUST_CIR_SPD * rand_cof_x;
@@ -519,6 +511,3 @@ EFFECT* SetEffect(float X, float Y, int Type, int orient)
 	}
 	return NULL;
 }
-
-
-

@@ -20,7 +20,7 @@
 // マクロ定義
 //*****************************************************************************
 #define TEXTURE_WIDTH				(75.0f)	// キャラサイズ
-#define TEXTURE_HEIGHT				(75.0f)	// 
+#define TEXTURE_HEIGHT				(75.0f)	//
 #define TEXTURE_MAX					(1)		// テクスチャの数
 #define	PLAYER_TEX_NO				(0)
 
@@ -109,18 +109,17 @@ struct ILLUSION
 // プロトタイプ宣言
 //*****************************************************************************
 
-void CheckHitTerra(PLAYER* player, EFFECT* effect);		
+void CheckHitTerra(PLAYER* player, EFFECT* effect);
 void CheckHitEnemy(PLAYER* player, EFFECT* effect);
 void GetTrigger(PLAYER* player);
-
 
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer				*g_VertexBuffer = NULL;		// 頂点情報
-static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11Buffer* g_VertexBuffer = NULL;		// 頂点情報
+static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
-static char *g_TexturName[TEXTURE_MAX] = 
+static char* g_TexturName[TEXTURE_MAX] =
 {
 	"data/TEXTURE/player.png",
 };
@@ -151,7 +150,7 @@ static const TEXTURE_INFO c_TexInfo[STATE_MAX] =
 //=============================================================================
 HRESULT InitPlayer(void)
 {
-	ID3D11Device *pDevice = GetDevice();
+	ID3D11Device* pDevice = GetDevice();
 
 	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
@@ -165,7 +164,6 @@ HRESULT InitPlayer(void)
 			NULL);
 	}
 
-
 	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -175,17 +173,16 @@ HRESULT InitPlayer(void)
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
 
-
 	// プレイヤー構造体の初期化
 	for (int i = 0; i < PLAYER_MAX; i++)
 	{
 		PLAYER* s_Player = g_Player + i;
 
 		s_Player->use = TRUE;
-		s_Player->pos = D3DXVECTOR3(TEXTURE_WIDTH/2 + 50, SCREEN_HEIGHT /2 , 0.0f);	// 中心点から表示
+		s_Player->pos = D3DXVECTOR3(TEXTURE_WIDTH / 2 + 50, SCREEN_HEIGHT / 2, 0.0f);	// 中心点から表示
 		s_Player->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		s_Player->w   = TEXTURE_WIDTH;
-		s_Player->h   = TEXTURE_HEIGHT;
+		s_Player->w = TEXTURE_WIDTH;
+		s_Player->h = TEXTURE_HEIGHT;
 		s_Player->texNo = PLAYER_TEX_NO;
 
 		s_Player->countAnim = 0;
@@ -279,7 +276,7 @@ void UpdatePlayer(void)
 						s_Player->pos.x > s_Player->elev->pos.x + s_Player->elev->w)
 					{
 						s_Player->state = FALL;
-						s_Player->countAnim =0.0f; s_Player->patternAnim = 0;
+						s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
 						s_Player->elev = NULL;
 					}
 				}
@@ -287,7 +284,7 @@ void UpdatePlayer(void)
 				{
 					// Start to fall when walk across the edge.
 					s_Player->state = FALL;
-					s_Player->countAnim =0.0f; s_Player->patternAnim = 0;
+					s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
 				}
 				break;
 			}
@@ -330,10 +327,10 @@ void UpdatePlayer(void)
 				// If there is obstacle under player, stand still & stop falling.
 				if (GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2))
 				{
-   					s_Player->vertSpd = 0;
+					s_Player->vertSpd = 0;
 					s_Player->state = STAND;
-					s_Player->countAnim =0.0f; s_Player->patternAnim = 0;
-					
+					s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
+
 					s_Player->pos = ReloacteObj(s_Player->pos.x, s_Player->pos.y, s_Player->w, s_Player->h);
 					// Check if stand on the ground obstacle of elevator.
 					for (int i = 0; i < ELEV_MAX; i++)
@@ -345,7 +342,7 @@ void UpdatePlayer(void)
 							s_Player->w, s_Elevator->w, s_Player->h, s_Elevator->h))
 						{
 							s_Player->state = STAND;
-							s_Player->countAnim =0.0f; s_Player->patternAnim = 0;
+							s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
 							s_Player->elev = s_Elevator;
 						}
 					}
@@ -367,7 +364,7 @@ void UpdatePlayer(void)
 				if (s_Player->vertSpd >= 0)
 				{
 					s_Player->state = FALL;
-					s_Player->countAnim =0.0f; s_Player->patternAnim = 0;
+					s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 				}
 				// If there is obstacle above player, reverse vertical speed to +1.
@@ -376,7 +373,7 @@ void UpdatePlayer(void)
 					s_Player->pos.y += 5.0f;
 					s_Player->vertSpd = 1;
 					s_Player->state = FALL;
-					s_Player->countAnim =0.0f; s_Player->patternAnim = 0;
+					s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 				}
 				break;
@@ -384,7 +381,7 @@ void UpdatePlayer(void)
 			case DASH:
 			{
 				// Dash process.
-				// 
+				//
 				// Copy player's data to illusion array. Illusion generates every 10 frames.
 				if ((s_Player->actCount % ILLUSION_GEN_LAG) == 0) // Check if it's time to generate illusion
 				{
@@ -432,7 +429,7 @@ void UpdatePlayer(void)
 				if (!s_Player->actCount--)
 				{
 					s_Player->state = FALL;
-					s_Player->countAnim =0.0f; s_Player->patternAnim = 0;
+					s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 					s_Player->vertSpd = 0;
 				}
@@ -457,7 +454,7 @@ void UpdatePlayer(void)
 							s_Player->stamina += ATK_COST;
 							s_Player->actCount = 0;
 							s_Player->state = FALL;
-							s_Player->countAnim =0.0f; 
+							s_Player->countAnim = 0.0f;
 							s_Player->patternAnim = 0;
 							break;
 						}
@@ -507,11 +504,11 @@ void UpdatePlayer(void)
 					s_Player->atkOrient = s_Player->orient;
 					s_Player->effect = NULL;
 					s_Player->state = FALL;
-					s_Player->countAnim =0.0f; 
+					s_Player->countAnim = 0.0f;
 					s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 				}
-			break;
+				break;
 			}
 			case SLASH:
 			{
@@ -582,7 +579,7 @@ void UpdatePlayer(void)
 				{
 					s_Player->effect = NULL;
 					s_Player->state = FALL;
-					s_Player->countAnim =0.0f; 
+					s_Player->countAnim = 0.0f;
 					s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 				}
@@ -597,7 +594,7 @@ void UpdatePlayer(void)
 				{
 					s_Player->vertSpd = 0;
 					s_Player->state = FALL;
-					s_Player->countAnim =0.0f; 
+					s_Player->countAnim = 0.0f;
 					s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 				}
@@ -640,7 +637,7 @@ void UpdatePlayer(void)
 				else
 				{
 					s_Player->state = FALL;
-					s_Player->countAnim =0.0f;
+					s_Player->countAnim = 0.0f;
 					s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 				}
@@ -676,7 +673,7 @@ void UpdatePlayer(void)
 						{
 							s_Player->state = FALL;
 							s_Player->vertSpd = 0;
-							s_Player->countAnim =0.0f; 
+							s_Player->countAnim = 0.0f;
 							s_Player->patternAnim = 0;
 						}
 					}
@@ -691,7 +688,7 @@ void UpdatePlayer(void)
 					s_Player->effect = NULL;
 					s_Player->vertSpd = 0;
 					s_Player->state = FALL;
-					s_Player->countAnim =0.0f; 
+					s_Player->countAnim = 0.0f;
 					s_Player->patternAnim = 0;
 					s_Player->elev = NULL;
 				}
@@ -724,18 +721,17 @@ void UpdatePlayer(void)
 
 #ifdef _DEBUG
 			// デバッグ表示
-			//PrintDebugProc("Player X:%f Y:%f vS: %d BGd: %d Health: %d State: %d \n", 
-			//	s_Player->pos.x, 
-			//	s_Player->pos.y, 
-			//	s_Player->vertSpd, 
+			//PrintDebugProc("Player X:%f Y:%f vS: %d BGd: %d Health: %d State: %d \n",
+			//	s_Player->pos.x,
+			//	s_Player->pos.y,
+			//	s_Player->vertSpd,
 			//	GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2),
-			//	s_Player->health, 
+			//	s_Player->health,
 			//	s_Player->state);
 #endif
 		}
 	}
 }
-
 
 //=============================================================================
 // 描画処理
@@ -777,7 +773,7 @@ void DrawPlayer(void)
 			// Calculate the parameter for animation
 			float tw = 1.0f / PLAYER_PNG_W * TEXTURE_WIDTH;
 			float th = 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT;
-			float tx = tw * s_Player->patternAnim ;
+			float tx = tw * s_Player->patternAnim;
 			float sumH = 0.0f;
 			float ty = 1.0f / PLAYER_PNG_H * c_TexInfo[s_Player->state].startY;
 
@@ -803,7 +799,7 @@ void DrawPlayer(void)
 				break;
 
 			default:
-				ty += (!s_Player->orient) ?  0 : 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT;
+				ty += (!s_Player->orient) ? 0 : 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT;
 				break;
 			}
 
@@ -874,19 +870,18 @@ void DrawPlayer(void)
 	}
 }
 
-
 //=============================================================================
 // プレイヤー構造体の先頭アドレスを取得
 //=============================================================================
-PLAYER *GetPlayer(void)
+PLAYER* GetPlayer(void)
 {
 	return &g_Player[0];
 }
 
-// 
+//
 // @brief	Decrease player's health and switch state to STUN.
 // @param	enemy pointer, dam, orient
-// @return	
+// @return
 //
 void HitPlayer(ENEMY* enemy, PLAYER* player, int damge, int orient)
 {
@@ -894,8 +889,8 @@ void HitPlayer(ENEMY* enemy, PLAYER* player, int damge, int orient)
 	if (!player->godCount)
 	{
 		// Sucessfully parried.
-		if (player->state == PARRY && 
-			player->actCount <= PARRY_FRAME - PARRY_DETECTION && 
+		if (player->state == PARRY &&
+			player->actCount <= PARRY_FRAME - PARRY_DETECTION &&
 			player->actCount >= PARRY_FRAME - PARRY_END)
 		{
 			HitEnemy(enemy, 0, 0);
@@ -920,7 +915,7 @@ void HitPlayer(ENEMY* enemy, PLAYER* player, int damge, int orient)
 		}
 		SetEffect(player->pos.x, player->pos.y, BLOOD_SPLASH, orient);
 		player->state = STUN;
-		player->countAnim = 0.0f; 
+		player->countAnim = 0.0f;
 		player->patternAnim = 0;
 		player->actCount = BIG_STUN_FRAME;
 		player->health -= damge;
@@ -931,7 +926,7 @@ void HitPlayer(ENEMY* enemy, PLAYER* player, int damge, int orient)
 		{
 			player->health = 0;
 			player->state = DEAD;
-			player->countAnim = 0.0f; 
+			player->countAnim = 0.0f;
 			player->patternAnim = 0;
 			player->actCount = DEAD_FRAME;
 		}
@@ -971,7 +966,7 @@ void HitPlayer(ENEMY* enemy, PLAYER* player, int damge, int orient)
 }
 
 //
-// @brief	Do attack detection in terrain, such as hitting 
+// @brief	Do attack detection in terrain, such as hitting
 //			on wall get a reverse force
 // @param	Player pointer, attack effect used as collision box.
 //
@@ -1128,7 +1123,7 @@ void GetTrigger(PLAYER* player)
 		}
 
 		//
-		// INSTRUCTION PRIORITY: 
+		// INSTRUCTION PRIORITY:
 		// dash > attack > parry > jump >> move rht > move lft > stand(no input)
 		//
 		// Move trigger.
@@ -1207,7 +1202,6 @@ void GetTrigger(PLAYER* player)
 			{
 				player->stamina -= ATK_COST;
 
-
 				// Super slash after successfully parried
 				if (player->pryDetect)
 				{
@@ -1263,7 +1257,7 @@ void GetTrigger(PLAYER* player)
 		{
 			player->state = BIG_JUMP;
 
-					player->countAnim =0.0f; player->patternAnim = 0;
+			player->countAnim = 0.0f; player->patternAnim = 0;
 			player->vertSpd += JUMP_SPEED / 3;
 		}
 	}

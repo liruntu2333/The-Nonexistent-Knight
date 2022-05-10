@@ -15,7 +15,6 @@
 #define ENEMY_MAX		(2)		// エネミーのMax人数
 #define	ENEMY_HEALTH_MAX					(20)
 
-
 //*****************************************************************************
 // 構造体定義
 //*****************************************************************************
@@ -50,9 +49,8 @@ struct ENEMY
 	int				vertSpd;		// vertical movement per frame
 	int				horzSpd;		// horizontal movement per frame, only used when stunned
 	int				actCount;		// used for dash / attack / STUN count down
-	EFFECT*         effect;			// initiated effect
-	EFFECT*			rddot;			// red dot
-
+	EFFECT* effect;			// initiated effect
+	EFFECT* rddot;			// red dot
 
 	int				stamina;		// dash / attack need enough stamina to trigger
 	int				health;			// when health reduces to 0, enemy die.
@@ -62,8 +60,6 @@ struct ENEMY
 	//int				tblMax;			// そのテーブルのデータ数
 };
 
-
-
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -72,8 +68,6 @@ void UninitEnemy(void);
 void UpdateEnemy(void);
 void DrawEnemy(void);
 
-ENEMY *GetEnemy(void);
+ENEMY* GetEnemy(void);
 
 void HitEnemy(ENEMY* enemy, int damge, int orient);
-
-

@@ -19,7 +19,7 @@
 // マクロ定義
 //*****************************************************************************
 #define MAP_WIDTH				(800/16)	// キャラサイズ
-#define MAP_HEIGHT				(800/16)	// 
+#define MAP_HEIGHT				(800/16)	//
 #define TEXTURE_MAX					(1)		// テクスチャの数
 
 #define TEXTURE_PATTERN_DIVIDE_X	(1)		// アニメパターンのテクスチャ内分割数（X)
@@ -43,10 +43,8 @@ static char* g_TexturName[TEXTURE_MAX] = {
 	"data/TEXTURE/bullet00.png"
 };
 
-
 static BOOL		g_Load = FALSE;			// 初期化を行ったかのフラグ
 static BULLET	g_Bullet[BULLET_MAX];	// プレイヤー構造体
-
 
 //=============================================================================
 // 初期化処理
@@ -67,7 +65,6 @@ HRESULT InitBullet(void)
 			NULL);
 	}
 
-
 	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -76,7 +73,6 @@ HRESULT InitBullet(void)
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
-
 
 	// プレイヤー構造体の初期化
 	for (int i = 0; i < BULLET_MAX; i++)
@@ -87,13 +83,11 @@ HRESULT InitBullet(void)
 		g_Bullet[i].w = MAP_WIDTH;
 		g_Bullet[i].h = MAP_HEIGHT;
 		g_Bullet[i].texNo = 0;
-	
 
 		g_Bullet[i].countAnim = 0;
 		g_Bullet[i].patternAnim = 0;
 
 		g_Bullet[i].move = D3DXVECTOR3(4.0f, 0.0f, 0.0f);		// 移動量
-
 	}
 
 	g_Load = TRUE;	// データの初期化を行った
@@ -136,13 +130,12 @@ void UpdateBullet(void)
 	//	SetBullet(GetPlayer()->pos);
 	//}
 
-
 	for (int i = 0; i < BULLET_MAX; i++)
 	{
 		// 生きてるプレイヤーだけ処理をする
 		if (g_Bullet[i].use == TRUE)
 		{
-			// アニメーション  
+			// アニメーション
 			g_Bullet[i].countAnim += 1.0f;
 			if (g_Bullet[i].countAnim > ANIM_WAIT)
 			{
@@ -160,9 +153,7 @@ void UpdateBullet(void)
 			//if (g_Bullet[i].pos.y < 0 || g_Bullet[i].pos.y >(SCREEN_HEIGHT - TEXTURE_HEIGHT))
 			//	s_enemy_move_y = -s_enemy_move_y;
 
-
 			//	float angle = atan2(GetPlayer()->pos.y - g_Bullet[0].pos.y, GetPlayer()->pos.x - g_Bullet[0].pos.x) + D3DX_PI;
-
 
 			g_Bullet[i].pos += g_Bullet[i].move;
 
@@ -171,7 +162,6 @@ void UpdateBullet(void)
 			{
 				DestructBullet(g_Bullet + i);
 			}
-
 
 			for (int j = 0; j < ENEMY_MAX; j++)
 			{
@@ -185,18 +175,14 @@ void UpdateBullet(void)
 					}
 				}
 			}
-
 		}
 
 #ifdef _DEBUG
 		// デバッグ表示
 		//PrintDebugProc("Bullet No%d  X:%f Y:%f\n", i, g_Bullet[i].pos.x, g_Bullet[i].pos.y);
 #endif
-
 	}
-
 }
-
 
 //=============================================================================
 // 描画処理
@@ -220,7 +206,7 @@ void DrawBullet(void)
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 
-	BG *bg = GetMap();
+	BG* bg = GetMap();
 	for (int i = 0; i < BULLET_MAX; i++)
 	{
 		if (g_Bullet[i].use == TRUE)		// このプレイヤーが使われている？
@@ -256,16 +242,13 @@ void DrawBullet(void)
 	}
 }
 
-
 //=============================================================================
 // プレイヤー構造体の先頭アドレスを取得
 //=============================================================================
 BULLET* GetBullet(void)
 {
-
 	return &g_Bullet[0];
 }
-
 
 void SetBullet(D3DXVECTOR3 pos)
 {
@@ -275,12 +258,10 @@ void SetBullet(D3DXVECTOR3 pos)
 		{
 			g_Bullet[i].use = TRUE;
 			g_Bullet[i].pos = pos + D3DXVECTOR3(MAP_WIDTH, 0.0F, 0.0F);
-		//	PlaySound(SOUND_LABEL_SE_laser000);
+			//	PlaySound(SOUND_LABEL_SE_laser000);
 			return;
 		}
 	}
-
-
 }
 
 void DestructBullet(BULLET* bp)
@@ -288,4 +269,3 @@ void DestructBullet(BULLET* bp)
 	if (bp->use) bp->use = FALSE;
 	return;
 }
-

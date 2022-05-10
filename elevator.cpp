@@ -1,6 +1,6 @@
 //
 // @file				elevator.cpp
-// @brief				An elevator object that can move around and 
+// @brief				An elevator object that can move around and
 //						modifies terrain.
 // @copyright			2021 LI ZIZHEN liruntu2333@gmail.com
 // @lisense				GPL
@@ -11,7 +11,6 @@
 #include "map.h"
 #include "sprite.h"
 #include "elevator.h"
-
 
 //
 //	Macros
@@ -45,8 +44,8 @@ static ELEVATOR	g_Elevator;
 
 //
 // @brief	initiate elevator object
-// @param	
-// @return	
+// @param
+// @return
 //
 HRESULT InitElev(void)
 {
@@ -63,7 +62,6 @@ HRESULT InitElev(void)
 			&g_Texture[i],
 			NULL);
 	}
-
 
 	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
@@ -102,8 +100,8 @@ HRESULT InitElev(void)
 
 //
 // @brief	destruct elevator object
-// @param	
-// @return	
+// @param
+// @return
 //
 void UninitElev(void)
 {
@@ -129,8 +127,8 @@ void UninitElev(void)
 
 //
 // @brief	update elevator object
-// @param	
-// @return	
+// @param
+// @return
 //
 void UpdateElev(void)
 {
@@ -176,8 +174,8 @@ void UpdateElev(void)
 
 //
 // @brief	draw elevator object
-// @param	
-// @return	
+// @param
+// @return
 //
 void DrawElev(void)
 {
@@ -217,8 +215,8 @@ void DrawElev(void)
 
 //
 // @brief	get g_Elevator addres
-// @param	
-// @return	
+// @param
+// @return
 //
 ELEVATOR* GetElev(void)
 {

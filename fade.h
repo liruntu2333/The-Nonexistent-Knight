@@ -22,7 +22,6 @@ enum
 	FADE_MAX
 };
 
-
 struct FADE
 {
 	D3DXVECTOR3		pos;		// ポリゴンの座標
@@ -32,9 +31,7 @@ struct FADE
 	int				flag;		// FADE_IN / FADE_OUT
 	int				nextMode;	// 遷移する先のモード
 	D3DXCOLOR		color;		// フェードのカラー（α値）
-
 };
-
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -46,6 +43,3 @@ void DrawFade(void);
 
 void SetFade(int fade, int modeNext);
 int GetFade(void);
-
-
-

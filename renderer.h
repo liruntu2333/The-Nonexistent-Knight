@@ -8,7 +8,6 @@
 
 #include "main.h"
 
-
 //*********************************************************
 // マクロ定義
 //*********************************************************
@@ -42,7 +41,6 @@ enum CULL_MODE
 	CULL_MODE_NUM
 };
 
-
 //*********************************************************
 // 構造体
 //*********************************************************
@@ -50,10 +48,10 @@ enum CULL_MODE
 // 頂点構造体
 struct VERTEX_3D
 {
-    D3DXVECTOR3 Position;
-    D3DXVECTOR3 Normal;
-    D3DXCOLOR  Diffuse;
-    D3DXVECTOR2 TexCoord;
+	D3DXVECTOR3 Position;
+	D3DXVECTOR3 Normal;
+	D3DXCOLOR  Diffuse;
+	D3DXVECTOR2 TexCoord;
 };
 
 // マテリアル構造体
@@ -85,7 +83,6 @@ struct FOG {
 	D3DXCOLOR	FogColor;	// フォグの色
 };
 
-
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -95,20 +92,20 @@ void UninitRenderer(void);
 void Clear(void);
 void Present(void);
 
-ID3D11Device *GetDevice( void );
-ID3D11DeviceContext *GetDeviceContext( void );
+ID3D11Device* GetDevice(void);
+ID3D11DeviceContext* GetDeviceContext(void);
 
-void SetDepthEnable( bool Enable );
+void SetDepthEnable(bool Enable);
 void SetBlendState(BLEND_MODE bm);
 void SetCullingMode(CULL_MODE cm);
 void SetAlphaTestEnable(BOOL flag);
 
-void SetWorldViewProjection2D( void );
-void SetWorldMatrix( D3DXMATRIX *WorldMatrix );
-void SetViewMatrix( D3DXMATRIX *ViewMatrix );
-void SetProjectionMatrix( D3DXMATRIX *ProjectionMatrix );
+void SetWorldViewProjection2D(void);
+void SetWorldMatrix(D3DXMATRIX* WorldMatrix);
+void SetViewMatrix(D3DXMATRIX* ViewMatrix);
+void SetProjectionMatrix(D3DXMATRIX* ProjectionMatrix);
 
-void SetMaterial( MATERIAL material );
+void SetMaterial(MATERIAL material);
 
 void SetLightEnable(BOOL flag);
 void SetLight(int index, LIGHT* light);
@@ -120,4 +117,3 @@ void DebugTextOut(char* text, int x, int y);
 
 void SetFuchi(int flag);
 void SetShaderCamera(D3DXVECTOR3 pos);
-

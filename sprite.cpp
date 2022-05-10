@@ -10,62 +10,56 @@
 // マクロ定義
 //*****************************************************************************
 
-
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
 
-
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-
-
 
 //=============================================================================
 // 頂点データ設定
 //=============================================================================
 
 // 指定座標を左上として描画する
-void SetSpriteLTColor(ID3D11Buffer *buf, 
-	float X, float Y, float Width, float Height, 
+void SetSpriteLTColor(ID3D11Buffer* buf,
+	float X, float Y, float Width, float Height,
 	float U, float V, float UW, float VH,
 	D3DXCOLOR color)
 {
 	D3D11_MAPPED_SUBRESOURCE msr;
 	GetDeviceContext()->Map(buf, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
 
-	VERTEX_3D *vertex = (VERTEX_3D*)msr.pData;
+	VERTEX_3D* vertex = (VERTEX_3D*)msr.pData;
 
 	// 左上を原点として設定するプログラム
 	vertex[0].Position = D3DXVECTOR3(X, Y, 0.0f);
-	vertex[0].Diffuse  = color;
+	vertex[0].Diffuse = color;
 	vertex[0].TexCoord = D3DXVECTOR2(U, V);
 
 	vertex[1].Position = D3DXVECTOR3(X + Width, Y, 0.0f);
-	vertex[1].Diffuse  = color;
+	vertex[1].Diffuse = color;
 	vertex[1].TexCoord = D3DXVECTOR2(U + UW, V);
 
 	vertex[2].Position = D3DXVECTOR3(X, Y + Height, 0.0f);
-	vertex[2].Diffuse  = color;
+	vertex[2].Diffuse = color;
 	vertex[2].TexCoord = D3DXVECTOR2(U, V + VH);
 
 	vertex[3].Position = D3DXVECTOR3(X + Width, Y + Height, 0.0f);
-	vertex[3].Diffuse  = color;
+	vertex[3].Diffuse = color;
 	vertex[3].TexCoord = D3DXVECTOR2(U + UW, V + VH);
 
 	GetDeviceContext()->Unmap(buf, 0);
-
 }
 
-
 // 指定座標を中心として描画する
-void SetSprite(ID3D11Buffer *buf, float X, float Y, float Width, float Height, float U, float V, float UW, float VH)
+void SetSprite(ID3D11Buffer* buf, float X, float Y, float Width, float Height, float U, float V, float UW, float VH)
 {
 	D3D11_MAPPED_SUBRESOURCE msr;
 	GetDeviceContext()->Map(buf, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
 
-	VERTEX_3D *vertex = (VERTEX_3D*)msr.pData;
+	VERTEX_3D* vertex = (VERTEX_3D*)msr.pData;
 
 	float hw, hh;
 	hw = Width * 0.5f;		// コンピューターは割り算が苦手
@@ -94,18 +88,16 @@ void SetSprite(ID3D11Buffer *buf, float X, float Y, float Width, float Height, f
 	vertex[3].TexCoord = D3DXVECTOR2(U + UW, V + VH);
 
 	GetDeviceContext()->Unmap(buf, 0);
-
 }
 
-
-void SetSpriteColor(ID3D11Buffer *buf, float X, float Y, float Width, float Height,
-		float U, float V, float UW, float VH,
-		D3DXCOLOR color)
+void SetSpriteColor(ID3D11Buffer* buf, float X, float Y, float Width, float Height,
+	float U, float V, float UW, float VH,
+	D3DXCOLOR color)
 {
 	D3D11_MAPPED_SUBRESOURCE msr;
 	GetDeviceContext()->Map(buf, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
 
-	VERTEX_3D *vertex = (VERTEX_3D*)msr.pData;
+	VERTEX_3D* vertex = (VERTEX_3D*)msr.pData;
 
 	float hw, hh;
 	hw = Width * 0.5f;		// コンピューターは割り算が苦手
@@ -134,18 +126,16 @@ void SetSpriteColor(ID3D11Buffer *buf, float X, float Y, float Width, float Heig
 	vertex[3].TexCoord = D3DXVECTOR2(U + UW, V + VH);
 
 	GetDeviceContext()->Unmap(buf, 0);
-
 }
 
-
-void SetSpriteColorRotation(ID3D11Buffer *buf, float X, float Y, float Width, float Height,
+void SetSpriteColorRotation(ID3D11Buffer* buf, float X, float Y, float Width, float Height,
 	float U, float V, float UW, float VH,
 	D3DXCOLOR Color, float Rot)
 {
 	D3D11_MAPPED_SUBRESOURCE msr;
 	GetDeviceContext()->Map(buf, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
 
-	VERTEX_3D *vertex = (VERTEX_3D*)msr.pData;
+	VERTEX_3D* vertex = (VERTEX_3D*)msr.pData;
 
 	float hw, hh;
 	hw = Width * 0.5f;		// コンピューターは割り算が苦手
@@ -184,6 +174,4 @@ void SetSpriteColorRotation(ID3D11Buffer *buf, float X, float Y, float Width, fl
 	vertex[3].TexCoord = D3DXVECTOR2(U + UW, V + VH);
 
 	GetDeviceContext()->Unmap(buf, 0);
-
 }
-

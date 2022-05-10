@@ -16,54 +16,52 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-static const float TEXTURE_WIDTH			= SCREEN_WIDTH;// 背景サイズ
-static const float MAP_HEIGHT			= SCREEN_HEIGHT;// 
-static const int TEXTURE_MAX				= 4;// テクスチャの数
-											  
-static const int LOGO_MAX					= 2;
-static const float LOGO_WIDTH				= TEXTURE_WIDTH / 2;
-static const float LOGO_HEIGHT				= MAP_HEIGHT / 2;
-static const int LOGO_DIVIDE_X				= 100;
-static const int LOGO_DIVIDE_Y				= 50;
-											  
-static const float MOSAIC_WIDTH				= 100.0f;
-static const float MOSAIC_HEIGHT			= 100.0f;
-static const int MOSAIC_DIVIDE_X			= 50;
-static const int MOSAIC_DIVIDE_Y			= 50;
-static const int MOSAIC_SAMPLING_INTVL		= 3;
+static const float TEXTURE_WIDTH = SCREEN_WIDTH;// 背景サイズ
+static const float MAP_HEIGHT = SCREEN_HEIGHT;//
+static const int TEXTURE_MAX = 4;// テクスチャの数
+
+static const int LOGO_MAX = 2;
+static const float LOGO_WIDTH = TEXTURE_WIDTH / 2;
+static const float LOGO_HEIGHT = MAP_HEIGHT / 2;
+static const int LOGO_DIVIDE_X = 100;
+static const int LOGO_DIVIDE_Y = 50;
+
+static const float MOSAIC_WIDTH = 100.0f;
+static const float MOSAIC_HEIGHT = 100.0f;
+static const int MOSAIC_DIVIDE_X = 50;
+static const int MOSAIC_DIVIDE_Y = 50;
+static const int MOSAIC_SAMPLING_INTVL = 3;
 
 #define M_PI 3.14159265358979323846
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
 
-
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer				*g_VertexBuffer = NULL;		// 頂点情報
-static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11Buffer* g_VertexBuffer = NULL;		// 頂点情報
+static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
 // テクスチャのファイル名
-static char *g_TexturName[TEXTURE_MAX] = {
+static char* g_TexturName[TEXTURE_MAX] = {
 	"data/TEXTURE/title.png",
 	"data/TEXTURE/background.jpg",
 	"data/TEXTURE/effect000.jpg",
 	"data/TEXTURE/title_logo.png",
 };
 
-
 static BOOL		g_Load = FALSE;		// 初期化を行ったかのフラグ
 static TITLE	g_Title, g_Logo[LOGO_MAX], g_Mosaic;
 
 static double effect_dx, effect_dy, effect_dt; // display x y for effect
-static const double effect_ddt = 2 * M_PI / 100;	
+static const double effect_ddt = 2 * M_PI / 100;
 
 // 初期化処理
 //=============================================================================
 HRESULT InitTitle(void)
 {
-	ID3D11Device *pDevice = GetDevice();
+	ID3D11Device* pDevice = GetDevice();
 
 	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
@@ -76,7 +74,6 @@ HRESULT InitTitle(void)
 			&g_Texture[i],
 			NULL);
 	}
-	
 
 	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
@@ -87,15 +84,14 @@ HRESULT InitTitle(void)
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
 
-
 	// 変数の初期化
-	g_Title.w     = TEXTURE_WIDTH;
-	g_Title.h     = MAP_HEIGHT;
-	g_Title.pos   = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	g_Title.w = TEXTURE_WIDTH;
+	g_Title.h = MAP_HEIGHT;
+	g_Title.pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	g_Title.texNo = 1;
 	//g_Title.move = 3.7f;
 	g_Title.offset = 0.0f;
-	
+
 	for (size_t i = 0; i < LOGO_MAX; i++)
 	{
 		g_Logo[i].w = LOGO_WIDTH;
@@ -108,7 +104,6 @@ HRESULT InitTitle(void)
 	g_Mosaic.h = MOSAIC_HEIGHT;
 	g_Mosaic.pos = g_Logo[1].pos;
 	g_Mosaic.texNo = 3;
-
 
 	effect_dx = 100.0f;
 	effect_dy = 100.0f;
@@ -148,7 +143,6 @@ void UninitTitle(void)
 //=============================================================================
 void UpdateTitle(void)
 {
-
 	if (GetKeyboardTrigger(DIK_RETURN))
 	{
 		SetFade(FADE_OUT, MODE_TUTORIAL);
@@ -214,11 +208,8 @@ void UpdateTitle(void)
 	}*/
 
 	//g_Title.pos.x += g_Title.move;
-	//if (g_Title.pos.x < 0 || g_Title.pos.x > (SCREEN_WIDTH - g_Title.w)) 
+	//if (g_Title.pos.x < 0 || g_Title.pos.x > (SCREEN_WIDTH - g_Title.w))
 	//	g_Title.move = -1 * g_Title.move;
-
-
-
 }
 
 //=============================================================================
@@ -243,7 +234,7 @@ void DrawTitle(void)
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 
-	// 
+	//
 	//	draw background
 	//
 	{
@@ -294,23 +285,22 @@ void DrawTitle(void)
 	for (int i = 0; i < LOGO_DIVIDE_Y; i++)
 	{
 		double phase_x = 2 * M_PI / LOGO_DIVIDE_Y * i + effect_dt;
-		
+
 		for (int j = 0; j < LOGO_DIVIDE_X; j++)
 		{
 			double phase_y = 2 * M_PI / LOGO_DIVIDE_X * j + effect_dt;
 
 			SetSpriteLTColor(g_VertexBuffer,							// buffer
-				(float) (g_Logo[0].pos.x + sin(phase_x) * effect_dx / 10 + Logo_div_xw * j),			// X
-				(float) (g_Logo[0].pos.y + sin(phase_y) * effect_dx / 10 + Logo_div_yh * i),			// Y
+				(float)(g_Logo[0].pos.x + sin(phase_x) * effect_dx / 10 + Logo_div_xw * j),			// X
+				(float)(g_Logo[0].pos.y + sin(phase_y) * effect_dx / 10 + Logo_div_yh * i),			// Y
 				Logo_div_xw,										// Width
 				Logo_div_yh,										// Height
 				Logo_div_uw * j,								// U
 				Logo_div_vh * i,								// V
 				Logo_div_uw,									// UW
 				Logo_div_vh,									// VH
-				D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.2f - (FLOAT) effect_dy / 500.0f));	//色の各要素
+				D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.2f - (FLOAT)effect_dy / 500.0f));	//色の各要素
 			GetDeviceContext()->Draw(4, 0);
-
 		}
 
 		// apply horizontal wave to title logo
@@ -335,7 +325,7 @@ void DrawTitle(void)
 
 	//
 	// draw Title logo No.1
-	// 	   
+	//
 	// テクスチャ設定
 	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_Logo[1].texNo]);
 
@@ -356,7 +346,7 @@ void DrawTitle(void)
 	static const float Mosaic_div_yh = g_Mosaic.h / MOSAIC_DIVIDE_Y;
 
 	static const float Mosaic_div_uw = 1.0f * MOSAIC_WIDTH / LOGO_WIDTH / MOSAIC_DIVIDE_X;
-	static const float Mosaic_div_vh = 1.0f * MOSAIC_HEIGHT / LOGO_HEIGHT / MOSAIC_DIVIDE_Y ;
+	static const float Mosaic_div_vh = 1.0f * MOSAIC_HEIGHT / LOGO_HEIGHT / MOSAIC_DIVIDE_Y;
 
 	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_Mosaic.texNo]);
 	for (int i = 0; i < MOSAIC_DIVIDE_Y; i++)
@@ -373,11 +363,11 @@ void DrawTitle(void)
 			{
 				int u_range = j / MOSAIC_SAMPLING_INTVL;
 
-				float Mosaic_u = (g_Mosaic.pos.x - g_Logo[1].pos.x) / LOGO_WIDTH +		// left side coordinate of the whole mosaic block		
-					u_range * MOSAIC_SAMPLING_INTVL * Mosaic_div_uw +					// horizontal offset before sampling block				
+				float Mosaic_u = (g_Mosaic.pos.x - g_Logo[1].pos.x) / LOGO_WIDTH +		// left side coordinate of the whole mosaic block
+					u_range * MOSAIC_SAMPLING_INTVL * Mosaic_div_uw +					// horizontal offset before sampling block
 					rand() % MOSAIC_SAMPLING_INTVL * Mosaic_div_uw;						// random sampling in u
-				float Mosaic_v = (g_Mosaic.pos.y - g_Logo[1].pos.y) / LOGO_HEIGHT +		// top side coordinate of the whole mosaic block		
-					v_range * MOSAIC_SAMPLING_INTVL * Mosaic_div_vh +					// vertical offset before sampling block				
+				float Mosaic_v = (g_Mosaic.pos.y - g_Logo[1].pos.y) / LOGO_HEIGHT +		// top side coordinate of the whole mosaic block
+					v_range * MOSAIC_SAMPLING_INTVL * Mosaic_div_vh +					// vertical offset before sampling block
 					rand() % MOSAIC_SAMPLING_INTVL * Mosaic_div_vh;						// random sampling in v
 
 				SetSpriteLTColor(g_VertexBuffer,						// buffer
@@ -391,13 +381,7 @@ void DrawTitle(void)
 					Mosaic_div_vh,										// VH
 					D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));					//色の各要素
 				GetDeviceContext()->Draw(4, 0);
-
 			}
 		}
 	}
 }
-
-
-
-
-

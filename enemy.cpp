@@ -19,7 +19,7 @@
 // マクロ定義
 //*****************************************************************************
 #define TEXTURE_WIDTH				(800/8)	// キャラサイズ
-#define TEXTURE_HEIGHT				(800/8)	// 
+#define TEXTURE_HEIGHT				(800/8)	//
 #define TEXTURE_MAX					(2)		// テクスチャの数
 
 #define TEXTURE_PATTERN_DIVIDE_X	(2)		// アニメパターンのテクスチャ内分割数（X)
@@ -87,10 +87,8 @@ static char* g_TexturName[TEXTURE_MAX] = {
 	"data/TEXTURE/enemy_reverse.png",
 };
 
-
 static BOOL		g_Load = FALSE;			// 初期化を行ったかのフラグ
 static ENEMY	g_Enemy[ENEMY_MAX];	// プレイヤー構造体
-
 
 //=============================================================================
 // 初期化処理
@@ -111,7 +109,6 @@ HRESULT InitEnemy(void)
 			NULL);
 	}
 
-
 	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -121,14 +118,13 @@ HRESULT InitEnemy(void)
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
 
-
 	// エネミー構造体の初期化
 	for (int i = 0; i < ENEMY_MAX; i++)
 	{
 		ENEMY* s_Enemy = g_Enemy + i;
 
 		s_Enemy->use = TRUE;
-		s_Enemy->pos = D3DXVECTOR3(TEXTURE_WIDTH / 2 + 500.0f +100.0f * i, SCREEN_HEIGHT / 2, 0.0f);	// 中心点から表示
+		s_Enemy->pos = D3DXVECTOR3(TEXTURE_WIDTH / 2 + 500.0f + 100.0f * i, SCREEN_HEIGHT / 2, 0.0f);	// 中心点から表示
 		s_Enemy->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		s_Enemy->w = TEXTURE_WIDTH;
 		s_Enemy->h = TEXTURE_HEIGHT;
@@ -155,9 +151,7 @@ HRESULT InitEnemy(void)
 		//g_Enemy[i].time = 0.0f;			// 線形補間用
 		//g_Enemy[i].moveTblNo = 0;			// データテーブル
 		//g_Enemy[i].tblMax = sizeof(g_MoveTbl0) / sizeof(LINEAR_INTERPOLATION);// 線形補間用
-
 	}
-
 
 	g_Load = TRUE;	// データの初期化を行った
 	return S_OK;
@@ -322,7 +316,6 @@ void UpdateEnemy(void)
 				// Death process.
 				if (!s_Enemy->actCount--)
 				{
-
 					s_Enemy->use = FALSE;
 				}
 				else
@@ -353,9 +346,7 @@ void UpdateEnemy(void)
 #endif
 		}
 	}
-
 }
-
 
 //=============================================================================
 // 描画処理
@@ -416,7 +407,6 @@ void DrawEnemy(void)
 	}
 }
 
-
 //=============================================================================
 // プレイヤー構造体の先頭アドレスを取得
 //=============================================================================
@@ -428,13 +418,13 @@ ENEMY* GetEnemy(void)
 void DestructEnemy(ENEMY* ep)
 {
 	AddScore(100);
-//	PlaySound(SOUND_LABEL_SE_hit000);
+	//	PlaySound(SOUND_LABEL_SE_hit000);
 	if (ep->use) ep->use = FALSE;
 	return;
 }
 
 //
-// @brief	Do attack detection on player. 
+// @brief	Do attack detection on player.
 // @param	Enemy pointer and attack effect used as collision box. If effect == NULL,
 //			enemy itself presents as collision box.
 //
@@ -473,7 +463,7 @@ void ChekHitPlayer(ENEMY* enemy)
 			}
 			else
 			{
-				// This damage is occured by enemy collision 
+				// This damage is occured by enemy collision
 				// attacks which doesn't have effect BB.
 				if (BBCollision(&enemy->pos, &s_Player->pos,
 					enemy->w, s_Player->w,
@@ -498,16 +488,15 @@ void ChekHitPlayer(ENEMY* enemy)
 					HitPlayer(enemy, s_Player, 1, enemy->atkOrient);
 				}
 			}
-			
 		}
 	}
 }
 
-// 
+//
 // @brief	Decrease ENEMY's health and switch state to STUN.
 //			If damage == 0 means enemy get parried.
 // @param	enemy pointer, dam, orient (not used when parrying)
-// @return	
+// @return
 //
 void HitEnemy(ENEMY* enemy, int damage, int orient)
 {

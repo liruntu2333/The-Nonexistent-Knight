@@ -12,7 +12,7 @@
 // マクロ定義
 //*****************************************************************************
 #define MAP_WIDTH					(1600)	// 背景サイズ
-#define MAP_HEIGHT					(900)	// 
+#define MAP_HEIGHT					(900)	//
 
 // プレイヤーの画面内配置座標
 #define PLAYER_DISP_X				(SCREEN_WIDTH/2)
@@ -23,7 +23,6 @@
 #define SHAKE_PD					(10)			// screen shake period
 #define SHAKE_AMP					(30.0f)			// screen shake amplitude
 
-
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -31,10 +30,10 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer				*g_VertexBuffer = NULL;		// 頂点情報
-static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11Buffer* g_VertexBuffer = NULL;		// 頂点情報
+static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
-static char *g_TexturName[TEXTURE_MAX] = {
+static char* g_TexturName[TEXTURE_MAX] = {
 	"data/TEXTURE/map.png",
 	"data/TEXTURE/background.jpg",
 };
@@ -46,12 +45,11 @@ static BG	g_BG;
 // Data storaged in 2D array. 0 stands for air, 1 earth, 2 ground suface.
 static unsigned short int g_TerrainDT[MAP_HEIGHT / BLK_LGTH][MAP_WIDTH / BLK_LGTH] = { {0} };
 
-
 // 初期化処理
 //=============================================================================
 HRESULT InitMap(void)
 {
-	ID3D11Device *pDevice = GetDevice();
+	ID3D11Device* pDevice = GetDevice();
 
 	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
@@ -65,7 +63,6 @@ HRESULT InitMap(void)
 			NULL);
 	}
 
-
 	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -75,18 +72,17 @@ HRESULT InitMap(void)
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
 
-
 	// 変数の初期化
-	g_Map.w     = MAP_WIDTH;
-	g_Map.h     = MAP_HEIGHT;
-	g_Map.pos   = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	g_Map.w = MAP_WIDTH;
+	g_Map.h = MAP_HEIGHT;
+	g_Map.pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	g_Map.texNo = 0;
 
 	g_Map.shake = FALSE;
 
-	g_BG.w     = SCREEN_WIDTH;
-	g_BG.h     = SCREEN_HEIGHT;
-	g_BG.pos   = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	g_BG.w = SCREEN_WIDTH;
+	g_BG.h = SCREEN_HEIGHT;
+	g_BG.pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	g_BG.texNo = 1;
 	g_BG.shake = FALSE;
 
@@ -192,7 +188,7 @@ void UpdateMap(void)
 
 	if (g_Map.shake)
 	{
-		if (g_Map.shake % SHAKE_PD < SHAKE_PD/2)
+		if (g_Map.shake % SHAKE_PD < SHAKE_PD / 2)
 		{
 			g_Map.pos.x += SHAKE_AMP / SHAKE_FRAME * g_Map.shake;
 			g_Map.pos.y += SHAKE_AMP / SHAKE_FRAME * g_Map.shake;
@@ -266,8 +262,8 @@ void DrawMap(void)
 
 //
 // @brief	get g_Map pointer
-// @param	
-// @return	
+// @param
+// @return
 //
 BG* GetMap(void)
 {
@@ -291,7 +287,7 @@ int GetTerrain(float x, float y)
 //
 D3DXVECTOR3 ReloacteObj(float x, float y, float w, float h)
 {
-	int feetY = (int)((y + h/2) / BLK_LGTH);
+	int feetY = (int)((y + h / 2) / BLK_LGTH);
 	int feetX = (int)(x / BLK_LGTH);
 	while (true)
 	{
@@ -299,7 +295,7 @@ D3DXVECTOR3 ReloacteObj(float x, float y, float w, float h)
 			break;
 		feetY--;
 	}
-	return D3DXVECTOR3(x, (float)(feetY) * BLK_LGTH - h / 2, 0.0f);
+	return D3DXVECTOR3(x, (float)(feetY)*BLK_LGTH - h / 2, 0.0f);
 }
 
 //
@@ -311,7 +307,6 @@ void SetTerrain(int X, int Y, int terrain)
 {
 	g_TerrainDT[Y][X] = terrain;
 }
-
 
 //
 // @brief	Set screen shake that frequently attenuates

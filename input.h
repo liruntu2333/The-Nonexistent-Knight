@@ -17,7 +17,6 @@
 #define	USE_MOUSE					// éŒ¾‚·‚é‚Æƒ}ƒEƒX‚Å‘€ì‰Â”\‚É‚È‚é
 #define	USE_PAD						// éŒ¾‚·‚é‚Æƒpƒbƒh‚Å‘€ì‰Â”\‚É‚È‚é
 
-
 /* game padî•ñ */
 #define BUTTON_UP		0x00000001l	// •ûŒüƒL[ã(.IY<0)
 #define BUTTON_DOWN		0x00000002l	// •ûŒüƒL[‰º(.IY>0)
@@ -61,8 +60,6 @@ enum {	// ƒ{ƒ^ƒ“‚É‘Î‚·‚érgbButtons[?]”z—ñ‚Ì”z—ñ”Ô†(DirectInputã‚Å‚ÌXYABƒ{ƒ^ƒ“ˆ
 	rgbButtons_START,
 };
 
-
-
 //*****************************************************************************
 // ƒvƒƒgƒ^ƒCƒvéŒ¾
 //*****************************************************************************
@@ -88,7 +85,5 @@ long GetMouseY(void);               // ƒ}ƒEƒX‚ªY•ûŒü‚É“®‚¢‚½‘Š‘Î’l
 long GetMouseZ(void);               // ƒ}ƒEƒXƒzƒC[ƒ‹‚ª“®‚¢‚½‘Š‘Î’l
 
 //---------------------------- game pad
-BOOL IsButtonPressed(int padNo,DWORD button);
-BOOL IsButtonTriggered(int padNo,DWORD button);
-
-
+BOOL IsButtonPressed(int padNo, DWORD button);
+BOOL IsButtonTriggered(int padNo, DWORD button);

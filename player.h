@@ -70,15 +70,14 @@ struct PLAYER
 	int				vertSpd;		// vertical movement per frame
 	int				horzSpd;		// horizontal movement per frame, only used when stunned
 	int				actCount;		// used for dash / attack / stun count down
-	EFFECT*			effect;			// initiated attack / heal effect
-	ELEVATOR*		elev;			// taken elevator
+	EFFECT* effect;			// initiated attack / heal effect
+	ELEVATOR* elev;			// taken elevator
 	int				godCount;		// god mode count down
 
 	int				stamina;		// dash / attack need enough stamina to trigger
 	int				health;			// when health reduces to 0, you die.
 	int				money;			// defeat enemy get coin.
 };
-
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -88,7 +87,6 @@ void UninitPlayer(void);
 void UpdatePlayer(void);
 void DrawPlayer(void);
 
-PLAYER *GetPlayer(void);
+PLAYER* GetPlayer(void);
 
 void HitPlayer(ENEMY* enmey, PLAYER* player, int damge, int orient);
-

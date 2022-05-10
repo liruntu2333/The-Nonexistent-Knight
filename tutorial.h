@@ -22,8 +22,6 @@ struct TUTORIAL
 	float offset;
 };
 
-
-
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -31,5 +29,3 @@ HRESULT InitTutorial(void);
 void UninitTutorial(void);
 void UpdateTutorial(void);
 void DrawTutorial(void);
-
-

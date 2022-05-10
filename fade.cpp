@@ -10,7 +10,7 @@
 // マクロ定義
 //*****************************************************************************
 #define MAP_WIDTH				(SCREEN_WIDTH)	// 背景サイズ
-#define MAP_HEIGHT				(SCREEN_HEIGHT)	// 
+#define MAP_HEIGHT				(SCREEN_HEIGHT)	//
 #define TEXTURE_MAX					(1)				// テクスチャの数
 
 #define	FADE_RATE					(0.02f)			// フェード係数
@@ -20,28 +20,25 @@
 //*****************************************************************************
 static void SetVertex(float X, float Y, float Width, float Height, float U, float V, float UW, float VH);
 
-
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer				*g_VertexBuffer = NULL;		// 頂点情報
-static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11Buffer* g_VertexBuffer = NULL;		// 頂点情報
+static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
-static char *g_TexturName[] = {
+static char* g_TexturName[] = {
 	"data/TEXTURE/fade_black.png",
 };
 
 static BOOL		g_Load = FALSE;		// 初期化を行ったかのフラグ
 static FADE		g_Fade;
 
-
-
 //=============================================================================
 // 初期化処理
 //=============================================================================
 HRESULT InitFade(void)
 {
-	ID3D11Device *pDevice = GetDevice();
+	ID3D11Device* pDevice = GetDevice();
 
 	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
@@ -55,7 +52,6 @@ HRESULT InitFade(void)
 			NULL);
 	}
 
-
 	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -65,15 +61,13 @@ HRESULT InitFade(void)
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
 
-
 	// 変数の初期化
 	g_Fade.w = MAP_WIDTH;
 	g_Fade.h = MAP_HEIGHT;
 	g_Fade.pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	g_Fade.texNo = 0;
 
-
-	g_Fade.flag  = FADE_IN;
+	g_Fade.flag = FADE_IN;
 	g_Fade.nextMode = MODE_END;
 	g_Fade.color = D3DXCOLOR(1.0, 1.0, 1.0, 1.0);
 
@@ -111,7 +105,6 @@ void UninitFade(void)
 //=============================================================================
 void UpdateFade(void)
 {
-
 	if (g_Fade.flag != FADE_NONE)
 	{// フェード処理中
 		if (g_Fade.flag == FADE_OUT)
@@ -126,7 +119,6 @@ void UpdateFade(void)
 				// モードを設定
 				SetMode(g_Fade.nextMode);
 			}
-
 		}
 		else if (g_Fade.flag == FADE_IN)
 		{// フェードイン処理
@@ -137,10 +129,8 @@ void UpdateFade(void)
 				g_Fade.color.a = 0.0f;
 				SetFade(FADE_NONE, g_Fade.nextMode);
 			}
-
 		}
 	}
-
 }
 
 //=============================================================================
@@ -178,10 +168,7 @@ void DrawFade(void)
 		// ポリゴン描画
 		GetDeviceContext()->Draw(4, 0);
 	}
-
-
 }
-
 
 //=============================================================================
 // 頂点データ設定
@@ -191,28 +178,26 @@ static void SetVertex(float X, float Y, float Width, float Height, float U, floa
 	D3D11_MAPPED_SUBRESOURCE msr;
 	GetDeviceContext()->Map(g_VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
 
-	VERTEX_3D *vertex = (VERTEX_3D*)msr.pData;
+	VERTEX_3D* vertex = (VERTEX_3D*)msr.pData;
 
 	vertex[0].Position = D3DXVECTOR3(X, Y, 0.0f);
-	vertex[0].Diffuse  = g_Fade.color;
+	vertex[0].Diffuse = g_Fade.color;
 	vertex[0].TexCoord = D3DXVECTOR2(U, V);
 
 	vertex[1].Position = D3DXVECTOR3(X + Width, Y, 0.0f);
-	vertex[1].Diffuse  = g_Fade.color;
+	vertex[1].Diffuse = g_Fade.color;
 	vertex[1].TexCoord = D3DXVECTOR2(U + UW, V);
 
 	vertex[2].Position = D3DXVECTOR3(X, Y + Height, 0.0f);
-	vertex[2].Diffuse  = g_Fade.color;
+	vertex[2].Diffuse = g_Fade.color;
 	vertex[2].TexCoord = D3DXVECTOR2(U, V + VH);
 
 	vertex[3].Position = D3DXVECTOR3(X + Width, Y + Height, 0.0f);
-	vertex[3].Diffuse  = g_Fade.color;
+	vertex[3].Diffuse = g_Fade.color;
 	vertex[3].TexCoord = D3DXVECTOR2(U + UW, V + VH);
 
 	GetDeviceContext()->Unmap(g_VertexBuffer, 0);
-
 }
-
 
 //=============================================================================
 // フェードの状態設定
@@ -230,6 +215,3 @@ int GetFade(void)
 {
 	return g_Fade.flag;
 }
-
-
-

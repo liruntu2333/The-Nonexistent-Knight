@@ -1,6 +1,6 @@
 //
 // @file				elevator.h
-// @brief				An elevator object can moves around and 
+// @brief				An elevator object can moves around and
 //						modifies terrain.
 // @copyright			2021 LI ZIZHEN liruntu2333@gmail.com
 // @lisense				GPL

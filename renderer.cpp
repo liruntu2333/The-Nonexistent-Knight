@@ -6,8 +6,6 @@
 //=============================================================================
 #include "renderer.h"
 
-
-
 //*********************************************************
 // 構造体
 //*********************************************************
@@ -60,52 +58,46 @@ struct FUCHI
 	int			fill[3];
 };
 
-
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
 static void SetLightBuffer(void);
-
 
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
 static D3D_FEATURE_LEVEL       g_FeatureLevel = D3D_FEATURE_LEVEL_11_0;
 
-static ID3D11Device*           g_D3DDevice = NULL;
-static ID3D11DeviceContext*    g_ImmediateContext = NULL;
-static IDXGISwapChain*         g_SwapChain = NULL;
+static ID3D11Device* g_D3DDevice = NULL;
+static ID3D11DeviceContext* g_ImmediateContext = NULL;
+static IDXGISwapChain* g_SwapChain = NULL;
 static ID3D11RenderTargetView* g_RenderTargetView = NULL;
 static ID3D11DepthStencilView* g_DepthStencilView = NULL;
 
-
-
-static ID3D11VertexShader*     g_VertexShader = NULL;
-static ID3D11PixelShader*      g_PixelShader = NULL;
-static ID3D11InputLayout*      g_VertexLayout = NULL;
-static ID3D11Buffer*			g_WorldBuffer = NULL;
-static ID3D11Buffer*			g_ViewBuffer = NULL;
-static ID3D11Buffer*			g_ProjectionBuffer = NULL;
-static ID3D11Buffer*			g_MaterialBuffer = NULL;
-static ID3D11Buffer*			g_LightBuffer = NULL;
-static ID3D11Buffer*			g_FogBuffer = NULL;
-static ID3D11Buffer*			g_FuchiBuffer = NULL;
-static ID3D11Buffer*			g_CameraBuffer = NULL;
+static ID3D11VertexShader* g_VertexShader = NULL;
+static ID3D11PixelShader* g_PixelShader = NULL;
+static ID3D11InputLayout* g_VertexLayout = NULL;
+static ID3D11Buffer* g_WorldBuffer = NULL;
+static ID3D11Buffer* g_ViewBuffer = NULL;
+static ID3D11Buffer* g_ProjectionBuffer = NULL;
+static ID3D11Buffer* g_MaterialBuffer = NULL;
+static ID3D11Buffer* g_LightBuffer = NULL;
+static ID3D11Buffer* g_FogBuffer = NULL;
+static ID3D11Buffer* g_FuchiBuffer = NULL;
+static ID3D11Buffer* g_CameraBuffer = NULL;
 
 static ID3D11DepthStencilState* g_DepthStateEnable;
 static ID3D11DepthStencilState* g_DepthStateDisable;
 
-static ID3D11BlendState*		g_BlendStateNone;
-static ID3D11BlendState*		g_BlendStateAlphaBlend;
-static ID3D11BlendState*		g_BlendStateAdd;
-static ID3D11BlendState*		g_BlendStateSubtract;
+static ID3D11BlendState* g_BlendStateNone;
+static ID3D11BlendState* g_BlendStateAlphaBlend;
+static ID3D11BlendState* g_BlendStateAdd;
+static ID3D11BlendState* g_BlendStateSubtract;
 static BLEND_MODE				g_BlendStateParam;
 
-
-static ID3D11RasterizerState*	g_RasterStateCullOff;
-static ID3D11RasterizerState*	g_RasterStateCullCW;
-static ID3D11RasterizerState*	g_RasterStateCullCCW;
-
+static ID3D11RasterizerState* g_RasterStateCullOff;
+static ID3D11RasterizerState* g_RasterStateCullCW;
+static ID3D11RasterizerState* g_RasterStateCullCCW;
 
 static MATERIAL_CBUFFER	g_Material;
 static LIGHT_CBUFFER	g_Light;
@@ -113,28 +105,23 @@ static FOG_CBUFFER		g_Fog;
 
 static FUCHI			g_Fuchi;
 
-
-ID3D11Device* GetDevice( void )
+ID3D11Device* GetDevice(void)
 {
 	return g_D3DDevice;
 }
 
-
-ID3D11DeviceContext* GetDeviceContext( void )
+ID3D11DeviceContext* GetDeviceContext(void)
 {
 	return g_ImmediateContext;
 }
 
-
-void SetDepthEnable( bool Enable )
+void SetDepthEnable(bool Enable)
 {
-	if( Enable )
-		g_ImmediateContext->OMSetDepthStencilState( g_DepthStateEnable, NULL );
+	if (Enable)
+		g_ImmediateContext->OMSetDepthStencilState(g_DepthStateEnable, NULL);
 	else
-		g_ImmediateContext->OMSetDepthStencilState( g_DepthStateDisable, NULL );
-
+		g_ImmediateContext->OMSetDepthStencilState(g_DepthStateDisable, NULL);
 }
-
 
 void SetBlendState(BLEND_MODE bm)
 {
@@ -237,8 +224,7 @@ void SetAlphaTestEnable(BOOL flag)
 		blendState->Release();
 }
 
-
-void SetWorldViewProjection2D( void )
+void SetWorldViewProjection2D(void)
 {
 	D3DXMATRIX world;
 	D3DXMatrixIdentity(&world);
@@ -256,8 +242,7 @@ void SetWorldViewProjection2D( void )
 	GetDeviceContext()->UpdateSubresource(g_ProjectionBuffer, 0, NULL, &worldViewProjection, 0, 0);
 }
 
-
-void SetWorldMatrix( D3DXMATRIX *WorldMatrix )
+void SetWorldMatrix(D3DXMATRIX* WorldMatrix)
 {
 	D3DXMATRIX world;
 	world = *WorldMatrix;
@@ -266,7 +251,7 @@ void SetWorldMatrix( D3DXMATRIX *WorldMatrix )
 	GetDeviceContext()->UpdateSubresource(g_WorldBuffer, 0, NULL, &world, 0, 0);
 }
 
-void SetViewMatrix( D3DXMATRIX *ViewMatrix )
+void SetViewMatrix(D3DXMATRIX* ViewMatrix)
 {
 	D3DXMATRIX view;
 	view = *ViewMatrix;
@@ -275,7 +260,7 @@ void SetViewMatrix( D3DXMATRIX *ViewMatrix )
 	GetDeviceContext()->UpdateSubresource(g_ViewBuffer, 0, NULL, &view, 0, 0);
 }
 
-void SetProjectionMatrix( D3DXMATRIX *ProjectionMatrix )
+void SetProjectionMatrix(D3DXMATRIX* ProjectionMatrix)
 {
 	D3DXMATRIX projection;
 	projection = *ProjectionMatrix;
@@ -284,7 +269,7 @@ void SetProjectionMatrix( D3DXMATRIX *ProjectionMatrix )
 	GetDeviceContext()->UpdateSubresource(g_ProjectionBuffer, 0, NULL, &projection, 0, 0);
 }
 
-void SetMaterial( MATERIAL material )
+void SetMaterial(MATERIAL material)
 {
 	g_Material.Diffuse = material.Diffuse;
 	g_Material.Ambient = material.Ambient;
@@ -293,7 +278,7 @@ void SetMaterial( MATERIAL material )
 	g_Material.Shininess = material.Shininess;
 	g_Material.noTexSampling = material.noTexSampling;
 
-	GetDeviceContext()->UpdateSubresource( g_MaterialBuffer, 0, NULL, &g_Material, 0, 0 );
+	GetDeviceContext()->UpdateSubresource(g_MaterialBuffer, 0, NULL, &g_Material, 0, 0);
 }
 
 void SetLightBuffer(void)
@@ -349,14 +334,11 @@ void SetFuchi(int flag)
 	GetDeviceContext()->UpdateSubresource(g_FuchiBuffer, 0, NULL, &g_Fuchi, 0, 0);
 }
 
-
 void SetShaderCamera(D3DXVECTOR3 pos)
 {
 	D3DXVECTOR4 tmp = (D3DXVECTOR4)pos;
 	GetDeviceContext()->UpdateSubresource(g_CameraBuffer, 0, NULL, &tmp, 0, 0);
 }
-
-
 
 //=============================================================================
 // 初期化処理
@@ -368,7 +350,7 @@ HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	// デバイス、スワップチェーン、コンテキスト生成
 	DWORD deviceFlags = 0;
 	DXGI_SWAP_CHAIN_DESC sd;
-	ZeroMemory( &sd, sizeof( sd ) );
+	ZeroMemory(&sd, sizeof(sd));
 	sd.BufferCount = 1;
 	sd.BufferDesc.Width = SCREEN_WIDTH;
 	sd.BufferDesc.Height = SCREEN_HEIGHT;
@@ -388,19 +370,19 @@ HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	deviceFlags = D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #endif
 
-	hr = D3D11CreateDeviceAndSwapChain( NULL,
-										D3D_DRIVER_TYPE_HARDWARE,
-										NULL,
-										deviceFlags,
-										NULL,
-										0,
-										D3D11_SDK_VERSION,
-										&sd,
-										&g_SwapChain,
-										&g_D3DDevice,
-										&g_FeatureLevel,
-										&g_ImmediateContext );
-	if( FAILED( hr ) )
+	hr = D3D11CreateDeviceAndSwapChain(NULL,
+		D3D_DRIVER_TYPE_HARDWARE,
+		NULL,
+		deviceFlags,
+		NULL,
+		0,
+		D3D11_SDK_VERSION,
+		&sd,
+		&g_SwapChain,
+		&g_D3DDevice,
+		&g_FeatureLevel,
+		&g_ImmediateContext);
+	if (FAILED(hr))
 		return hr;
 
 	//デバッグ文字出力用設定
@@ -412,39 +394,35 @@ HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 
 	// レンダーターゲットビュー生成、設定
 	ID3D11Texture2D* pBackBuffer = NULL;
-	g_SwapChain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), ( LPVOID* )&pBackBuffer );
-	g_D3DDevice->CreateRenderTargetView( pBackBuffer, NULL, &g_RenderTargetView );
+	g_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+	g_D3DDevice->CreateRenderTargetView(pBackBuffer, NULL, &g_RenderTargetView);
 	pBackBuffer->Release();
-
-
 
 	//ステンシル用テクスチャー作成
 	ID3D11Texture2D* depthTexture = NULL;
 	D3D11_TEXTURE2D_DESC td;
-	ZeroMemory( &td, sizeof(td) );
-	td.Width			= sd.BufferDesc.Width;
-	td.Height			= sd.BufferDesc.Height;
-	td.MipLevels		= 1;
-	td.ArraySize		= 1;
-	td.Format			= DXGI_FORMAT_D24_UNORM_S8_UINT;
-	td.SampleDesc		= sd.SampleDesc;
-	td.Usage			= D3D11_USAGE_DEFAULT;
-	td.BindFlags		= D3D11_BIND_DEPTH_STENCIL;
-    td.CPUAccessFlags	= 0;
-    td.MiscFlags		= 0;
-	g_D3DDevice->CreateTexture2D( &td, NULL, &depthTexture );
+	ZeroMemory(&td, sizeof(td));
+	td.Width = sd.BufferDesc.Width;
+	td.Height = sd.BufferDesc.Height;
+	td.MipLevels = 1;
+	td.ArraySize = 1;
+	td.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	td.SampleDesc = sd.SampleDesc;
+	td.Usage = D3D11_USAGE_DEFAULT;
+	td.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	td.CPUAccessFlags = 0;
+	td.MiscFlags = 0;
+	g_D3DDevice->CreateTexture2D(&td, NULL, &depthTexture);
 
 	//ステンシルターゲット作成
 	D3D11_DEPTH_STENCIL_VIEW_DESC dsvd;
-	ZeroMemory( &dsvd, sizeof(dsvd) );
-	dsvd.Format			= td.Format;
-	dsvd.ViewDimension	= D3D11_DSV_DIMENSION_TEXTURE2D;
-	dsvd.Flags			= 0;
-	g_D3DDevice->CreateDepthStencilView( depthTexture, &dsvd, &g_DepthStencilView );
+	ZeroMemory(&dsvd, sizeof(dsvd));
+	dsvd.Format = td.Format;
+	dsvd.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	dsvd.Flags = 0;
+	g_D3DDevice->CreateDepthStencilView(depthTexture, &dsvd, &g_DepthStencilView);
 
-
-	g_ImmediateContext->OMSetRenderTargets( 1, &g_RenderTargetView, g_DepthStencilView );
-
+	g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, g_DepthStencilView);
 
 	// ビューポート設定
 	D3D11_VIEWPORT vp;
@@ -454,18 +432,16 @@ HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	vp.MaxDepth = 1.0f;
 	vp.TopLeftX = 0;
 	vp.TopLeftY = 0;
-	g_ImmediateContext->RSSetViewports( 1, &vp );
-
-
+	g_ImmediateContext->RSSetViewports(1, &vp);
 
 	// ラスタライザステート作成
-	D3D11_RASTERIZER_DESC rd; 
-	ZeroMemory( &rd, sizeof( rd ) );
+	D3D11_RASTERIZER_DESC rd;
+	ZeroMemory(&rd, sizeof(rd));
 	rd.FillMode = D3D11_FILL_SOLID;
-	rd.CullMode = D3D11_CULL_NONE; 
-	rd.DepthClipEnable = TRUE; 
-	rd.MultisampleEnable = FALSE; 
-	g_D3DDevice->CreateRasterizerState( &rd, &g_RasterStateCullOff);
+	rd.CullMode = D3D11_CULL_NONE;
+	rd.DepthClipEnable = TRUE;
+	rd.MultisampleEnable = FALSE;
+	g_D3DDevice->CreateRasterizerState(&rd, &g_RasterStateCullOff);
 
 	rd.CullMode = D3D11_CULL_FRONT;
 	g_D3DDevice->CreateRasterizerState(&rd, &g_RasterStateCullCW);
@@ -476,11 +452,9 @@ HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	// カリングモード設定（CCW）
 	SetCullingMode(CULL_MODE_BACK);
 
-
-
 	// ブレンドステートの作成
 	D3D11_BLEND_DESC blendDesc;
-	ZeroMemory( &blendDesc, sizeof( blendDesc ) );
+	ZeroMemory(&blendDesc, sizeof(blendDesc));
 	blendDesc.AlphaToCoverageEnable = FALSE;
 	blendDesc.IndependentBlendEnable = FALSE;
 	blendDesc.RenderTarget[0].BlendEnable = TRUE;
@@ -491,7 +465,7 @@ HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	g_D3DDevice->CreateBlendState( &blendDesc, &g_BlendStateAlphaBlend );
+	g_D3DDevice->CreateBlendState(&blendDesc, &g_BlendStateAlphaBlend);
 
 	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
 	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO;
@@ -523,31 +497,26 @@ HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	// アルファブレンド設定
 	SetBlendState(BLEND_MODE_ALPHABLEND);
 
-
-
-
 	// 深度ステンシルステート作成
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
-	ZeroMemory( &depthStencilDesc, sizeof( depthStencilDesc ) );
+	ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
 	depthStencilDesc.DepthEnable = TRUE;
-	depthStencilDesc.DepthWriteMask	= D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	depthStencilDesc.StencilEnable = FALSE;
 
-	g_D3DDevice->CreateDepthStencilState( &depthStencilDesc, &g_DepthStateEnable );//深度有効ステート
+	g_D3DDevice->CreateDepthStencilState(&depthStencilDesc, &g_DepthStateEnable);//深度有効ステート
 
 	//depthStencilDesc.DepthEnable = FALSE;
-	depthStencilDesc.DepthWriteMask	= D3D11_DEPTH_WRITE_MASK_ZERO;
-	g_D3DDevice->CreateDepthStencilState( &depthStencilDesc, &g_DepthStateDisable );//深度無効ステート
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	g_D3DDevice->CreateDepthStencilState(&depthStencilDesc, &g_DepthStateDisable);//深度無効ステート
 
 	// 深度ステンシルステート設定
 	SetDepthEnable(true);
 
-
-
 	// サンプラーステート設定
 	D3D11_SAMPLER_DESC samplerDesc;
-	ZeroMemory( &samplerDesc, sizeof( samplerDesc ) );
+	ZeroMemory(&samplerDesc, sizeof(samplerDesc));
 	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -559,22 +528,20 @@ HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	ID3D11SamplerState* samplerState = NULL;
-	g_D3DDevice->CreateSamplerState( &samplerDesc, &samplerState );
+	g_D3DDevice->CreateSamplerState(&samplerDesc, &samplerState);
 
-	g_ImmediateContext->PSSetSamplers( 0, 1, &samplerState );
-
-
+	g_ImmediateContext->PSSetSamplers(0, 1, &samplerState);
 
 	// 頂点シェーダコンパイル・生成
 	ID3DBlob* pErrorBlob;
 	ID3DBlob* pVSBlob = NULL;
-	hr = D3DX11CompileFromFile( "shader.hlsl", NULL, NULL, "VertexShaderPolygon", "vs_4_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, NULL, &pVSBlob, &pErrorBlob, NULL );
-	if( FAILED(hr) )
+	hr = D3DX11CompileFromFile("shader.hlsl", NULL, NULL, "VertexShaderPolygon", "vs_4_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, NULL, &pVSBlob, &pErrorBlob, NULL);
+	if (FAILED(hr))
 	{
-		MessageBox( NULL , (char*)pErrorBlob->GetBufferPointer(), "VS", MB_OK | MB_ICONERROR );
+		MessageBox(NULL, (char*)pErrorBlob->GetBufferPointer(), "VS", MB_OK | MB_ICONERROR);
 	}
 
-	g_D3DDevice->CreateVertexShader( pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, &g_VertexShader );
+	g_D3DDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, &g_VertexShader);
 
 	// 入力レイアウト生成
 	D3D11_INPUT_ELEMENT_DESC layout[] =
@@ -584,29 +551,27 @@ HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,			0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
-	UINT numElements = ARRAYSIZE( layout );
+	UINT numElements = ARRAYSIZE(layout);
 
-	g_D3DDevice->CreateInputLayout( layout,
+	g_D3DDevice->CreateInputLayout(layout,
 		numElements,
 		pVSBlob->GetBufferPointer(),
 		pVSBlob->GetBufferSize(),
-		&g_VertexLayout );
+		&g_VertexLayout);
 
 	pVSBlob->Release();
 
-
 	// ピクセルシェーダコンパイル・生成
 	ID3DBlob* pPSBlob = NULL;
-	hr = D3DX11CompileFromFile( "shader.hlsl", NULL, NULL, "PixelShaderPolygon", "ps_4_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, NULL, &pPSBlob, &pErrorBlob, NULL );
-	if( FAILED(hr) )
+	hr = D3DX11CompileFromFile("shader.hlsl", NULL, NULL, "PixelShaderPolygon", "ps_4_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, NULL, &pPSBlob, &pErrorBlob, NULL);
+	if (FAILED(hr))
 	{
-		MessageBox( NULL , (char*)pErrorBlob->GetBufferPointer(), "PS", MB_OK | MB_ICONERROR );
+		MessageBox(NULL, (char*)pErrorBlob->GetBufferPointer(), "PS", MB_OK | MB_ICONERROR);
 	}
 
-	g_D3DDevice->CreatePixelShader( pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, &g_PixelShader );
-	
-	pPSBlob->Release();
+	g_D3DDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, &g_PixelShader);
 
+	pPSBlob->Release();
 
 	// 定数バッファ生成
 	D3D11_BUFFER_DESC hBufferDesc;
@@ -662,13 +627,12 @@ HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	g_ImmediateContext->VSSetConstantBuffers(7, 1, &g_CameraBuffer);
 	g_ImmediateContext->PSSetConstantBuffers(7, 1, &g_CameraBuffer);
 
-
 	// 入力レイアウト設定
-	g_ImmediateContext->IASetInputLayout( g_VertexLayout );
+	g_ImmediateContext->IASetInputLayout(g_VertexLayout);
 
 	// シェーダ設定
-	g_ImmediateContext->VSSetShader( g_VertexShader, NULL, 0 );
-	g_ImmediateContext->PSSetShader( g_PixelShader, NULL, 0 );
+	g_ImmediateContext->VSSetShader(g_VertexShader, NULL, 0);
+	g_ImmediateContext->PSSetShader(g_PixelShader, NULL, 0);
 
 	//ライト初期化
 	ZeroMemory(&g_Light, sizeof(LIGHT_CBUFFER));
@@ -677,7 +641,6 @@ HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	g_Light.Ambient[0] = D3DXCOLOR(0.1f, 0.1f, 0.1f, 1.0f);
 	g_Light.Flags[0].Type = LIGHT_TYPE_DIRECTIONAL;
 	SetLightBuffer();
-
 
 	//マテリアル初期化
 	MATERIAL material;
@@ -688,7 +651,6 @@ HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 
 	return S_OK;
 }
-
 
 //=============================================================================
 // 終了処理
@@ -724,8 +686,6 @@ void UninitRenderer(void)
 	if (g_D3DDevice)			g_D3DDevice->Release();
 }
 
-
-
 //=============================================================================
 // バックバッファクリア
 //=============================================================================
@@ -733,19 +693,17 @@ void Clear(void)
 {
 	// バックバッファクリア
 	float ClearColor[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
-	g_ImmediateContext->ClearRenderTargetView( g_RenderTargetView, ClearColor );
-	g_ImmediateContext->ClearDepthStencilView( g_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	g_ImmediateContext->ClearRenderTargetView(g_RenderTargetView, ClearColor);
+	g_ImmediateContext->ClearDepthStencilView(g_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
-
 
 //=============================================================================
 // プレゼント
 //=============================================================================
 void Present(void)
 {
-	g_SwapChain->Present( 0, 0 );
+	g_SwapChain->Present(0, 0);
 }
-
 
 //=============================================================================
 // デバッグ用テキスト出力

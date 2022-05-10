@@ -16,9 +16,9 @@
 #define SCORE_DIGIT			(5)			// 桁数
 
 #define	SCORE_DX			(500.0f)	// 表示位置
-#define	SCORE_DY			(20.0f)		// 
-#define	SCORE_DW			(16.0f)		// 
-#define	SCORE_DH			(32.0f)		// 
+#define	SCORE_DY			(20.0f)		//
+#define	SCORE_DW			(16.0f)		//
+#define	SCORE_DH			(32.0f)		//
 
 struct SCORE
 {
@@ -28,7 +28,6 @@ struct SCORE
 
 	int				score;		// 得点
 };
-
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -41,4 +40,3 @@ void DrawScore(void);
 int GetScore(void);
 void AddScore(int add);
 void SetScore(int score);
-

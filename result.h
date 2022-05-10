@@ -17,10 +17,7 @@ struct RESULT
 	D3DXVECTOR3		pos;		// ポリゴンの座標
 	float			w, h;		// 幅と高さ
 	int				texNo;		// 使用しているテクスチャ番号
-
 };
-
-
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -31,4 +28,3 @@ void UpdateResult(void);
 void DrawResult(void);
 
 void SetResult(int score);
-

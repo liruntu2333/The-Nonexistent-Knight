@@ -11,35 +11,32 @@
 // マクロ定義
 //*****************************************************************************
 #define TEXTURE_WIDTH				(SCORE_DW)	// 数字のサイズ
-#define TEXTURE_HEIGHT				(SCORE_DH)	// 
+#define TEXTURE_HEIGHT				(SCORE_DH)	//
 #define TEXTURE_MAX					(1)			// テクスチャの数
-
 
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
 
-
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer				*g_VertexBuffer = NULL;		// 頂点情報
-static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11Buffer* g_VertexBuffer = NULL;		// 頂点情報
+static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
-static char *g_TexturName[] = {
+static char* g_TexturName[] = {
 	"data/TEXTURE/number16x32.png",
 };
 
 static BOOL		g_Load = FALSE;		// 初期化を行ったかのフラグ
 static SCORE	g_Score;
 
-
 //=============================================================================
 // 初期化処理
 //=============================================================================
 HRESULT InitScore(void)
 {
-	ID3D11Device *pDevice = GetDevice();
+	ID3D11Device* pDevice = GetDevice();
 
 	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
@@ -53,7 +50,6 @@ HRESULT InitScore(void)
 			NULL);
 	}
 
-
 	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -62,7 +58,6 @@ HRESULT InitScore(void)
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
-
 
 	// 変数の初期化
 	g_Score.w = TEXTURE_WIDTH;
@@ -105,7 +100,6 @@ void UninitScore(void)
 //=============================================================================
 void UpdateScore(void)
 {
-
 }
 
 //=============================================================================
@@ -143,9 +137,9 @@ void DrawScore(void)
 
 		// 次の桁へ
 		number /= 10;
-		
+
 		// スコアの位置やテクスチャー座標を反映
-		float px = g_Score.pos.x - g_Score.w*i;	// スコアの表示位置X
+		float px = g_Score.pos.x - g_Score.w * i;	// スコアの表示位置X
 		float py = g_Score.pos.y;				// スコアの表示位置Y
 		float pw = g_Score.w;					// スコアの表示幅
 		float ph = g_Score.h;					// スコアの表示高さ
@@ -163,11 +157,8 @@ void DrawScore(void)
 
 		// ポリゴン描画
 		GetDeviceContext()->Draw(4, 0);
-
 	}
-
 }
-
 
 //=============================================================================
 // スコアを加算する
@@ -180,15 +171,12 @@ void AddScore(int add)
 	{
 		g_Score.score = SCORE_MAX;
 	}
-
 }
-
 
 int GetScore(void)
 {
 	return g_Score.score;
 }
-
 
 void SetScore(int score)
 {

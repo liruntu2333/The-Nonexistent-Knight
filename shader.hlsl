@@ -1,21 +1,19 @@
-
-
 //*****************************************************************************
 // 定数バッファ
 //*****************************************************************************
 
 // マトリクスバッファ
-cbuffer WorldBuffer : register( b0 )
+cbuffer WorldBuffer : register(b0)
 {
 	matrix World;
 }
 
-cbuffer ViewBuffer : register( b1 )
+cbuffer ViewBuffer : register(b1)
 {
 	matrix View;
 }
 
-cbuffer ProjectionBuffer : register( b2 )
+cbuffer ProjectionBuffer : register(b2)
 {
 	matrix Projection;
 }
@@ -32,7 +30,7 @@ struct MATERIAL
 	float		Dummy[2];//16byte境界用
 };
 
-cbuffer MaterialBuffer : register( b3 )
+cbuffer MaterialBuffer : register(b3)
 {
 	MATERIAL	Material;
 }
@@ -50,7 +48,7 @@ struct LIGHT
 	int			Dummy[3];//16byte境界用
 };
 
-cbuffer LightBuffer : register( b4 )
+cbuffer LightBuffer : register(b4)
 {
 	LIGHT		Light;
 }
@@ -64,7 +62,7 @@ struct FOG
 };
 
 // フォグ用バッファ
-cbuffer FogBuffer : register( b5 )
+cbuffer FogBuffer : register(b5)
 {
 	FOG			Fog;
 };
@@ -76,27 +74,24 @@ cbuffer Fuchi : register(b6)
 	int			fill[3];
 };
 
-
 cbuffer CameraBuffer : register(b7)
 {
 	float4 Camera;
 }
 
-
-
 //=============================================================================
 // 頂点シェーダ
 //=============================================================================
-void VertexShaderPolygon( in  float4 inPosition		: POSITION0,
-						  in  float4 inNormal		: NORMAL0,
-						  in  float4 inDiffuse		: COLOR0,
-						  in  float2 inTexCoord		: TEXCOORD0,
+void VertexShaderPolygon(in  float4 inPosition		: POSITION0,
+	in  float4 inNormal : NORMAL0,
+	in  float4 inDiffuse : COLOR0,
+	in  float2 inTexCoord : TEXCOORD0,
 
-						  out float4 outPosition	: SV_POSITION,
-						  out float4 outNormal		: NORMAL0,
-						  out float2 outTexCoord	: TEXCOORD0,
-						  out float4 outDiffuse		: COLOR0,
-						  out float4 outWorldPosition : POSITION0
+	out float4 outPosition : SV_POSITION,
+	out float4 outNormal : NORMAL0,
+	out float2 outTexCoord : TEXCOORD0,
+	out float4 outDiffuse : COLOR0,
+	out float4 outWorldPosition : POSITION0
 )
 {
 	matrix wvp;
@@ -107,11 +102,9 @@ void VertexShaderPolygon( in  float4 inPosition		: POSITION0,
 	outNormal = normalize(mul(float4(inNormal.xyz, 0.0f), World));
 	outTexCoord = inTexCoord;
 
-	
 	outWorldPosition = mul(inPosition, World);
 
-
-	if (Light.Enable == 0) 
+	if (Light.Enable == 0)
 	{
 		outDiffuse = inDiffuse * Material.Diffuse;
 	}
@@ -168,25 +161,22 @@ void VertexShaderPolygon( in  float4 inPosition		: POSITION0,
 	}
 }
 
-
-
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-Texture2D		g_Texture : register( t0 );
-SamplerState	g_SamplerState : register( s0 );
-
+Texture2D		g_Texture : register(t0);
+SamplerState	g_SamplerState : register(s0);
 
 //=============================================================================
 // ピクセルシェーダ
 //=============================================================================
-void PixelShaderPolygon( in  float4 inPosition		: SV_POSITION,
-						 in  float4 inNormal		: NORMAL0,
-						 in  float2 inTexCoord		: TEXCOORD0,
-						 in  float4 inDiffuse		: COLOR0,
-						 in  float4 inWorldPosition : POSITION0,
+void PixelShaderPolygon(in  float4 inPosition		: SV_POSITION,
+	in  float4 inNormal : NORMAL0,
+	in  float2 inTexCoord : TEXCOORD0,
+	in  float4 inDiffuse : COLOR0,
+	in  float4 inWorldPosition : POSITION0,
 
-						 out float4 outDiffuse		: SV_Target )
+	out float4 outDiffuse : SV_Target)
 {
 	float4 color;
 
@@ -201,20 +191,18 @@ void PixelShaderPolygon( in  float4 inPosition		: SV_POSITION,
 		color = inDiffuse;
 	}
 
-
 	if (Fog.Enable == 1)
 	{
-		float z = inPosition.z*inPosition.w;
+		float z = inPosition.z * inPosition.w;
 		float f = (Fog.Distance.y - z) / (Fog.Distance.y - Fog.Distance.x);
 		f = saturate(f);
-		outDiffuse = f * color + (1 - f)*Fog.FogColor;
+		outDiffuse = f * color + (1 - f) * Fog.FogColor;
 		outDiffuse.a = color.a;
 	}
 	else
 	{
 		outDiffuse = color;
 	}
-
 
 	//縁取り
 	if (fuchi == 1)
@@ -223,12 +211,8 @@ void PixelShaderPolygon( in  float4 inPosition		: SV_POSITION,
 		//if ((angle < 0.5f)&&(angle > -0.5f))
 		if (angle > -0.3f)
 		{
-			outDiffuse.rb  = 1.0f;
-			outDiffuse.g = 0.0f;			
+			outDiffuse.rb = 1.0f;
+			outDiffuse.g = 0.0f;
 		}
 	}
-
-
-
-
 }

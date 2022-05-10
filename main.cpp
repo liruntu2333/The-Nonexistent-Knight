@@ -43,13 +43,11 @@ void Update(void);
 void Draw(void);
 bool CheckGameover();
 
-
 //*****************************************************************************
 // グローバル変数:
 //*****************************************************************************
 long g_MouseX = 0;
 long g_MouseY = 0;
-
 
 #ifdef _DEBUG
 int		g_CountFPS;							// FPSカウンタ
@@ -64,8 +62,6 @@ int g_SMcount = 0;							// use to count down slow motion
 
 DWORD g_dwFrameCount = 0;
 
-
-
 //=============================================================================
 // メイン関数
 //=============================================================================
@@ -79,7 +75,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	DWORD dwFPSLastTime;
 	DWORD dwCurrentTime;
 	DWORD dwFrameCount;
-	
+
 	WNDCLASSEX	wcex = {
 		sizeof(WNDCLASSEX),
 		CS_CLASSDC,
@@ -89,29 +85,29 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		hInstance,
 		NULL,
 		LoadCursor(NULL, IDC_ARROW),
-		(HBRUSH)(COLOR_WINDOW+1),
+		(HBRUSH)(COLOR_WINDOW + 1),
 		NULL,
 		CLASS_NAME,
 		NULL
 	};
 	HWND		hWnd;
 	MSG			msg;
-	
+
 	// ウィンドウクラスの登録
 	RegisterClassEx(&wcex);
 
 	// ウィンドウの作成
 	hWnd = CreateWindow(CLASS_NAME,
-						WINDOW_NAME,
-						WS_OVERLAPPEDWINDOW,
-						CW_USEDEFAULT,																		// ウィンドウの左座標
-						CW_USEDEFAULT,																		// ウィンドウの上座標
-						SCREEN_WIDTH + GetSystemMetrics(SM_CXDLGFRAME)*2,									// ウィンドウ横幅
-						SCREEN_HEIGHT + GetSystemMetrics(SM_CXDLGFRAME)*2+GetSystemMetrics(SM_CYCAPTION),	// ウィンドウ縦幅
-						NULL,
-						NULL,
-						hInstance,
-						NULL);
+		WINDOW_NAME,
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT,																		// ウィンドウの左座標
+		CW_USEDEFAULT,																		// ウィンドウの上座標
+		SCREEN_WIDTH + GetSystemMetrics(SM_CXDLGFRAME) * 2,									// ウィンドウ横幅
+		SCREEN_HEIGHT + GetSystemMetrics(SM_CXDLGFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION),	// ウィンドウ縦幅
+		NULL,
+		NULL,
+		hInstance,
+		NULL);
 
 	BOOL mode = TRUE;
 
@@ -138,7 +134,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	}
 
 	// DirectXの初期化(ウィンドウを作成してから行う)
-	if(FAILED(Init(hInstance, hWnd, mode)))
+	if (FAILED(Init(hInstance, hWnd, mode)))
 	{
 		return -1;
 	}
@@ -147,17 +143,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	timeBeginPeriod(1);	// 分解能を設定
 	dwExecLastTime = dwFPSLastTime = timeGetTime();	// システム時刻をミリ秒単位で取得
 	dwCurrentTime = dwFrameCount = 0;
-	
+
 	// ウインドウの表示(Init()の後に呼ばないと駄目)
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
-	
+
 	// メッセージループ
-	while(1)
+	while (1)
 	{
-		if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
-			if(msg.message == WM_QUIT)
+			if (msg.message == WM_QUIT)
 			{// PostQuitMessage()が呼ばれたらループ終了
 				break;
 			}
@@ -203,7 +199,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			}
 		}
 	}
-	
+
 	timeEndPeriod(1);				// 分解能を戻す
 
 	// ウィンドウクラスの登録を解除
@@ -220,14 +216,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 //=============================================================================
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	switch( message )
+	switch (message)
 	{
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
 
 	case WM_KEYDOWN:
-		switch(wParam)
+		switch (wParam)
 		{
 		case VK_ESCAPE:					// [ESC]キーが押された
 			DestroyWindow(hWnd);		// ウィンドウを破棄するよう指示する
@@ -270,7 +266,6 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	return S_OK;
 }
 
-
 //=============================================================================
 // 終了処理
 //=============================================================================
@@ -290,7 +285,6 @@ void Uninit(void)
 
 	// レンダリングの終了処理
 	UninitRenderer();
-
 }
 
 //=============================================================================
@@ -358,7 +352,7 @@ void Draw(void)
 
 	// 2D描画なので深度無効
 	SetDepthEnable(false);
-	
+
 	// モードによって処理を分ける
 	switch (g_Mode)
 	{
@@ -376,11 +370,10 @@ void Draw(void)
 
 		DrawEnemy();
 		DrawBullet();
-//		DrawScore();
+		//		DrawScore();
 		DrawEffect();
 		DrawPlayer();
 		DrawUI();
-
 
 		if (g_LoadGame == TRUE)
 		{
@@ -403,9 +396,7 @@ void Draw(void)
 
 	// バックバッファ、フロントバッファ入れ替え
 	Present();
-
 }
-
 
 //=============================================================================
 // モードの設定
@@ -413,7 +404,7 @@ void Draw(void)
 void SetMode(int mode)
 {
 	// モードを変える前に全部メモリを解放しちゃう
-	
+
 	// タイトルの終了処理
 	UninitTitle();
 	UninitElev();
@@ -460,7 +451,7 @@ void SetMode(int mode)
 		InitResult();
 		PlaySound(SOUND_LABEL_BGM_DrunkStar);
 		break;
-		
+
 		// ゲーム終了時の処理
 	case MODE_END:
 		StopSound();
@@ -470,7 +461,6 @@ void SetMode(int mode)
 
 bool CheckGameover()
 {
-
 	ENEMY* enemy = GetEnemy();
 
 	bool flag = true;
@@ -516,7 +506,6 @@ void SetLoadGame(BOOL flg)
 	g_LoadGame = flg;
 }
 
-
 //=============================================================================
 // モードの取得
 //=============================================================================
@@ -524,7 +513,6 @@ int GetMode(void)
 {
 	return g_Mode;
 }
-
 
 //=============================================================================
 // マウス座標の取得
@@ -534,18 +522,14 @@ long GetMousePosX(void)
 	return g_MouseX;
 }
 
-
 long GetMousePosY(void)
 {
 	return g_MouseY;
 }
 
-
 #ifdef _DEBUG
-char *GetDebugStr(void)
+char* GetDebugStr(void)
 {
 	return g_DebugStr;
 }
 #endif
-
-

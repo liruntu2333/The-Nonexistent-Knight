@@ -13,14 +13,12 @@
 // マクロ定義
 //*****************************************************************************
 #define TEXTURE_WIDTH				(SCREEN_WIDTH)	// 背景サイズ
-#define MAP_HEIGHT				(SCREEN_HEIGHT)	// 
+#define MAP_HEIGHT				(SCREEN_HEIGHT)	//
 #define TEXTURE_MAX					(1)				// テクスチャの数
-
 
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-
 
 //*****************************************************************************
 // グローバル変数
@@ -33,11 +31,8 @@ static char* g_TexturName[TEXTURE_MAX] = {
 	"data/TEXTURE/tutorial.png",
 };
 
-
 static BOOL		g_Load = FALSE;		// 初期化を行ったかのフラグ
 static TUTORIAL	g_Tutorial;
-
-
 
 // 初期化処理
 //=============================================================================
@@ -57,7 +52,6 @@ HRESULT InitTutorial(void)
 			NULL);
 	}
 
-
 	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -66,7 +60,6 @@ HRESULT InitTutorial(void)
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
-
 
 	// 変数の初期化
 	g_Tutorial.w = TEXTURE_WIDTH;
@@ -110,7 +103,6 @@ void UninitTutorial(void)
 //=============================================================================
 void UpdateTutorial(void)
 {
-
 	if (GetKeyboardTrigger(DIK_RETURN))
 	{
 		SetFade(FADE_OUT, MODE_GAME);
@@ -143,11 +135,8 @@ void UpdateTutorial(void)
 	}*/
 
 	//g_Tutorial.pos.x += g_Tutorial.move;
-	//if (g_Tutorial.pos.x < 0 || g_Tutorial.pos.x > (SCREEN_WIDTH - g_Tutorial.w)) 
+	//if (g_Tutorial.pos.x < 0 || g_Tutorial.pos.x > (SCREEN_WIDTH - g_Tutorial.w))
 	//	g_Tutorial.move = -1 * g_Tutorial.move;
-
-
-
 }
 
 //=============================================================================
@@ -186,10 +175,4 @@ void DrawTutorial(void)
 		// ポリゴン描画
 		GetDeviceContext()->Draw(4, 0);
 	}
-
 }
-
-
-
-
-

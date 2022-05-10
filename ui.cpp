@@ -49,7 +49,6 @@
 #define	ENM_BAR_W					50.0f
 #define	ENM_BAR_H					10.0f
 
-
 //
 //	Function Prototype Declarations
 //
@@ -80,8 +79,8 @@ static ICON g_EnmBar[ENEMY_BAR_MAX];
 
 //
 // @brief	initiate ui object
-// @param	
-// @return	
+// @param
+// @return
 //
 HRESULT InitUI(void)
 {
@@ -166,8 +165,8 @@ HRESULT InitUI(void)
 
 //
 // @brief	destruct elevator object
-// @param	
-// @return	
+// @param
+// @return
 //
 void UninitUI(void)
 {
@@ -193,8 +192,8 @@ void UninitUI(void)
 
 //
 // @brief	update ui object
-// @param	
-// @return	
+// @param
+// @return
 //
 void UpdateUI(void)
 {
@@ -203,7 +202,7 @@ void UpdateUI(void)
 	for (int i = 0; i < HEART_MAX; i++)
 	{
 		ICON* s_Heart = g_Heart + i;
-		s_Heart->texNo = (i < s_Health) ? HEART_FULL_TEX_NO: HEART_EMPTY_TEX_NO;
+		s_Heart->texNo = (i < s_Health) ? HEART_FULL_TEX_NO : HEART_EMPTY_TEX_NO;
 
 #ifdef _DEBUG
 		// デバッグ表示
@@ -239,8 +238,8 @@ void UpdateUI(void)
 
 //
 // @brief	draw ui object
-// @param	
-// @return	
+// @param
+// @return
 //
 void DrawUI(void)
 {
@@ -353,7 +352,6 @@ void DrawUI(void)
 
 		// ポリゴン描画
 		GetDeviceContext()->Draw(4, 0);
-
 	}
 
 	// Draw enemy health bar
