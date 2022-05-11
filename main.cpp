@@ -83,12 +83,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		0,
 		0,
 		hInstance,
-		NULL,
-		LoadCursor(NULL, IDC_ARROW),
+		nullptr,
+		LoadCursor(nullptr, IDC_ARROW),
 		(HBRUSH)(COLOR_WINDOW + 1),
-		NULL,
+		nullptr,
 		CLASS_NAME,
-		NULL
+		nullptr
 	};
 	HWND		hWnd;
 	MSG			msg;
@@ -111,7 +111,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	BOOL mode = TRUE;
 
-	int id = MessageBox(NULL, "Display in window mode?", "Display mode", MB_YESNOCANCEL | MB_ICONQUESTION);
+	int id = MessageBox(nullptr, "Display in window mode?", "Display mode", MB_YESNOCANCEL | MB_ICONQUESTION);
 
 	switch (id)
 	{
@@ -151,7 +151,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	// メッセージループ
 	while (1)
 	{
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			if (msg.message == WM_QUIT)
 			{// PostQuitMessage()が呼ばれたらループ終了

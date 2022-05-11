@@ -116,10 +116,10 @@ void GetTrigger(PLAYER* player);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer* g_VertexBuffer = NULL;		// 頂点情報
-static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11Buffer* g_VertexBuffer = nullptr;		// 頂点情報
+static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = {nullptr};	// テクスチャ情報
 
-static char* g_TexturName[TEXTURE_MAX] =
+static char* g_TextureName[TEXTURE_MAX] =
 {
 	"data/TEXTURE/player.png",
 };
@@ -155,13 +155,13 @@ HRESULT InitPlayer(void)
 	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
-		g_Texture[i] = NULL;
+		g_Texture[i] = nullptr;
 		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-			g_TexturName[i],
-			NULL,
-			NULL,
+			g_TextureName[i],
+			nullptr,
+			nullptr,
 			&g_Texture[i],
-			NULL);
+		nullptr);
 	}
 
 	// 頂点バッファ生成
@@ -171,7 +171,7 @@ HRESULT InitPlayer(void)
 	bd.ByteWidth = sizeof(VERTEX_3D) * 4;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
+	GetDevice()->CreateBuffer(&bd, nullptr, &g_VertexBuffer);
 
 	// プレイヤー構造体の初期化
 	for (int i = 0; i < PLAYER_MAX; i++)
@@ -195,8 +195,8 @@ HRESULT InitPlayer(void)
 		s_Player->vertSpd = 0;
 		s_Player->horzSpd = 0;
 		s_Player->actCount = 0;
-		s_Player->effect = NULL;
-		s_Player->elev = NULL;
+		s_Player->effect = nullptr;
+		s_Player->elev = nullptr;
 
 		s_Player->stamina = PLAYER_STAMINA_MAX;
 		s_Player->health = PLAYER_HEALTH_MAX;
@@ -224,7 +224,7 @@ void UninitPlayer(void)
 	if (g_VertexBuffer)
 	{
 		g_VertexBuffer->Release();
-		g_VertexBuffer = NULL;
+		g_VertexBuffer = nullptr;
 	}
 
 	for (int i = 0; i < TEXTURE_MAX; i++)
@@ -232,7 +232,7 @@ void UninitPlayer(void)
 		if (g_Texture[i])
 		{
 			g_Texture[i]->Release();
-			g_Texture[i] = NULL;
+			g_Texture[i] = nullptr;
 		}
 	}
 
@@ -277,7 +277,7 @@ void UpdatePlayer(void)
 					{
 						s_Player->state = FALL;
 						s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
-						s_Player->elev = NULL;
+						s_Player->elev = nullptr;
 					}
 				}
 				else if (!GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2))
@@ -365,7 +365,7 @@ void UpdatePlayer(void)
 				{
 					s_Player->state = FALL;
 					s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
-					s_Player->elev = NULL;
+					s_Player->elev = nullptr;
 				}
 				// If there is obstacle above player, reverse vertical speed to +1.
 				if (GetTerrain(s_Player->pos.x, s_Player->pos.y - s_Player->h / 2))
@@ -374,7 +374,7 @@ void UpdatePlayer(void)
 					s_Player->vertSpd = 1;
 					s_Player->state = FALL;
 					s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
-					s_Player->elev = NULL;
+					s_Player->elev = nullptr;
 				}
 				break;
 			}
@@ -430,7 +430,7 @@ void UpdatePlayer(void)
 				{
 					s_Player->state = FALL;
 					s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
-					s_Player->elev = NULL;
+					s_Player->elev = nullptr;
 					s_Player->vertSpd = 0;
 				}
 				break;
@@ -502,11 +502,11 @@ void UpdatePlayer(void)
 				if (!s_Player->actCount--)
 				{
 					s_Player->atkOrient = s_Player->orient;
-					s_Player->effect = NULL;
+					s_Player->effect = nullptr;
 					s_Player->state = FALL;
 					s_Player->countAnim = 0.0f;
 					s_Player->patternAnim = 0;
-					s_Player->elev = NULL;
+					s_Player->elev = nullptr;
 				}
 				break;
 			}
@@ -577,11 +577,11 @@ void UpdatePlayer(void)
 				// While attacking, dashCount degresses per frame until reaches 0
 				if (!s_Player->actCount--)
 				{
-					s_Player->effect = NULL;
+					s_Player->effect = nullptr;
 					s_Player->state = FALL;
 					s_Player->countAnim = 0.0f;
 					s_Player->patternAnim = 0;
-					s_Player->elev = NULL;
+					s_Player->elev = nullptr;
 				}
 				break;
 			}
@@ -596,7 +596,7 @@ void UpdatePlayer(void)
 					s_Player->state = FALL;
 					s_Player->countAnim = 0.0f;
 					s_Player->patternAnim = 0;
-					s_Player->elev = NULL;
+					s_Player->elev = nullptr;
 				}
 				break;
 			}
@@ -639,7 +639,7 @@ void UpdatePlayer(void)
 					s_Player->state = FALL;
 					s_Player->countAnim = 0.0f;
 					s_Player->patternAnim = 0;
-					s_Player->elev = NULL;
+					s_Player->elev = nullptr;
 				}
 				break;
 			}
@@ -685,12 +685,12 @@ void UpdatePlayer(void)
 				}
 				else
 				{
-					s_Player->effect = NULL;
+					s_Player->effect = nullptr;
 					s_Player->vertSpd = 0;
 					s_Player->state = FALL;
 					s_Player->countAnim = 0.0f;
 					s_Player->patternAnim = 0;
-					s_Player->elev = NULL;
+					s_Player->elev = nullptr;
 				}
 				break;
 			}
@@ -911,7 +911,7 @@ void HitPlayer(ENEMY* enemy, PLAYER* player, int damge, int orient)
 		if (player->effect)
 		{
 			player->effect->use = FALSE;
-			player->effect = NULL;
+			player->effect = nullptr;
 		}
 		SetEffect(player->pos.x, player->pos.y, BLOOD_SPLASH, orient);
 		player->state = STUN;
@@ -997,7 +997,7 @@ void CheckHitTerra(PLAYER* player, EFFECT* effect)
 						PLAYER_REFLECT, player->atkOrient);
 					// stop playing Blade effect cause hit on the wall
 					player->effect->use = FALSE;
-					player->effect = NULL;
+					player->effect = nullptr;
 
 					player->state = STUN;
 					player->countAnim = 0.0f; player->patternAnim = 0;
@@ -1189,7 +1189,7 @@ void GetTrigger(PLAYER* player)
 			{
 				player->stamina -= DASH_COST;
 				player->state = DASH;
-				player->elev = NULL;
+				player->elev = nullptr;
 				player->actCount = DASH_FRAME;
 
 				PlaySound(SOUND_LABEL_SE_dash);
@@ -1243,7 +1243,7 @@ void GetTrigger(PLAYER* player)
 		{
 			if (player->stamina >= JUMP_COST)
 			{
-				player->elev = NULL;
+				player->elev = nullptr;
 				player->stamina -= JUMP_COST;
 				player->state = JUMP;
 				player->countAnim = 0.0f; player->patternAnim = 0;

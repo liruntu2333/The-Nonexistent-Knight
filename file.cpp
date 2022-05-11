@@ -80,7 +80,7 @@ void SaveData(void)
 	printf("\nセーブ開始・・・");
 	fp = fopen("savedata.bin", "wb");			// ファイルをバイナリ書き込みモードでOpenする
 
-	if (fp != NULL)								// ファイルがあれば書き込み、無ければ無視
+	if (fp != nullptr)								// ファイルがあれば書き込み、無ければ無視
 	{
 		fwrite(&save, sizeof BYTE, sizeof(SAVEDATA), fp);	// 指定したアドレスから指定したバイト数分ファイルへ書き込む
 		fclose(fp);								// Openしていたファイルを閉じる
@@ -109,7 +109,7 @@ void LoadData(void)
 	printf("\nロード開始・・・");
 	fp = fopen("savedata.bin", "rb");	// ファイルをバイナリ読み込みモードでOpenする
 
-	if (fp != NULL)						// ファイルがあれば書き込み、無ければ無視
+	if (fp != nullptr)						// ファイルがあれば書き込み、無ければ無視
 	{
 		fread(&save, 1, sizeof(SAVEDATA), fp);	// 指定したアドレスへ指定したバイト数分ファイルから読み込む
 		fclose(fp);								// Openしていたファイルを閉じる

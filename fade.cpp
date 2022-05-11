@@ -23,8 +23,8 @@ static void SetVertex(float X, float Y, float Width, float Height, float U, floa
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer* g_VertexBuffer = NULL;		// 頂点情報
-static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11Buffer* g_VertexBuffer = nullptr;		// 頂点情報
+static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = {nullptr};	// テクスチャ情報
 
 static char* g_TexturName[] = {
 	"data/TEXTURE/fade_black.png",
@@ -43,13 +43,13 @@ HRESULT InitFade(void)
 	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
-		g_Texture[i] = NULL;
+		g_Texture[i] = nullptr;
 		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
 			g_TexturName[i],
-			NULL,
-			NULL,
+			nullptr,
+			nullptr,
 			&g_Texture[i],
-			NULL);
+		nullptr);
 	}
 
 	// 頂点バッファ生成
@@ -59,7 +59,7 @@ HRESULT InitFade(void)
 	bd.ByteWidth = sizeof(VERTEX_3D) * 4;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
+	GetDevice()->CreateBuffer(&bd, nullptr, &g_VertexBuffer);
 
 	// 変数の初期化
 	g_Fade.w = MAP_WIDTH;
@@ -85,7 +85,7 @@ void UninitFade(void)
 	if (g_VertexBuffer)
 	{
 		g_VertexBuffer->Release();
-		g_VertexBuffer = NULL;
+		g_VertexBuffer = nullptr;
 	}
 
 	for (int i = 0; i < TEXTURE_MAX; i++)
@@ -93,7 +93,7 @@ void UninitFade(void)
 		if (g_Texture[i])
 		{
 			g_Texture[i]->Release();
-			g_Texture[i] = NULL;
+			g_Texture[i] = nullptr;
 		}
 	}
 

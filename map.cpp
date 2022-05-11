@@ -23,6 +23,9 @@
 #define SHAKE_PD					(10)			// screen shake period
 #define SHAKE_AMP					(30.0f)			// screen shake amplitude
 
+#define MAP_TEX_PATH				"data/TEXTURE/map.png"
+#define BG_TEX_PATH					"data/TEXTURE/background.jpg"
+
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -30,15 +33,11 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer* g_VertexBuffer = NULL;		// 頂点情報
-static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11Buffer* g_VertexBuffer = nullptr;
+static ID3D11ShaderResourceView* gMapTexture = nullptr;	
+static ID3D11ShaderResourceView* gBGTexture = nullptr;	
 
-static char* g_TexturName[TEXTURE_MAX] = {
-	"data/TEXTURE/map.png",
-	"data/TEXTURE/background.jpg",
-};
-
-static BOOL	g_Load = FALSE;		// 初期化を行ったかのフラグ
+static BOOL	g_Load = FALSE;
 static BG	g_Map;
 static BG	g_BG;
 
@@ -49,35 +48,36 @@ static unsigned short int g_TerrainDT[MAP_HEIGHT / BLK_LGTH][MAP_WIDTH / BLK_LGT
 //=============================================================================
 HRESULT InitMap(void)
 {
-	ID3D11Device* pDevice = GetDevice();
-
 	//テクスチャ生成
-	for (int i = 0; i < TEXTURE_MAX; i++)
-	{
-		g_Texture[i] = NULL;
-		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-			g_TexturName[i],
-			NULL,
-			NULL,
-			&g_Texture[i],
-			NULL);
-	}
+	gMapTexture = nullptr;
+	D3DX11CreateShaderResourceViewFromFile(GetDevice(),
+		MAP_TEX_PATH,
+		nullptr,
+		nullptr,
+		&gMapTexture,
+		nullptr);
 
-	// 頂点バッファ生成
+	gBGTexture = nullptr;
+	D3DX11CreateShaderResourceViewFromFile(GetDevice(),
+		BG_TEX_PATH,
+		nullptr,
+		nullptr,
+		&gBGTexture,
+		nullptr);
+
+	// Set up vertex buffer.
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.ByteWidth = sizeof(VERTEX_3D) * 4;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
+	GetDevice()->CreateBuffer(&bd, nullptr, &g_VertexBuffer);
 
-	// 変数の初期化
 	g_Map.w = MAP_WIDTH;
 	g_Map.h = MAP_HEIGHT;
 	g_Map.pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	g_Map.texNo = 0;
-
 	g_Map.shake = FALSE;
 
 	g_BG.w = SCREEN_WIDTH;
@@ -154,16 +154,19 @@ void UninitMap(void)
 	if (g_VertexBuffer)
 	{
 		g_VertexBuffer->Release();
-		g_VertexBuffer = NULL;
+		g_VertexBuffer = nullptr;
 	}
 
-	for (int i = 0; i < TEXTURE_MAX; i++)
+	if (gMapTexture)
 	{
-		if (g_Texture[i])
-		{
-			g_Texture[i]->Release();
-			g_Texture[i] = NULL;
-		}
+		gMapTexture->Release();
+		gMapTexture = nullptr;
+	}
+
+	if (gBGTexture)
+	{
+		gBGTexture->Release();
+		gBGTexture = nullptr;
 	}
 
 	g_Load = FALSE;
@@ -212,18 +215,14 @@ void UpdateMap(void)
 //=============================================================================
 void DrawMap(void)
 {
-	// 頂点バッファ設定
 	UINT stride = sizeof(VERTEX_3D);
 	UINT offset = 0;
 	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
 
-	// マトリクス設定
 	SetWorldViewProjection2D();
 
-	// プリミティブトポロジ設定
 	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	// マテリアル設定
 	MATERIAL material;
 	ZeroMemory(&material, sizeof(material));
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
@@ -231,31 +230,25 @@ void DrawMap(void)
 
 	// Draw Background
 	{
-		// テクスチャ設定
-		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_BG.texNo]);
+		GetDeviceContext()->PSSetShaderResources(0, 1, &gBGTexture);
 
-		// １枚のポリゴンの頂点とテクスチャ座標を設定
 		SetSpriteLTColor(g_VertexBuffer,
 			0.0f, 0.0f, g_BG.w, g_BG.h,
 			0.0f, 0.0f, 1.0f, 1.0f,
 			D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 
-		// ポリゴン描画
 		GetDeviceContext()->Draw(4, 0);
 	}
 
-	// タイトルの背景を描画
+	// Draw Terrain
 	{
-		// テクスチャ設定
-		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_Map.texNo]);
+		GetDeviceContext()->PSSetShaderResources(0, 1, &gMapTexture);
 
-		// １枚のポリゴンの頂点とテクスチャ座標を設定
 		SetSpriteLTColor(g_VertexBuffer,
 			-g_Map.pos.x, -g_Map.pos.y, g_Map.w, g_Map.h,
 			0.0f, 0.0f, 1.0f, 1.0f,
 			D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 
-		// ポリゴン描画
 		GetDeviceContext()->Draw(4, 0);
 	}
 }

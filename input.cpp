@@ -39,8 +39,8 @@ void UninitPad(void);
 //*****************************************************************************
 
 //------------------------------- keyboard
-LPDIRECTINPUT8			g_pDInput = NULL;					// IDirectInput8インターフェースへのポインタ
-LPDIRECTINPUTDEVICE8	g_pDIDevKeyboard = NULL;			// IDirectInputDevice8インターフェースへのポインタ(キーボード)
+LPDIRECTINPUT8			g_pDInput = nullptr;					// IDirectInput8インターフェースへのポインタ
+LPDIRECTINPUTDEVICE8	g_pDIDevKeyboard = nullptr;			// IDirectInputDevice8インターフェースへのポインタ(キーボード)
 BYTE					g_keyState[NUM_KEY_MAX];			// キーボードの状態を受け取るワーク
 BYTE					g_keyStateTrigger[NUM_KEY_MAX];		// キーボードの状態を受け取るワーク
 BYTE					g_keyStateRepeat[NUM_KEY_MAX];		// キーボードの状態を受け取るワーク
@@ -48,14 +48,14 @@ BYTE					g_keyStateRelease[NUM_KEY_MAX];		// キーボードの状態を受け取るワーク
 int						g_keyStateRepeatCnt[NUM_KEY_MAX];	// キーボードのリピートカウンタ
 
 //--------------------------------- mouse
-static LPDIRECTINPUTDEVICE8 pMouse = NULL; // mouse
+static LPDIRECTINPUTDEVICE8 pMouse = nullptr; // mouse
 
 static DIMOUSESTATE2   mouseState;		// マウスのダイレクトな状態
 static DIMOUSESTATE2   mouseTrigger;	// 押された瞬間だけON
 
 //--------------------------------- game pad
 
-static LPDIRECTINPUTDEVICE8	pGamePad[GAMEPADMAX] = { NULL,NULL,NULL,NULL };// パッドデバイス
+static LPDIRECTINPUTDEVICE8	pGamePad[GAMEPADMAX] = {nullptr, nullptr, nullptr, nullptr};// パッドデバイス
 
 static DWORD	padState[GAMEPADMAX];	// パッド情報（複数対応）
 static DWORD	padTrigger[GAMEPADMAX];
@@ -72,7 +72,7 @@ HRESULT InitInput(HINSTANCE hInst, HWND hWnd)
 	{
 		// DirectInputオブジェクトの作成
 		hr = DirectInput8Create(hInst, DIRECTINPUT_VERSION,
-			IID_IDirectInput8, (void**)&g_pDInput, NULL);
+			IID_IDirectInput8, (void**)&g_pDInput, nullptr);
 	}
 
 	// キーボードの初期化
@@ -104,7 +104,7 @@ void UninitInput(void)
 	if (g_pDInput)
 	{
 		g_pDInput->Release();
-		g_pDInput = NULL;
+		g_pDInput = nullptr;
 	}
 }
 
@@ -131,8 +131,8 @@ HRESULT InitKeyboard(HINSTANCE hInst, HWND hWnd)
 	HRESULT hr;
 
 	// デバイスオブジェクトを作成
-	hr = g_pDInput->CreateDevice(GUID_SysKeyboard, &g_pDIDevKeyboard, NULL);
-	if (FAILED(hr) || g_pDIDevKeyboard == NULL)
+	hr = g_pDInput->CreateDevice(GUID_SysKeyboard, &g_pDIDevKeyboard, nullptr);
+	if (FAILED(hr) || g_pDIDevKeyboard == nullptr)
 	{
 		MessageBox(hWnd, "キーボードがねぇ！", "警告！", MB_ICONWARNING);
 		return hr;
@@ -168,7 +168,7 @@ void UninitKeyboard(void)
 	if (g_pDIDevKeyboard)
 	{
 		g_pDIDevKeyboard->Release();
-		g_pDIDevKeyboard = NULL;
+		g_pDIDevKeyboard = nullptr;
 	}
 }
 
@@ -257,8 +257,8 @@ HRESULT InitializeMouse(HINSTANCE hInst, HWND hWindow)
 {
 	HRESULT result;
 	// デバイス作成
-	result = g_pDInput->CreateDevice(GUID_SysMouse, &pMouse, NULL);
-	if (FAILED(result) || pMouse == NULL)
+	result = g_pDInput->CreateDevice(GUID_SysMouse, &pMouse, nullptr);
+	if (FAILED(result) || pMouse == nullptr)
 	{
 		MessageBox(hWindow, "No mouse", "Warning", MB_OK | MB_ICONWARNING);
 		return result;
@@ -305,7 +305,7 @@ void UninitMouse()
 	{
 		pMouse->Unacquire();
 		pMouse->Release();
-		pMouse = NULL;
+		pMouse = nullptr;
 	}
 }
 //-----------------------------------------------------------
@@ -382,7 +382,7 @@ BOOL CALLBACK SearchGamePadCallback(LPDIDEVICEINSTANCE lpddi, LPVOID)
 {
 	HRESULT result;
 
-	result = g_pDInput->CreateDevice(lpddi->guidInstance, &pGamePad[padCount++], NULL);
+	result = g_pDInput->CreateDevice(lpddi->guidInstance, &pGamePad[padCount++], nullptr);
 	return DIENUM_CONTINUE;	// 次のデバイスを列挙
 }
 //---------------------------------------- 初期化
@@ -393,7 +393,7 @@ HRESULT InitializePad(void)			// パッド初期化
 
 	padCount = 0;
 	// ジョイパッドを探す
-	g_pDInput->EnumDevices(DI8DEVCLASS_GAMECTRL, (LPDIENUMDEVICESCALLBACK)SearchGamePadCallback, NULL, DIEDFL_ATTACHEDONLY);
+	g_pDInput->EnumDevices(DI8DEVCLASS_GAMECTRL, (LPDIENUMDEVICESCALLBACK)SearchGamePadCallback, nullptr, DIEDFL_ATTACHEDONLY);
 	// セットしたコールバック関数が、パッドを発見した数だけ呼ばれる。
 
 	for (i = 0; i < padCount; i++) {

@@ -50,8 +50,8 @@ void ChekHitPlayer(ENEMY* enemy);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer* g_VertexBuffer = NULL;		// 頂点情報
-static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11Buffer* g_VertexBuffer = nullptr;		// 頂点情報
+static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = {nullptr};	// テクスチャ情報
 //
 //static LINEAR_INTERPOLATION g_MoveTbl0[] = {
 //	//座標									回転率							拡大率							時間
@@ -100,13 +100,13 @@ HRESULT InitEnemy(void)
 	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
-		g_Texture[i] = NULL;
+		g_Texture[i] = nullptr;
 		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
 			g_TexturName[i],
-			NULL,
-			NULL,
+			nullptr,
+			nullptr,
 			&g_Texture[i],
-			NULL);
+		nullptr);
 	}
 
 	// 頂点バッファ生成
@@ -116,7 +116,7 @@ HRESULT InitEnemy(void)
 	bd.ByteWidth = sizeof(VERTEX_3D) * 4;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
+	GetDevice()->CreateBuffer(&bd, nullptr, &g_VertexBuffer);
 
 	// エネミー構造体の初期化
 	for (int i = 0; i < ENEMY_MAX; i++)
@@ -140,8 +140,8 @@ HRESULT InitEnemy(void)
 		s_Enemy->vertSpd = 0;
 		s_Enemy->horzSpd = 0;
 		s_Enemy->actCount = 0;
-		s_Enemy->effect = NULL;
-		s_Enemy->rddot = NULL;
+		s_Enemy->effect = nullptr;
+		s_Enemy->rddot = nullptr;
 		s_Enemy->slashed = FALSE;
 
 		s_Enemy->stamina = 0;
@@ -167,7 +167,7 @@ void UninitEnemy(void)
 	if (g_VertexBuffer)
 	{
 		g_VertexBuffer->Release();
-		g_VertexBuffer = NULL;
+		g_VertexBuffer = nullptr;
 	}
 
 	for (int i = 0; i < TEXTURE_MAX; i++)
@@ -175,7 +175,7 @@ void UninitEnemy(void)
 		if (g_Texture[i])
 		{
 			g_Texture[i]->Release();
-			g_Texture[i] = NULL;
+			g_Texture[i] = nullptr;
 		}
 	}
 
@@ -302,7 +302,7 @@ void UpdateEnemy(void)
 					if (s_Enemy->rddot)
 					{
 						s_Enemy->rddot->use = FALSE;
-						s_Enemy->rddot = NULL;
+						s_Enemy->rddot = nullptr;
 						GetPlayer()->pryDetect = FALSE;
 					}
 				}
@@ -514,7 +514,7 @@ void HitEnemy(ENEMY* enemy, int damage, int orient)
 		if (enemy->rddot)
 		{
 			enemy->rddot->use = FALSE;
-			enemy->rddot = NULL;
+			enemy->rddot = nullptr;
 		}
 	}
 	enemy->actCount = BIG_STUN_FRAME;

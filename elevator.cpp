@@ -31,8 +31,8 @@
 //
 //	Global Variables
 //
-static ID3D11Buffer* g_VertexBuffer = NULL;		// 頂点情報
-static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11Buffer* g_VertexBuffer = nullptr;		// 頂点情報
+static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = {nullptr};	// テクスチャ情報
 
 static char* g_TexturName[TEXTURE_MAX] = {
 	"data/TEXTURE/elevator.png"
@@ -54,13 +54,13 @@ HRESULT InitElev(void)
 	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
-		g_Texture[i] = NULL;
+		g_Texture[i] = nullptr;
 		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
 			g_TexturName[i],
-			NULL,
-			NULL,
+			nullptr,
+			nullptr,
 			&g_Texture[i],
-			NULL);
+		nullptr);
 	}
 
 	// 頂点バッファ生成
@@ -70,7 +70,7 @@ HRESULT InitElev(void)
 	bd.ByteWidth = sizeof(VERTEX_3D) * 4;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
+	GetDevice()->CreateBuffer(&bd, nullptr, &g_VertexBuffer);
 
 	// Initiate elevator.
 	g_Elevator.w = ELEV_WIDTH;
@@ -110,7 +110,7 @@ void UninitElev(void)
 	if (g_VertexBuffer)
 	{
 		g_VertexBuffer->Release();
-		g_VertexBuffer = NULL;
+		g_VertexBuffer = nullptr;
 	}
 
 	for (int i = 0; i < TEXTURE_MAX; i++)
@@ -118,7 +118,7 @@ void UninitElev(void)
 		if (g_Texture[i])
 		{
 			g_Texture[i]->Release();
-			g_Texture[i] = NULL;
+			g_Texture[i] = nullptr;
 		}
 	}
 
