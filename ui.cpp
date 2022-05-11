@@ -10,7 +10,7 @@
 #include "sprite.h"
 #include "player.h"
 #include "enemy.h"
-#include "map.h"
+#include "terrain.h"
 #include "ui.h"
 
 //
@@ -360,7 +360,7 @@ void DrawUI(void)
 		ICON* s_EnmBar = g_EnmBar + i;
 		if (s_EnmBar->use)
 		{
-			BG* s_Map = GetMap();
+			Terrain* s_Map = GetTerrain();
 			float ex = s_EnmBar->pos.x - s_Map->pos.x;	// relative position
 			float ey = s_EnmBar->pos.y - s_Map->pos.y;	// relative position
 

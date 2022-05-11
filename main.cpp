@@ -9,7 +9,8 @@
 #include "camera.h"
 #include "input.h"
 #include "title.h"
-#include "map.h"
+#include "background.h"
+#include "terrain.h"
 #include "player.h"
 #include "enemy.h"
 #include "bullet.h"
@@ -317,7 +318,8 @@ void Update(void)
 				g_FPS = 60;
 			}
 		}
-		UpdateMap();
+		UpdateBackground();
+		UpdateTerrain();
 		UpdateElev();
 		UpdatePlayer();
 		UpdateEffect();
@@ -365,7 +367,8 @@ void Draw(void)
 		break;
 
 	case MODE_GAME:			// ゲーム画面の描画
-		DrawMap();
+		DrawBackground();
+		DrawTerrain();
 		DrawElev();
 
 		DrawEnemy();
@@ -406,9 +409,10 @@ void SetMode(int mode)
 	// モードを変える前に全部メモリを解放しちゃう
 
 	// タイトルの終了処理
+	UninitBackground();
 	UninitTitle();
 	UninitElev();
-	UninitMap();
+	UninitTerrain();
 	UninitEffect();
 	UninitPlayer();
 	UninitEnemy();
@@ -436,7 +440,8 @@ void SetMode(int mode)
 
 	case MODE_GAME:
 		// ゲーム画面の初期化
-		InitMap();
+		InitBackground();
+		InitTerrain();
 		InitElev();
 		InitEffect();
 		InitPlayer();

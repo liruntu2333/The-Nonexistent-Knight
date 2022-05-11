@@ -1,6 +1,6 @@
 //=============================================================================
 //
-// [bg.h]
+// [terrain.h]
 // Author : LI ZIZHEN liruntu2333@gmail.com
 //
 //=============================================================================
@@ -12,7 +12,7 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-struct BG
+struct Terrain
 {
 	D3DXVECTOR3		pos;		
 	float			w, h;		
@@ -21,7 +21,7 @@ struct BG
 	BOOL			shake;		// screen shake occurs by get hit, etc
 };
 
-enum TERRAIN
+enum BLOCK_TYPE
 {
 	AIR,
 	EARTH,
@@ -33,12 +33,12 @@ enum TERRAIN
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-HRESULT InitMap(void);
-void UninitMap(void);
-void UpdateMap(void);
-void DrawMap(void);
+HRESULT InitTerrain(void);
+void UninitTerrain(void);
+void UpdateTerrain(void);
+void DrawTerrain(void);
 
-BG* GetMap(void);
+Terrain* GetTerrain(void);
 int GetTerrain(float x, float y);
 void SetTerrain(int X, int Y, int terrain);
 D3DXVECTOR3 ReloacteObj(float x, float y, float w, float h);

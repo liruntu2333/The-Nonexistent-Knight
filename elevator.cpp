@@ -8,7 +8,7 @@
 
 #include "main.h"
 #include "renderer.h"
-#include "map.h"
+#include "terrain.h"
 #include "sprite.h"
 #include "elevator.h"
 
@@ -198,7 +198,7 @@ void DrawElev(void)
 
 	// Draw elevator
 	{
-		BG* s_Map = GetMap();
+		Terrain* s_Map = GetTerrain();
 		float ex = g_Elevator.pos.x - s_Map->pos.x;	// プレイヤーの表示位置X
 		float ey = g_Elevator.pos.y - s_Map->pos.y;	// プレイヤーの表示位置Y
 

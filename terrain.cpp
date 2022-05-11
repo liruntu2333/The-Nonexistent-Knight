@@ -4,7 +4,7 @@
 // Author : LI ZIZHEN liruntu2333@gmail.com
 //
 //=============================================================================
-#include "map.h"
+#include "terrain.h"
 #include "sprite.h"
 #include "player.h"
 
@@ -38,15 +38,15 @@ static ID3D11ShaderResourceView* gMapTexture = nullptr;
 static ID3D11ShaderResourceView* gBGTexture = nullptr;	
 
 static BOOL	g_Load = FALSE;
-static BG	g_Map;
-static BG	g_BG;
+static Terrain	g_Map;
+static Terrain	g_BG;
 
 // Data storaged in 2D array. 0 stands for air, 1 earth, 2 ground suface.
 static unsigned short int g_TerrainDT[MAP_HEIGHT / BLK_LGTH][MAP_WIDTH / BLK_LGTH] = { {0} };
 
 // 初期化処理
 //=============================================================================
-HRESULT InitMap(void)
+HRESULT InitTerrain(void)
 {
 	//テクスチャ生成
 	gMapTexture = nullptr;
@@ -147,7 +147,7 @@ HRESULT InitMap(void)
 //=============================================================================
 // 終了処理
 //=============================================================================
-void UninitMap(void)
+void UninitTerrain(void)
 {
 	if (g_Load == FALSE) return;
 
@@ -163,11 +163,11 @@ void UninitMap(void)
 		gMapTexture = nullptr;
 	}
 
-	if (gBGTexture)
-	{
-		gBGTexture->Release();
-		gBGTexture = nullptr;
-	}
+	//if (gBGTexture)
+	//{
+	//	gBGTexture->Release();
+	//	gBGTexture = nullptr;
+	//}
 
 	g_Load = FALSE;
 }
@@ -175,12 +175,12 @@ void UninitMap(void)
 //=============================================================================
 // 更新処理
 //=============================================================================
-void UpdateMap(void)
+void UpdateTerrain(void)
 {
 	PLAYER* s_Player = GetPlayer();
 	// Calculate relative position for presenting on screen.
 	// WARNING: EVERYTHING PRESENTED IN THE SCREEN SHALL UPDATE ONLY
-	// AFTER BG. OTHERWISE POSITION DATA WILL BE IN A MESS.
+	// AFTER Terrain. OTHERWISE POSITION DATA WILL BE IN A MESS.
 	g_Map.pos.x = s_Player->pos.x - PLAYER_DISP_X;
 	if (g_Map.pos.x < 0) g_Map.pos.x = 0;
 	if (g_Map.pos.x > g_Map.w - SCREEN_WIDTH) g_Map.pos.x = g_Map.w - SCREEN_WIDTH;
@@ -213,7 +213,7 @@ void UpdateMap(void)
 //=============================================================================
 // 描画処理
 //=============================================================================
-void DrawMap(void)
+void DrawTerrain(void)
 {
 	UINT stride = sizeof(VERTEX_3D);
 	UINT offset = 0;
@@ -228,17 +228,17 @@ void DrawMap(void)
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 
-	// Draw Background
-	{
-		GetDeviceContext()->PSSetShaderResources(0, 1, &gBGTexture);
+	//// Draw Background
+	//{
+	//	GetDeviceContext()->PSSetShaderResources(0, 1, &gBGTexture);
 
-		SetSpriteLTColor(g_VertexBuffer,
-			0.0f, 0.0f, g_BG.w, g_BG.h,
-			0.0f, 0.0f, 1.0f, 1.0f,
-			D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	//	SetSpriteLTColor(g_VertexBuffer,
+	//		0.0f, 0.0f, g_BG.w, g_BG.h,
+	//		0.0f, 0.0f, 1.0f, 1.0f,
+	//		D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 
-		GetDeviceContext()->Draw(4, 0);
-	}
+	//	GetDeviceContext()->Draw(4, 0);
+	//}
 
 	// Draw Terrain
 	{
@@ -258,7 +258,7 @@ void DrawMap(void)
 // @param
 // @return
 //
-BG* GetMap(void)
+Terrain* GetTerrain(void)
 {
 	return &g_Map;
 }

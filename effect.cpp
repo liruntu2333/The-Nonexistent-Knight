@@ -7,7 +7,7 @@
 #include "effect.h"
 #include "sprite.h"
 #include "main.h"
-#include "map.h"
+#include "terrain.h"
 #include "player.h"
 #include "collision.h"
 #include "sound.h"
@@ -190,7 +190,7 @@ void UpdateEffect(void)
 			case COIN:
 			{
 				if (s_Effect->pos.y - s_Effect->h / 2 < 0 ||
-					s_Effect->pos.y + s_Effect->h / 2 > GetMap()->h)
+					s_Effect->pos.y + s_Effect->h / 2 > GetTerrain()->h)
 				{
 					s_Effect->use = FALSE;
 				}
@@ -384,7 +384,7 @@ void DrawEffect(void)
 	//
 	//SetBlendState(BLEND_MODE_ADD);
 	//SetBlendState(BLEND_MODE_SUBTRACT);
-	BG* s_Map = GetMap();
+	Terrain* s_Map = GetTerrain();
 
 	for (int i = 0; i < EFFECT_MAX; i++)
 	{

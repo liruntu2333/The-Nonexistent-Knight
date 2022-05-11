@@ -7,7 +7,7 @@
 #include "enemy.h"
 #include "sprite.h"
 #include "input.h"
-#include "map.h"
+#include "terrain.h"
 #include <math.h>
 #include "player.h"
 #include "collision.h"
@@ -370,7 +370,7 @@ void DrawEnemy(void)
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 
-	BG* bg = GetMap();
+	Terrain* bg = GetTerrain();
 
 	for (int i = 0; i < ENEMY_MAX; i++)
 	{

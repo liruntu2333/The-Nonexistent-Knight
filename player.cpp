@@ -7,7 +7,7 @@
 #include "player.h"
 #include "sprite.h"
 #include "input.h"
-#include "map.h"
+#include "terrain.h"
 #include "bullet.h"
 #include "file.h"
 #include "effect.h"
@@ -755,7 +755,7 @@ void DrawPlayer(void)
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 
-	BG* bg = GetMap();
+	Terrain* bg = GetTerrain();
 	for (int i = 0; i < PLAYER_MAX; i++)
 	{
 		PLAYER* s_Player = g_Player + i;
