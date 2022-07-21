@@ -1,51 +1,37 @@
-//=============================================================================
-//
-// レンダリング処理 [renderer.h]
-// Author : LI ZIZHEN liruntu2333@gmail.com
-//
-//=============================================================================
 #pragma once
 
 #include "main.h"
 
-//*********************************************************
-// マクロ定義
-//*********************************************************
 #define LIGHT_MAX		(10)
 
 enum LIGHT_TYPE
 {
-	LIGHT_TYPE_NONE,		//ライト無し
-	LIGHT_TYPE_DIRECTIONAL,	//ディレクショナルライト
-	LIGHT_TYPE_POINT,		//ポイントライト
+	LIGHT_TYPE_NONE,		
+	LIGHT_TYPE_DIRECTIONAL,	
+	LIGHT_TYPE_POINT,		
 
 	LIGHT_TYPE_NUM
 };
 
 enum BLEND_MODE
 {
-	BLEND_MODE_NONE,		//ブレンド無し
-	BLEND_MODE_ALPHABLEND,	//αブレンド
-	BLEND_MODE_ADD,			//加算ブレンド
-	BLEND_MODE_SUBTRACT,	//減算ブレンド
+	BLEND_MODE_NONE,		
+	BLEND_MODE_ALPHABLEND,	
+	BLEND_MODE_ADD,			
+	BLEND_MODE_SUBTRACT,	
 
 	BLEDD_MODE_NUM
 };
 
 enum CULL_MODE
 {
-	CULL_MODE_NONE,			//カリング無し
-	CULL_MODE_FRONT,		//表のポリゴンを描画しない(CW)
-	CULL_MODE_BACK,			//裏のポリゴンを描画しない(CCW)
+	CULL_MODE_NONE,			
+	CULL_MODE_FRONT,		
+	CULL_MODE_BACK,			
 
 	CULL_MODE_NUM
 };
 
-//*********************************************************
-// 構造体
-//*********************************************************
-
-// 頂点構造体
 struct VERTEX_3D
 {
 	D3DXVECTOR3 Position;
@@ -54,7 +40,6 @@ struct VERTEX_3D
 	D3DXVECTOR2 TexCoord;
 };
 
-// マテリアル構造体
 struct MATERIAL
 {
 	D3DXCOLOR	Ambient;
@@ -65,27 +50,22 @@ struct MATERIAL
 	int			noTexSampling;
 };
 
-// ライト構造体
 struct LIGHT {
-	D3DXVECTOR3 Direction;	// ライトの方向
-	D3DXVECTOR3 Position;	// ライトの位置
-	D3DXCOLOR	Diffuse;	// 拡散光の色
-	D3DXCOLOR   Ambient;	// 環境光の色
-	float		Attenuation;// 減衰率
-	int			Type;		// ライト種別・有効フラグ
-	int			Enable;		// ライト種別・有効フラグ
+	D3DXVECTOR3 Direction;	 
+	D3DXVECTOR3 Position;	 
+	D3DXCOLOR	Diffuse;	 
+	D3DXCOLOR   Ambient;	 
+	float		Attenuation; 
+	int			Type;		 
+	int			Enable;		 
 };
 
-// フォグ構造体
 struct FOG {
-	float		FogStart;	// フォグの開始距離
-	float		FogEnd;		// フォグの最大距離
-	D3DXCOLOR	FogColor;	// フォグの色
+	float		FogStart;	 
+	float		FogEnd;		 
+	D3DXCOLOR	FogColor;	 
 };
 
-//*****************************************************************************
-// プロトタイプ宣言
-//*****************************************************************************
 HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow);
 void UninitRenderer(void);
 

@@ -1,10 +1,3 @@
-//
-// @file				ui.cpp
-// @brief				Set & present UI at game mode.
-// @copyright			2021 LI ZIZHEN liruntu2333@gmail.com
-// @lisense				GPL
-//
-
 #include "main.h"
 #include "renderer.h"
 #include "sprite.h"
@@ -13,9 +6,6 @@
 #include "terrain.h"
 #include "ui.h"
 
-//
-//	Macros
-//
 #define TEXTURE_MAX				(7)
 #define HEART_MAX				PLAYER_HEALTH_MAX
 #define COIN_MAX				1
@@ -24,13 +14,13 @@
 
 #define HEART_FULL_TEX_NO			0
 #define HEART_EMPTY_TEX_NO			1
-#define HEART_START					D3DXVECTOR3(50.0f, 30.0f, 0.0f)		// The point where No.1 heart present
+#define HEART_START					D3DXVECTOR3(50.0f, 30.0f, 0.0f)		      
 #define HEART_LENGTH				50.0f
 #define HEART_INTERVAL				10.0f
 
 #define STA_FULL_TEX_NO				2
 #define STA_EMPTY_TEX_NO			3
-#define	STA_BAR_START				(HEART_START + D3DXVECTOR3(0.0f, HEART_LENGTH + 10.0f, 0.0f))		// The point where stamina bar present
+#define	STA_BAR_START				(HEART_START + D3DXVECTOR3(0.0f, HEART_LENGTH + 10.0f, 0.0f))		      
 #define	STA_BAR_W					400.0f
 #define	STA_BAR_H					30.0f
 
@@ -49,15 +39,8 @@
 #define	ENM_BAR_W					50.0f
 #define	ENM_BAR_H					10.0f
 
-//
-//	Function Prototype Declarations
-//
-
-//
-//	Global Variables
-//
-static ID3D11Buffer* g_VertexBuffer = nullptr;		// 頂点情報
-static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = {nullptr};	// テクスチャ情報
+static ID3D11Buffer* g_VertexBuffer = nullptr;		 
+static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = {nullptr};	 
 
 static char* g_TexturName[TEXTURE_MAX] = {
 		"data/TEXTURE/heart.png",
@@ -69,7 +52,7 @@ static char* g_TexturName[TEXTURE_MAX] = {
 		"data/TEXTURE/enemy_bar.png",
 };
 
-static BOOL	g_Load = FALSE;		// 初期化を行ったかのフラグ
+static BOOL	g_Load = FALSE;		 
 
 static ICON	g_Heart[HEART_MAX];
 static ICON	g_StaminaBar[STAMINA_BAR_MAX];
@@ -77,16 +60,10 @@ static ICON g_Coin[COIN_MAX];
 static ICON g_Money[MONEY_MAX];
 static ICON g_EnmBar[ENEMY_BAR_MAX];
 
-//
-// @brief	initiate ui object
-// @param
-// @return
-//
 HRESULT InitUI(void)
 {
 	ID3D11Device* pDevice = GetDevice();
 
-	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
 		g_Texture[i] = nullptr;
@@ -98,7 +75,6 @@ HRESULT InitUI(void)
 		nullptr);
 	}
 
-	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DYNAMIC;
@@ -159,15 +135,10 @@ HRESULT InitUI(void)
 		s_EnmBar->use = FALSE;
 	}
 
-	g_Load = TRUE;	// データの初期化を行った
+	g_Load = TRUE;	 
 	return S_OK;
 }
 
-//
-// @brief	destruct elevator object
-// @param
-// @return
-//
 void UninitUI(void)
 {
 	if (g_Load == FALSE) return;
@@ -190,11 +161,6 @@ void UninitUI(void)
 	g_Load = FALSE;
 }
 
-//
-// @brief	update ui object
-// @param
-// @return
-//
 void UpdateUI(void)
 {
 	int s_Health = GetPlayer()->health;
@@ -205,8 +171,6 @@ void UpdateUI(void)
 		s_Heart->texNo = (i < s_Health) ? HEART_FULL_TEX_NO : HEART_EMPTY_TEX_NO;
 
 #ifdef _DEBUG
-		// デバッグ表示
-	/*	PrintDebugProc("Heart No. %d x:%f y: %f use: %d TexNo: %d\n", i, s_Heart->pos.x, s_Heart->pos.y, s_Heart->use, s_Heart->texNo);*/
 #endif
 	}
 
@@ -236,31 +200,21 @@ void UpdateUI(void)
 	}
 }
 
-//
-// @brief	draw ui object
-// @param
-// @return
-//
 void DrawUI(void)
 {
-	// 頂点バッファ設定
 	UINT stride = sizeof(VERTEX_3D);
 	UINT offset = 0;
 	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
 
-	// マトリクス設定
 	SetWorldViewProjection2D();
 
-	// プリミティブトポロジ設定
 	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	// マテリアル設定
 	MATERIAL material;
 	ZeroMemory(&material, sizeof(material));
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 
-	// Draw Heart
 	for (int i = 0; i < HEART_MAX; i++)
 	{
 		ICON* s_Heart = g_Heart + i;
@@ -277,7 +231,6 @@ void DrawUI(void)
 		}
 	}
 
-	// Draw Stamina Bar
 	for (int i = 0; i < STAMINA_BAR_MAX; i++)
 	{
 		ICON* s_Bar = g_StaminaBar + i;
@@ -305,7 +258,6 @@ void DrawUI(void)
 		}
 	}
 
-	// Draw Coin
 	for (int i = 0; i < COIN_MAX; i++)
 	{
 		ICON* s_Coin = g_Coin + i;
@@ -322,47 +274,40 @@ void DrawUI(void)
 		}
 	}
 
-	// Draw Money
 	int money = GetPlayer()->money;
 	for (int i = 0; i < MONEY_DIGIT; i++)
 	{
-		// 今回表示する桁の数字
 		float x = (float)(money % 10);
 
-		// 次の桁へ
 		money /= 10;
 
-		// スコアの位置やテクスチャー座標を反映
-		float px = g_Money->pos.x - g_Money->w * i;	// スコアの表示位置X
-		float py = g_Money->pos.y;				// スコアの表示位置Y
-		float pw = g_Money->w;					// スコアの表示幅
-		float ph = g_Money->h;					// スコアの表示高さ
+		float px = g_Money->pos.x - g_Money->w * i;	 
+		float py = g_Money->pos.y;				 
+		float pw = g_Money->w;					 
+		float ph = g_Money->h;					 
 
-		float tw = 1.0f / 10;					// テクスチャの幅
-		float th = 1.0f / 1;					// テクスチャの高さ
-		float tx = x * tw;						// テクスチャの左上X座標
-		float ty = 0.0f;						// テクスチャの左上Y座標
+		float tw = 1.0f / 10;					 
+		float th = 1.0f / 1;					 
+		float tx = x * tw;						 
+		float ty = 0.0f;						 
 
 		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_Money->texNo]);
-		// １枚のポリゴンの頂点とテクスチャ座標を設定
 		SetSpriteLTColor(g_VertexBuffer,
 			px, py, pw, ph,
 			tx, ty, tw, th,
 			D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 
-		// ポリゴン描画
 		GetDeviceContext()->Draw(4, 0);
 	}
 
-	// Draw enemy health bar
 	for (int i = 0; i < ENEMY_BAR_MAX; i++)
 	{
 		ICON* s_EnmBar = g_EnmBar + i;
 		if (s_EnmBar->use)
 		{
 			Terrain* s_Map = GetTerrain();
-			float ex = s_EnmBar->pos.x - s_Map->pos.x;	// relative position
-			float ey = s_EnmBar->pos.y - s_Map->pos.y;	// relative position
+			float ex = s_EnmBar->pos.x - s_Map->pos.x;	  
+			float ey = s_EnmBar->pos.y - s_Map->pos.y;	  
 
 			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[s_EnmBar->texNo]);
 

@@ -1,18 +1,9 @@
-//=============================================================================
-//
-// プレイヤー処理 [player.h]
-// Author : LI ZIZHEN liruntu2333@gmail.com
-//
-//=============================================================================
 #pragma once
 
 #include "main.h"
 #include "renderer.h"
 
-//*****************************************************************************
-// マクロ定義
-//*****************************************************************************
-#define PLAYER_MAX					(1)		// プレイヤーのMax人数
+#define PLAYER_MAX					(1)		 
 #define GRAVITATIONAL_CONST			(1)
 #define FALL_LIMIT					(30)
 #define PLAYER_HEALTH_MAX					(7)
@@ -45,43 +36,37 @@ enum State
 	STATE_MAX
 };
 
-//*****************************************************************************
-// 構造体定義
-//*****************************************************************************
 struct EFFECT;
 struct ELEVATOR;
 struct ENEMY;
 
 struct PLAYER
 {
-	D3DXVECTOR3		pos;			// ポリゴンの座標
-	D3DXVECTOR3		rot;			// ポリゴンの回転量
-	BOOL			use;			// true:使っている  false:未使用
-	float			w, h;			// 幅と高さ
-	float			countAnim;		// アニメーションカウント
-	int				patternAnim;	// アニメーションパターンナンバー
-	int				texNo;			// テクスチャ番号
+	D3DXVECTOR3		pos;			 
+	D3DXVECTOR3		rot;			 
+	BOOL			use;			   
+	float			w, h;			 
+	float			countAnim;		 
+	int				patternAnim;	 
+	int				texNo;			 
 
-	int				state;			// current movement
-	int				orient;			// 0right 1down 2left 3up
-	int				atkOrient;		// 0right 1down 2left 3up
-	BOOL			atkDetect;		// 0 not yet 1 had
-	BOOL			pryDetect;		// Parry Detect
-	int				vertSpd;		// vertical movement per frame
-	int				horzSpd;		// horizontal movement per frame, only used when stunned
-	int				actCount;		// used for dash / attack / stun count down
-	EFFECT* effect;			// initiated attack / heal effect
-	ELEVATOR* elev;			// taken elevator
-	int				godCount;		// god mode count down
+	int				state;			  
+	int				orient;			    
+	int				atkOrient;		    
+	BOOL			atkDetect;		     
+	BOOL			pryDetect;		  
+	int				vertSpd;		    
+	int				horzSpd;		        
+	int				actCount;		         
+	EFFECT* effect;			     
+	ELEVATOR* elev;			  
+	int				godCount;		    
 
-	int				stamina;		// dash / attack need enough stamina to trigger
-	int				health;			// when health reduces to 0, you die.
-	int				money;			// defeat enemy get coin.
+	int				stamina;		        
+	int				health;			       
+	int				money;			    
 };
 
-//*****************************************************************************
-// プロトタイプ宣言
-//*****************************************************************************
 HRESULT InitPlayer(void);
 void UninitPlayer(void);
 void UpdatePlayer(void);

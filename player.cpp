@@ -1,9 +1,3 @@
-//=============================================================================
-//
-// プレイヤー処理 [player.cpp]
-// Author : LI ZIZHEN liruntu2333@gmail.com
-//
-//=============================================================================
 #include "player.h"
 #include "sprite.h"
 #include "input.h"
@@ -16,12 +10,9 @@
 #include "fade.h"
 #include "sound.h"
 
-//*****************************************************************************
-// マクロ定義
-//*****************************************************************************
-#define TEXTURE_WIDTH				(75.0f)	// キャラサイズ
-#define TEXTURE_HEIGHT				(75.0f)	//
-#define TEXTURE_MAX					(1)		// テクスチャの数
+#define TEXTURE_WIDTH				(75.0f)	 
+#define TEXTURE_HEIGHT				(75.0f)	
+#define TEXTURE_MAX					(1)		 
 #define	PLAYER_TEX_NO				(0)
 
 #define PLAYER_PNG_W				900
@@ -30,10 +21,7 @@
 #define UP_ATTACK_Y					13
 #define DOWN_ATTACK_Y				12
 
-//#define TEXTURE_PATTERN_DIVIDE_X	(5)		// アニメパターンのテクスチャ内分割数（X)
-//#define TEXTURE_PATTERN_DIVIDE_Y	(2)		// アニメパターンのテクスチャ内分割数（Y)
-//#define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X*TEXTURE_PATTERN_DIVIDE_Y)	// アニメーションパターン数
-#define ANIM_WAIT					(3)		// アニメーションの切り替わるWait値
+#define ANIM_WAIT					(3)		 
 
 #define ILLUSION_MAX				(20)
 
@@ -92,7 +80,6 @@
 
 #define GET_HIT_PARTICLE				(10)
 
-// Starting point in texture & animation frame
 struct TEXTURE_INFO
 {
 	float startY;
@@ -105,27 +92,20 @@ struct ILLUSION
 	int life;
 };
 
-//*****************************************************************************
-// プロトタイプ宣言
-//*****************************************************************************
-
 void CheckHitTerra(PLAYER* player, EFFECT* effect);
 void CheckHitEnemy(PLAYER* player, EFFECT* effect);
 void GetTrigger(PLAYER* player);
 
-//*****************************************************************************
-// グローバル変数
-//*****************************************************************************
-static ID3D11Buffer* g_VertexBuffer = nullptr;		// 頂点情報
-static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = {nullptr};	// テクスチャ情報
+static ID3D11Buffer* g_VertexBuffer = nullptr;		 
+static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = {nullptr};	 
 
 static char* g_TextureName[TEXTURE_MAX] =
 {
 	"data/TEXTURE/player.png",
 };
 
-static BOOL		g_Load = FALSE;			// 初期化を行ったかのフラグ
-static PLAYER	g_Player[PLAYER_MAX];	// プレイヤー構造体
+static BOOL		g_Load = FALSE;			 
+static PLAYER	g_Player[PLAYER_MAX];	 
 
 static ILLUSION	g_Illusion[ILLUSION_MAX];
 
@@ -145,14 +125,10 @@ static const TEXTURE_INFO c_TexInfo[STATE_MAX] =
 	{TEXTURE_HEIGHT * 6,	2},
 };
 
-//=============================================================================
-// 初期化処理
-//=============================================================================
 HRESULT InitPlayer(void)
 {
 	ID3D11Device* pDevice = GetDevice();
 
-	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
 		g_Texture[i] = nullptr;
@@ -164,7 +140,6 @@ HRESULT InitPlayer(void)
 		nullptr);
 	}
 
-	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DYNAMIC;
@@ -173,13 +148,12 @@ HRESULT InitPlayer(void)
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, nullptr, &g_VertexBuffer);
 
-	// プレイヤー構造体の初期化
 	for (int i = 0; i < PLAYER_MAX; i++)
 	{
 		PLAYER* s_Player = g_Player + i;
 
 		s_Player->use = TRUE;
-		s_Player->pos = D3DXVECTOR3(TEXTURE_WIDTH / 2 + 50, SCREEN_HEIGHT / 2, 0.0f);	// 中心点から表示
+		s_Player->pos = D3DXVECTOR3(TEXTURE_WIDTH / 2 + 50, SCREEN_HEIGHT / 2, 0.0f);	 
 		s_Player->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		s_Player->w = TEXTURE_WIDTH;
 		s_Player->h = TEXTURE_HEIGHT;
@@ -210,13 +184,10 @@ HRESULT InitPlayer(void)
 		s_Illusion->illusion.use = FALSE;
 	}
 
-	g_Load = TRUE;	// データの初期化を行った
+	g_Load = TRUE;	 
 	return S_OK;
 }
 
-//=============================================================================
-// 終了処理
-//=============================================================================
 void UninitPlayer(void)
 {
 	if (g_Load == FALSE) return;
@@ -239,52 +210,45 @@ void UninitPlayer(void)
 	g_Load = FALSE;
 }
 
-//=============================================================================
-// 更新処理
-//=============================================================================
 void UpdatePlayer(void)
 {
 	for (int i = 0; i < PLAYER_MAX; i++)
 	{
-		PLAYER* s_Player = g_Player + i;
-		// Only proceed with active player
-		if (s_Player->use == TRUE)
+		PLAYER* player = g_Player + i;
+		if (player->use == TRUE)
 		{
-			if (s_Player->godCount) s_Player->godCount--;
+			if (player->godCount) player->godCount--;
 
-			if (s_Player->elev)
+			if (player->elev)
 			{
-				s_Player->pos.y += s_Player->elev->vertSpd;
+				player->pos.y += player->elev->vertSpd;
 			}
 
-			// Input that changes current state of player.
-			GetTrigger(s_Player);
+			GetTrigger(player);
 
-			switch (s_Player->state)
+			switch (player->state)
 			{
 			case RUN:
 			{
 				if (!(GetFrameCount() % DUST_GEN_LAG))
 				{
 					PlaySound(SOUND_LABEL_SE_walk);
-					SetEffect(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2, DUST, 0);
+					SetEffect(player->pos.x, player->pos.y + player->h / 2, DUST, 0);
 				}
-				// Object is in the air, therefore should start to fall.
-				if (s_Player->elev)
+				if (player->elev)
 				{
-					if (s_Player->pos.x < s_Player->elev->pos.x ||
-						s_Player->pos.x > s_Player->elev->pos.x + s_Player->elev->w)
+					if (player->pos.x < player->elev->pos.x ||
+						player->pos.x > player->elev->pos.x + player->elev->w)
 					{
-						s_Player->state = FALL;
-						s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
-						s_Player->elev = nullptr;
+						player->state = FALL;
+						player->countAnim = 0.0f; player->patternAnim = 0;
+						player->elev = nullptr;
 					}
 				}
-				else if (!GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2))
+				else if (!GetTerrain(player->pos.x, player->pos.y + player->h / 2))
 				{
-					// Start to fall when walk across the edge.
-					s_Player->state = FALL;
-					s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
+					player->state = FALL;
+					player->countAnim = 0.0f; player->patternAnim = 0;
 				}
 				break;
 			}
@@ -292,58 +256,31 @@ void UpdatePlayer(void)
 			{
 				break;
 			}
-			//case STAND_ELEV:
-			//{
-			//	//s_Player->pos.y += s_Player->elev->vertSpd;
-			//	break;
-			//}
-			//case RUN_ELEV:
-			//{
-			//	if (!(GetFrameCount() % DUST_GEN_LAG))
-			//	{
-			//		SetEffect(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2, DUST, 0);
-			//	}
-
-			////	s_Player->pos.y += s_Player->elev->vertSpd;
-
-			//	if (s_Player->pos.x < s_Player->elev->pos.x ||
-			//		s_Player->pos.x > s_Player->elev->pos.x + s_Player->elev->w)
-			//	{
-			//		s_Player->state = FALL;
-			//		s_Player->elev = NULL;
-			//	}
-			//	break;
-			//}
 			case FALL:
 			{
-				// Vertical speed effected by gravity when in the air.
-				s_Player->pos.y += s_Player->vertSpd;
-				s_Player->vertSpd += GRAVITATIONAL_CONST;
-				if (s_Player->vertSpd > FALL_LIMIT)
+				player->pos.y += player->vertSpd;
+				player->vertSpd += GRAVITATIONAL_CONST;
+				if (player->vertSpd > FALL_LIMIT)
 				{
-					s_Player->vertSpd = FALL_LIMIT;
+					player->vertSpd = FALL_LIMIT;
 				}
 
-				// If there is obstacle under player, stand still & stop falling.
-				if (GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2))
+				if (GetTerrain(player->pos.x, player->pos.y + player->h / 2))
 				{
-					s_Player->vertSpd = 0;
-					s_Player->state = STAND;
-					s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
+					player->vertSpd = 0;
+					player->state = STAND;
+					player->countAnim = 0.0f; player->patternAnim = 0;
 
-					s_Player->pos = ReloacteObj(s_Player->pos.x, s_Player->pos.y, s_Player->w, s_Player->h);
-					// Check if stand on the ground obstacle of elevator.
+					player->pos = ReloacteObj(player->pos.x, player->pos.y, player->w, player->h);
 					for (int i = 0; i < ELEV_MAX; i++)
 					{
 						ELEVATOR* s_Elevator = GetElev() + i;
-						// Elevator's coordinate is start from left up corner,
-						// so cannot directly call BBCollision.
-						if (PECollision(&s_Player->pos, &s_Elevator->pos,
-							s_Player->w, s_Elevator->w, s_Player->h, s_Elevator->h))
+						if (PECollision(&player->pos, &s_Elevator->pos,
+							player->w, s_Elevator->w, player->h, s_Elevator->h))
 						{
-							s_Player->state = STAND;
-							s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
-							s_Player->elev = s_Elevator;
+							player->state = STAND;
+							player->countAnim = 0.0f; player->patternAnim = 0;
+							player->elev = s_Elevator;
 						}
 					}
 
@@ -354,42 +291,37 @@ void UpdatePlayer(void)
 			case JUMP:
 			case BIG_JUMP:
 			{
-				// Vertical speed effected by gravity when in the air.
-				s_Player->pos.y += s_Player->vertSpd;
-				s_Player->vertSpd += GRAVITATIONAL_CONST;
-				if (s_Player->vertSpd > FALL_LIMIT)
+				player->pos.y += player->vertSpd;
+				player->vertSpd += GRAVITATIONAL_CONST;
+				if (player->vertSpd > FALL_LIMIT)
 				{
-					s_Player->vertSpd = FALL_LIMIT;
+					player->vertSpd = FALL_LIMIT;
 				}
-				if (s_Player->vertSpd >= 0)
+				if (player->vertSpd >= 0)
 				{
-					s_Player->state = FALL;
-					s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
-					s_Player->elev = nullptr;
+					player->state = FALL;
+					player->countAnim = 0.0f; player->patternAnim = 0;
+					player->elev = nullptr;
 				}
-				// If there is obstacle above player, reverse vertical speed to +1.
-				if (GetTerrain(s_Player->pos.x, s_Player->pos.y - s_Player->h / 2))
+				if (GetTerrain(player->pos.x, player->pos.y - player->h / 2))
 				{
-					s_Player->pos.y += 5.0f;
-					s_Player->vertSpd = 1;
-					s_Player->state = FALL;
-					s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
-					s_Player->elev = nullptr;
+					player->pos.y += 5.0f;
+					player->vertSpd = 1;
+					player->state = FALL;
+					player->countAnim = 0.0f; player->patternAnim = 0;
+					player->elev = nullptr;
 				}
 				break;
 			}
 			case DASH:
 			{
-				// Dash process.
-				//
-				// Copy player's data to illusion array. Illusion generates every 10 frames.
-				if ((s_Player->actCount % ILLUSION_GEN_LAG) == 0) // Check if it's time to generate illusion
+				if ((player->actCount % ILLUSION_GEN_LAG) == 0)        
 				{
 					for (int i = 0; i < ILLUSION_MAX; i++)
 					{
 						if (!(g_Illusion + i)->illusion.use)
 						{
-							(g_Illusion + i)->illusion = *s_Player;
+							(g_Illusion + i)->illusion = *player;
 							(g_Illusion + i)->life = ILLUSION_LIFE_SPAN;
 							g_Illusion->illusion.use = TRUE;
 							break;
@@ -397,300 +329,270 @@ void UpdatePlayer(void)
 					}
 				}
 
-				if (s_Player->actCount == DASH_FRAME - DASH_GOD_ST)
+				if (player->actCount == DASH_FRAME - DASH_GOD_ST)
 				{
-					s_Player->godCount = DASH_GOD_END - DASH_GOD_ST;
+					player->godCount = DASH_GOD_END - DASH_GOD_ST;
 				}
 
 				if (GetFrameCount() % 2)
 				{
-					SetEffect(s_Player->pos.x, s_Player->pos.y, DUST_CIRCLE, 0);
+					SetEffect(player->pos.x, player->pos.y, DUST_CIRCLE, 0);
 				}
 
-				switch (s_Player->orient)
+				switch (player->orient)
 				{
-				case LEFT:								// Dash to left
-					if (!GetTerrain(s_Player->pos.x - s_Player->w / 2, s_Player->pos.y))
+				case LEFT:								   
+					if (!GetTerrain(player->pos.x - player->w / 2, player->pos.y))
 					{
-						s_Player->pos.x -= DASH_SPEED;
+						player->pos.x -= DASH_SPEED;
 					}
 					break;
-				case RIGHT:								// Dash to right
-					if (!GetTerrain(s_Player->pos.x + s_Player->w / 2, s_Player->pos.y))
+				case RIGHT:								   
+					if (!GetTerrain(player->pos.x + player->w / 2, player->pos.y))
 					{
-						s_Player->pos.x += DASH_SPEED;
+						player->pos.x += DASH_SPEED;
 					}
 					break;
 				default:
 					break;
 				}
 
-				// While dashing, dashCount degresses per frame until reaches 0
-				if (!s_Player->actCount--)
+				if (!player->actCount--)
 				{
-					s_Player->state = FALL;
-					s_Player->countAnim = 0.0f; s_Player->patternAnim = 0;
-					s_Player->elev = nullptr;
-					s_Player->vertSpd = 0;
+					player->state = FALL;
+					player->countAnim = 0.0f; player->patternAnim = 0;
+					player->elev = nullptr;
+					player->vertSpd = 0;
 				}
 				break;
 			}
 			case ATTACK:
 			{
-				// Attack process.
-				if (s_Player->actCount == ATK_FRAME)
+				if (player->actCount == ATK_FRAME)
 				{
-					// Check atk direction.
 					if (GetKeyboardPress(DIK_W))
 					{
-						s_Player->atkOrient = UP;
+						player->atkOrient = UP;
 					}
 					else if (GetKeyboardPress(DIK_S))
 					{
-						s_Player->atkOrient = DOWN;
-						// Player can't attack downward when isn't in air, nor on elevator.
-						if (s_Player->elev || GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2))
+						player->atkOrient = DOWN;
+						if (player->elev || GetTerrain(player->pos.x, player->pos.y + player->h / 2))
 						{
-							s_Player->stamina += ATK_COST;
-							s_Player->actCount = 0;
-							s_Player->state = FALL;
-							s_Player->countAnim = 0.0f;
-							s_Player->patternAnim = 0;
+							player->stamina += ATK_COST;
+							player->actCount = 0;
+							player->state = FALL;
+							player->countAnim = 0.0f;
+							player->patternAnim = 0;
 							break;
 						}
 					}
 					else if (GetKeyboardPress(DIK_D))
 					{
-						s_Player->atkOrient = RIGHT;
+						player->atkOrient = RIGHT;
 					}
 					else if (GetKeyboardPress(DIK_A))
 					{
-						s_Player->atkOrient = LEFT;
+						player->atkOrient = LEFT;
 					}
 					else
 					{
-						s_Player->atkOrient = s_Player->orient;
+						player->atkOrient = player->orient;
 					}
-					s_Player->vertSpd = 0;
-					s_Player->atkDetect = FALSE;
+					player->vertSpd = 0;
+					player->atkDetect = FALSE;
 
 					PlaySound(SOUND_LABEL_SE_attck);
 				}
 
-				if (s_Player->actCount == ATK_FRAME - ATK_DETECTION)
+				if (player->actCount == ATK_FRAME - ATK_DETECTION)
 				{
-					// blade effect bonds to start frame of detection
 					int rand_effect = rand() % 2;
-					s_Player->effect = SetEffect(s_Player->pos.x, s_Player->pos.y,
-						PLAYER_BLADE + rand_effect, s_Player->atkOrient);
+					player->effect = SetEffect(player->pos.x, player->pos.y,
+						PLAYER_BLADE + rand_effect, player->atkOrient);
 				}
 
-				// Attack dectecting process, hit detection should do only once.
-				if (!s_Player->atkDetect &&
-					s_Player->actCount < ATK_FRAME - ATK_DETECTION && s_Player->actCount > ATK_FRAME - ATK_END)
+				if (!player->atkDetect &&
+					player->actCount < ATK_FRAME - ATK_DETECTION && player->actCount > ATK_FRAME - ATK_END)
 				{
-					EFFECT* s_Effect = s_Player->effect;
+					EFFECT* s_Effect = player->effect;
 
-					// Do enemy detection first.
-					CheckHitEnemy(s_Player, s_Effect);
+					CheckHitEnemy(player, s_Effect);
 
-					// Do enviroment detection next.
-					CheckHitTerra(s_Player, s_Effect);
+					CheckHitTerra(player, s_Effect);
 				}
 
-				// While attacking, dashCount degresses per frame until reaches 0
-				if (!s_Player->actCount--)
+				if (!player->actCount--)
 				{
-					s_Player->atkOrient = s_Player->orient;
-					s_Player->effect = nullptr;
-					s_Player->state = FALL;
-					s_Player->countAnim = 0.0f;
-					s_Player->patternAnim = 0;
-					s_Player->elev = nullptr;
+					player->atkOrient = player->orient;
+					player->effect = nullptr;
+					player->state = FALL;
+					player->countAnim = 0.0f;
+					player->patternAnim = 0;
+					player->elev = nullptr;
 				}
 				break;
 			}
 			case SLASH:
 			{
-				// Attack process.
-				if (s_Player->actCount == SLASH_FRAME)
+				if (player->actCount == SLASH_FRAME)
 				{
-					// Super slash after sucessfully parried.
-					// Return to 60 FPS
 					SetSlowMotion(1);
 					PlaySound(SOUND_LABEL_SE_pasueReturn);
-					// Set next hit to normal attack.
-					s_Player->pryDetect = FALSE;
-					s_Player->atkOrient = s_Player->orient;
-					// slash effect
-					s_Player->effect = SetEffect(s_Player->pos.x, s_Player->pos.y,
-						PLAYER_SLASH, s_Player->atkOrient);
+					player->pryDetect = FALSE;
+					player->atkOrient = player->orient;
+					player->effect = SetEffect(player->pos.x, player->pos.y,
+						PLAYER_SLASH, player->atkOrient);
 
-					s_Player->vertSpd = 0;
-					s_Player->atkDetect = FALSE;
+					player->vertSpd = 0;
+					player->atkDetect = FALSE;
 				}
 
-				// Slash dectecting process, hit detection has no limit.
-				if (s_Player->actCount > SLASH_DETECTION && s_Player->actCount <= SLASH_END)
+				if (player->actCount > SLASH_DETECTION && player->actCount <= SLASH_END)
 				{
-					EFFECT* s_Effect = s_Player->effect;
+					EFFECT* s_Effect = player->effect;
 
-					// Do enemy detection only.
 					for (int i = 0; i < ENEMY_MAX; i++)
 					{
 						ENEMY* s_Enemy = GetEnemy() + i;
 						if (BBCollision(&s_Effect->pos, &s_Enemy->pos,
 							s_Effect->w, s_Enemy->w, s_Effect->h, s_Enemy->h) &&
-							s_Enemy->slashed == FALSE && s_Enemy->state != DEAD) // Bullseye
+							s_Enemy->slashed == FALSE && s_Enemy->state != DEAD)  
 						{
-							// Hit effect.
 							SetEffect(s_Enemy->pos.x, s_Enemy->pos.y,
-								PLAYER_HIT, s_Player->atkOrient);
-							// Do damage to enemy.
-							HitEnemy(s_Enemy, 2, s_Player->atkOrient);
+								PLAYER_HIT, player->atkOrient);
+							HitEnemy(s_Enemy, 2, player->atkOrient);
 
-							// Shake effect.
 							SetShake(SLASH_SHAKE);
 						}
 					}
 				}
 
-				// Dashing while slashing
-				switch (s_Player->orient)
+				switch (player->orient)
 				{
-				case LEFT:								// Dash to left
-					if (!GetTerrain(s_Player->pos.x - s_Player->w / 2, s_Player->pos.y))
+				case LEFT:								   
+					if (!GetTerrain(player->pos.x - player->w / 2, player->pos.y))
 					{
-						s_Player->pos.x -= SLASH_SPD;
+						player->pos.x -= SLASH_SPD;
 					}
 					break;
-				case RIGHT:								// Dash to right
-					if (!GetTerrain(s_Player->pos.x + s_Player->w / 2, s_Player->pos.y))
+				case RIGHT:								   
+					if (!GetTerrain(player->pos.x + player->w / 2, player->pos.y))
 					{
-						s_Player->pos.x += SLASH_SPD;
+						player->pos.x += SLASH_SPD;
 					}
 					break;
 				default:
 					break;
 				}
 
-				// While attacking, dashCount degresses per frame until reaches 0
-				if (!s_Player->actCount--)
+				if (!player->actCount--)
 				{
-					s_Player->effect = nullptr;
-					s_Player->state = FALL;
-					s_Player->countAnim = 0.0f;
-					s_Player->patternAnim = 0;
-					s_Player->elev = nullptr;
+					player->effect = nullptr;
+					player->state = FALL;
+					player->countAnim = 0.0f;
+					player->patternAnim = 0;
+					player->elev = nullptr;
 				}
 				break;
 			}
 			case PARRY:
 			{
-				// Parry process.
-
-				// While parrying, actCount degresses per frame until reaches 0
-				if (!s_Player->actCount--)
+				if (!player->actCount--)
 				{
-					s_Player->vertSpd = 0;
-					s_Player->state = FALL;
-					s_Player->countAnim = 0.0f;
-					s_Player->patternAnim = 0;
-					s_Player->elev = nullptr;
+					player->vertSpd = 0;
+					player->state = FALL;
+					player->countAnim = 0.0f;
+					player->patternAnim = 0;
+					player->elev = nullptr;
 				}
 				break;
 			}
 			case STUN:
 			{
-				// Stun process.
-				if (s_Player->actCount--)
+				if (player->actCount--)
 				{
-					// Bounce to right.
-					if (s_Player->horzSpd > 0)
+					if (player->horzSpd > 0)
 					{
-						if (!GetTerrain(s_Player->pos.x + s_Player->w / 2, s_Player->pos.y))
+						if (!GetTerrain(player->pos.x + player->w / 2, player->pos.y))
 						{
-							s_Player->pos.x += s_Player->horzSpd;
+							player->pos.x += player->horzSpd;
 						}
 					}
-					// Bouce to left.
-					else if (s_Player->horzSpd < 0)
+					else if (player->horzSpd < 0)
 					{
-						if (!GetTerrain(s_Player->pos.x - s_Player->w / 2, s_Player->pos.y))
+						if (!GetTerrain(player->pos.x - player->w / 2, player->pos.y))
 						{
-							s_Player->pos.x += s_Player->horzSpd;
+							player->pos.x += player->horzSpd;
 						}
 					}
 
-					s_Player->horzSpd = (int)(0.9f * s_Player->horzSpd);
+					player->horzSpd = (int)(0.9f * player->horzSpd);
 
-					if (!GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2))
+					if (!GetTerrain(player->pos.x, player->pos.y + player->h / 2))
 					{
-						s_Player->pos.y += s_Player->vertSpd;
-						s_Player->vertSpd += GRAVITATIONAL_CONST;
-						if (s_Player->vertSpd > FALL_LIMIT)
+						player->pos.y += player->vertSpd;
+						player->vertSpd += GRAVITATIONAL_CONST;
+						if (player->vertSpd > FALL_LIMIT)
 						{
-							s_Player->vertSpd = FALL_LIMIT;
+							player->vertSpd = FALL_LIMIT;
 						}
 					}
 				}
 				else
 				{
-					s_Player->state = FALL;
-					s_Player->countAnim = 0.0f;
-					s_Player->patternAnim = 0;
-					s_Player->elev = nullptr;
+					player->state = FALL;
+					player->countAnim = 0.0f;
+					player->patternAnim = 0;
+					player->elev = nullptr;
 				}
 				break;
 			}
 			case DEAD:
 			{
-				// Death process.
-				if (!s_Player->actCount--)
+				if (!player->actCount--)
 				{
 					SetFade(FADE_OUT, MODE_GAME);
 				}
 				else
 				{
-					SetEffect(s_Player->pos.x, s_Player->pos.y, DUST_CIRCLE, rand() % 4);
+					SetEffect(player->pos.x, player->pos.y, DUST_CIRCLE, rand() % 4);
 				}
 				break;
 			}
 			case HEAL:
 			{
-				// Heal process.
-				if (s_Player->actCount--)
+				if (player->actCount--)
 				{
-					// Set Heal effect at frame no.60
-					if (s_Player->actCount == HEAL_FRAME - HEAL_START)
+					if (player->actCount == HEAL_FRAME - HEAL_START)
 					{
-						if (s_Player->money >= HEAL_COST)
+						if (player->money >= HEAL_COST)
 						{
-							s_Player->effect = SetEffect(s_Player->pos.x, s_Player->pos.y, PLAYER_HEAL, 0);
-							s_Player->money -= HEAL_COST;
+							player->effect = SetEffect(player->pos.x, player->pos.y, PLAYER_HEAL, 0);
+							player->money -= HEAL_COST;
 						}
 						else
 						{
-							s_Player->state = FALL;
-							s_Player->vertSpd = 0;
-							s_Player->countAnim = 0.0f;
-							s_Player->patternAnim = 0;
+							player->state = FALL;
+							player->vertSpd = 0;
+							player->countAnim = 0.0f;
+							player->patternAnim = 0;
 						}
 					}
-					if (s_Player->actCount == HEAL_FRAME - HEAL_TAKE_EFFECT)
+					if (player->actCount == HEAL_FRAME - HEAL_TAKE_EFFECT)
 					{
 						PlaySound(SOUND_LABEL_SE_heal);
-						s_Player->health += (s_Player->health < PLAYER_HEALTH_MAX) ? 1 : 0;
+						player->health += (player->health < PLAYER_HEALTH_MAX) ? 1 : 0;
 					}
 				}
 				else
 				{
-					s_Player->effect = nullptr;
-					s_Player->vertSpd = 0;
-					s_Player->state = FALL;
-					s_Player->countAnim = 0.0f;
-					s_Player->patternAnim = 0;
-					s_Player->elev = nullptr;
+					player->effect = nullptr;
+					player->vertSpd = 0;
+					player->state = FALL;
+					player->countAnim = 0.0f;
+					player->patternAnim = 0;
+					player->elev = nullptr;
 				}
 				break;
 			}
@@ -698,7 +600,6 @@ void UpdatePlayer(void)
 				break;
 			}
 
-			// Illusion's life decrease to 0
 			for (int i = 0; i < ILLUSION_MAX; i++)
 			{
 				if ((g_Illusion + i)->illusion.use)
@@ -708,48 +609,31 @@ void UpdatePlayer(void)
 				}
 			}
 
-			// Animation
-			if (s_Player->countAnim++ > ANIM_WAIT)
+			if (player->countAnim++ > ANIM_WAIT)
 			{
-				s_Player->countAnim = 0.0f;
-				// Change pattern and check if it's the end of animation.
-				if (++s_Player->patternAnim >= c_TexInfo[s_Player->state].frame)
+				player->countAnim = 0.0f;
+				if (++player->patternAnim >= c_TexInfo[player->state].frame)
 				{
-					s_Player->patternAnim = 0;
+					player->patternAnim = 0;
 				}
 			}
 
 #ifdef _DEBUG
-			// デバッグ表示
-			//PrintDebugProc("Player X:%f Y:%f vS: %d BGd: %d Health: %d State: %d \n",
-			//	s_Player->pos.x,
-			//	s_Player->pos.y,
-			//	s_Player->vertSpd,
-			//	GetTerrain(s_Player->pos.x, s_Player->pos.y + s_Player->h / 2),
-			//	s_Player->health,
-			//	s_Player->state);
 #endif
 		}
 	}
 }
 
-//=============================================================================
-// 描画処理
-//=============================================================================
 void DrawPlayer(void)
 {
-	// 頂点バッファ設定
 	UINT stride = sizeof(VERTEX_3D);
 	UINT offset = 0;
 	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
 
-	// マトリクス設定
 	SetWorldViewProjection2D();
 
-	// プリミティブトポロジ設定
 	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	// マテリアル設定
 	MATERIAL material;
 	ZeroMemory(&material, sizeof(material));
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
@@ -759,25 +643,21 @@ void DrawPlayer(void)
 	for (int i = 0; i < PLAYER_MAX; i++)
 	{
 		PLAYER* s_Player = g_Player + i;
-		if (s_Player->use == TRUE && s_Player->state != DASH)		// このプレイヤーが使われている？
-		{									// Yes
-			// テクスチャ設定
+		if (s_Player->use == TRUE && s_Player->state != DASH)		 
+		{									 
 			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[s_Player->texNo]);
 
-			// Calculate the relative position of player
-			float px = s_Player->pos.x - bg->pos.x;	// プレイヤーの表示位置X
-			float py = s_Player->pos.y - bg->pos.y;	// プレイヤーの表示位置Y
-			float pw = s_Player->w;		// プレイヤーの表示幅
-			float ph = s_Player->h;		// プレイヤーの表示高さ
+			float px = s_Player->pos.x - bg->pos.x;	 
+			float py = s_Player->pos.y - bg->pos.y;	 
+			float pw = s_Player->w;		 
+			float ph = s_Player->h;		 
 
-			// Calculate the parameter for animation
 			float tw = 1.0f / PLAYER_PNG_W * TEXTURE_WIDTH;
 			float th = 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT;
 			float tx = tw * s_Player->patternAnim;
 			float sumH = 0.0f;
 			float ty = 1.0f / PLAYER_PNG_H * c_TexInfo[s_Player->state].startY;
 
-			// Considering state and orient, set the param to right row.
 			switch (s_Player->state)
 			{
 			case HEAL:
@@ -817,23 +697,19 @@ void DrawPlayer(void)
 		ILLUSION* s_Illusion = g_Illusion + i;
 		if (s_Illusion->illusion.use)
 		{
-			// テクスチャ設定
 			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[s_Illusion->illusion.texNo]);
 
-			// Calculate the relative position of player
-			float px = s_Illusion->illusion.pos.x - bg->pos.x;	// プレイヤーの表示位置X
-			float py = s_Illusion->illusion.pos.y - bg->pos.y;	// プレイヤーの表示位置Y
-			float pw = s_Illusion->illusion.w;		// プレイヤーの表示幅
-			float ph = s_Illusion->illusion.h;		// プレイヤーの表示高さ
+			float px = s_Illusion->illusion.pos.x - bg->pos.x;	 
+			float py = s_Illusion->illusion.pos.y - bg->pos.y;	 
+			float pw = s_Illusion->illusion.w;		 
+			float ph = s_Illusion->illusion.h;		 
 
-			// Calculate the parameter for animation
 			float tw = 1.0f / PLAYER_PNG_W * TEXTURE_WIDTH;
 			float th = 1.0f / PLAYER_PNG_H * TEXTURE_HEIGHT;
 			float tx = tw * s_Illusion->illusion.patternAnim;
 			float sumH = 0.0f;
 			float ty = 1.0f / PLAYER_PNG_H * c_TexInfo[s_Illusion->illusion.state].startY;
 
-			// Considering state and orient, set the param to right row.
 			switch (s_Illusion->illusion.state)
 			{
 			case HEAL:
@@ -870,25 +746,15 @@ void DrawPlayer(void)
 	}
 }
 
-//=============================================================================
-// プレイヤー構造体の先頭アドレスを取得
-//=============================================================================
 PLAYER* GetPlayer(void)
 {
 	return &g_Player[0];
 }
 
-//
-// @brief	Decrease player's health and switch state to STUN.
-// @param	enemy pointer, dam, orient
-// @return
-//
 void HitPlayer(ENEMY* enemy, PLAYER* player, int damge, int orient)
 {
-	// do nothing if player's in god mode.
 	if (!player->godCount)
 	{
-		// Sucessfully parried.
 		if (player->state == PARRY &&
 			player->actCount <= PARRY_FRAME - PARRY_DETECTION &&
 			player->actCount >= PARRY_FRAME - PARRY_END)
@@ -907,7 +773,6 @@ void HitPlayer(ENEMY* enemy, PLAYER* player, int damge, int orient)
 			return;
 		}
 
-		// Enemy deals damage to player, player steps backwards, turn to god mode
 		if (player->effect)
 		{
 			player->effect->use = FALSE;
@@ -965,37 +830,26 @@ void HitPlayer(ENEMY* enemy, PLAYER* player, int damge, int orient)
 	return;
 }
 
-//
-// @brief	Do attack detection in terrain, such as hitting
-//			on wall get a reverse force
-// @param	Player pointer, attack effect used as collision box.
-//
 void CheckHitTerra(PLAYER* player, EFFECT* effect)
 {
 	if (!player->atkDetect)
 	{
-		// Process to check hitting on enviroment
 		float cof = -1.0f;
 		float radius = effect->w / 2;
-		// Math use to find hit point in enviroment.
 		const float rcosrot = radius * (float)cos(effect->rot.z);
 		const float rsinrot = radius * (float)sin(effect->rot.z);
 		while (cof <= 1.0f)
 		{
-			// Check if hit on undestroyable object (enviroment bloack).
 			if (GetTerrain(effect->pos.x + cof * rcosrot, effect->pos.y + cof * rsinrot))
 			{
 				PlaySound(SOUND_LABEL_SE_reflect);
 
-				// Varies from direction to direction, step back, jump.
 				switch (player->atkOrient)
 				{
 				case RIGHT:
 				case LEFT:
-					// Reflect effect.
 					SetEffect(player->pos.x + cof * rcosrot, player->pos.y + cof * rsinrot,
 						PLAYER_REFLECT, player->atkOrient);
-					// stop playing Blade effect cause hit on the wall
 					player->effect->use = FALSE;
 					player->effect = nullptr;
 
@@ -1006,32 +860,27 @@ void CheckHitTerra(PLAYER* player, EFFECT* effect)
 					else
 						player->horzSpd = -MINI_STUN_HSPD;
 					player->actCount = MINI_STUN_FRAME;
-					// Screen shake effect
 					SetShake(HIT_SHAKE);
 					break;
 
 				case DOWN:
 					if (!GetTerrain(player->pos.x, player->pos.y + player->h / 2))
 					{
-						// Reflect effect.
 						SetEffect(player->pos.x + cof * rcosrot, player->pos.y + cof * rsinrot,
 							PLAYER_REFLECT, player->atkOrient);
 						player->vertSpd = HITJUMP_SPD;
 						player->state = BIG_JUMP;
 						player->countAnim = 0.0f; player->patternAnim = 0;
-						// Screen shake effect
 						SetShake(HIT_SHAKE);
 					}
 					break;
 
 				case UP:
-					// Reflect effect.
 					SetEffect(player->pos.x + cof * rcosrot, player->pos.y + cof * rsinrot,
 						PLAYER_REFLECT, player->atkOrient);
 					player->vertSpd = -HITJUMP_SPD / 2;
 					player->state = FALL;
 					player->countAnim = 0.0f; player->patternAnim = 0;
-					// Screen shake effect
 					SetShake(HIT_SHAKE);
 					break;
 
@@ -1046,32 +895,23 @@ void CheckHitTerra(PLAYER* player, EFFECT* effect)
 	}
 }
 
-//
-// @brief	Do attack detection on enemy. Just like what happens when hit the terrain,
-//			also has feedback suck as reverse force and hit effect.
-// @param	Player pointer, attack effect used as collision box.
-//
 void CheckHitEnemy(PLAYER* player, EFFECT* effect)
 {
 	for (int i = 0; i < ENEMY_MAX; i++)
 	{
 		ENEMY* s_Enemy = GetEnemy() + i;
 		if (s_Enemy->use && s_Enemy->state != DEAD &&
-			BBCollision(&effect->pos, &s_Enemy->pos, effect->w, s_Enemy->w, effect->h, s_Enemy->h)) // Bullseye
+			BBCollision(&effect->pos, &s_Enemy->pos, effect->w, s_Enemy->w, effect->h, s_Enemy->h))  
 		{
-			// Hit effect.
 			int rand_effect = rand() % 2;
 			SetEffect(player->pos.x, player->pos.y,
 				PLAYER_HIT + rand_effect, player->atkOrient);
 
-			// Do damage to enemy.
 			HitEnemy(s_Enemy, 1, player->atkOrient);
 
-			// Shake effect.
 			SetShake(HIT_SHAKE);
 			player->atkDetect = TRUE;
 
-			// Varies from direction to direction, step back, jump.
 			switch (player->atkOrient)
 			{
 			case RIGHT:
@@ -1105,28 +945,15 @@ void CheckHitEnemy(PLAYER* player, EFFECT* effect)
 	}
 }
 
-//
-// @brief	Gathering KeyBoard inputs, immediately change player's state
-//			to ATTACK / DASH / JUMP / PARRY etc in this frame.
-// @param	Player pointer
-//
 void GetTrigger(PLAYER* player)
 {
-	// While in uncontrollable states like DASH ~ ATTACK,
-	// you can't do anything until act finished.
 	if (player->state < DASH || player->state > ATTACK)
 	{
-		// Stanima regen.
 		if (player->stamina < PLAYER_STAMINA_MAX)
 		{
 			player->stamina++;
 		}
 
-		//
-		// INSTRUCTION PRIORITY:
-		// dash > attack > parry > jump >> move rht > move lft > stand(no input)
-		//
-		// Move trigger.
 		if (GetKeyboardPress(DIK_D))
 		{
 			player->orient = RIGHT;
@@ -1134,7 +961,6 @@ void GetTrigger(PLAYER* player)
 			if (!GetTerrain(player->pos.x + player->w / 2, player->pos.y))
 			{
 				player->pos.x += RUN_SPEED;
-				// Player's state should be RUN / RUN ON ELEV
 				if (player->state == STAND)
 				{
 					player->state = RUN;
@@ -1150,13 +976,12 @@ void GetTrigger(PLAYER* player)
 				}
 			}
 		}
-		else if (GetKeyboardPress(DIK_A))		// Move right overrides move left.
+		else if (GetKeyboardPress(DIK_A))		     
 		{
 			player->orient = LEFT;
 			if (!GetTerrain(player->pos.x - player->w / 2, player->pos.y))
 			{
 				player->pos.x -= RUN_SPEED;
-				// Player's state should be RUN / RUN ON ELEV
 				if (player->state == STAND)
 				{
 					player->state = RUN;
@@ -1174,7 +999,6 @@ void GetTrigger(PLAYER* player)
 		}
 		else
 		{
-			// No instruction coming from keyboard, player does nothing but stand.
 			if (player->state == RUN)
 			{
 				player->state = STAND;
@@ -1182,7 +1006,6 @@ void GetTrigger(PLAYER* player)
 			}
 		}
 
-		// Dash trigger.
 		if (GetKeyboardTrigger(DIK_LSHIFT))
 		{
 			if (player->stamina >= DASH_COST)
@@ -1195,14 +1018,12 @@ void GetTrigger(PLAYER* player)
 				PlaySound(SOUND_LABEL_SE_dash);
 			}
 		}
-		// Attack trigger.
 		else if (GetKeyboardTrigger(DIK_J))
 		{
 			if (player->stamina >= ATK_COST)
 			{
 				player->stamina -= ATK_COST;
 
-				// Super slash after successfully parried
 				if (player->pryDetect)
 				{
 					player->state = SLASH;
@@ -1211,7 +1032,6 @@ void GetTrigger(PLAYER* player)
 
 					PlaySound(SOUND_LABEL_SE_dash);
 				}
-				// Normal attack.
 				else
 				{
 					player->state = ATTACK;
@@ -1220,7 +1040,6 @@ void GetTrigger(PLAYER* player)
 				}
 			}
 		}
-		// Parry trigger.
 		else if (GetKeyboardTrigger(DIK_K))
 		{
 			if (player->stamina >= PARRY_COST)
@@ -1231,14 +1050,12 @@ void GetTrigger(PLAYER* player)
 				player->actCount = PARRY_FRAME;
 			}
 		}
-		// Heal trigger.
 		else if (GetKeyboardTrigger(DIK_R))
 		{
 			player->state = HEAL;
 			player->countAnim = 0.0f; player->patternAnim = 0;
 			player->actCount = HEAL_FRAME;
 		}
-		// Jump only triggers when player's on the ground(STAND ~ STAND_ELEV).
 		else if (player->state < DASH && GetKeyboardTrigger(DIK_SPACE))
 		{
 			if (player->stamina >= JUMP_COST)
@@ -1251,7 +1068,6 @@ void GetTrigger(PLAYER* player)
 			}
 		}
 
-		// Big Jump trigger
 		if (player->state == JUMP && GetKeyboardPress(DIK_SPACE) &&
 			player->vertSpd <= JUMP_SPEED * 1 / 2 && player->vertSpd >= JUMP_SPEED * 4 / 7)
 		{

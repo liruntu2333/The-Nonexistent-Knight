@@ -1,24 +1,15 @@
-//=============================================================================
-//
-// [terrain.h]
-// Author : LI ZIZHEN liruntu2333@gmail.com
-//
-//=============================================================================
 #pragma once
 
 #include "main.h"
 #include "renderer.h"
 
-//*****************************************************************************
-// マクロ定義
-//*****************************************************************************
 struct Terrain
 {
 	D3DXVECTOR3		pos;		
 	float			w, h;		
 	int				texNo;		
 
-	BOOL			shake;		// screen shake occurs by get hit, etc
+	BOOL			shake;		       
 };
 
 enum BLOCK_TYPE
@@ -28,11 +19,8 @@ enum BLOCK_TYPE
 	GROUND,
 };
 
-#define BLK_LGTH				(10)			// Block Length
+#define BLK_LGTH				(10)			  
 
-//*****************************************************************************
-// プロトタイプ宣言
-//*****************************************************************************
 HRESULT InitTerrain(void);
 void UninitTerrain(void);
 void UpdateTerrain(void);

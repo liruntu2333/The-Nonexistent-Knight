@@ -1,15 +1,9 @@
-//=============================================================================
-//
-// Mainヘッダー [main.h]
-// Author : LI ZIZHEN liruntu2333@gmail.com
-//
-//=============================================================================
 #pragma once
 
 #pragma warning(push)
 #pragma warning(disable:4005)
 
-#define _CRT_SECURE_NO_WARNINGS			// scanf のwarning防止
+#define _CRT_SECURE_NO_WARNINGS			  
 #include <stdio.h>
 
 #include <d3d11.h>
@@ -17,7 +11,7 @@
 #include <d3dcompiler.h>
 #include <d3dx9.h>
 
-#define DIRECTINPUT_VERSION 0x0800		// 警告対処
+#define DIRECTINPUT_VERSION 0x0800		 
 #include "dinput.h"
 #include "mmsystem.h"
 
@@ -25,9 +19,6 @@
 
 #include "debugproc.h"
 
-//*****************************************************************************
-// ライブラリのリンク
-//*****************************************************************************
 #pragma comment (lib, "d3d11.lib")
 #pragma comment (lib, "d3dcompiler.lib")
 #pragma comment (lib, "d3dx11.lib")
@@ -37,28 +28,22 @@
 #pragma comment (lib, "dxguid.lib")
 #pragma comment (lib, "dinput8.lib")
 
-//*****************************************************************************
-// マクロ定義
-//*****************************************************************************
-#define SCREEN_WIDTH	(1280)				// ウインドウの幅
-#define SCREEN_HEIGHT	(720)				// ウインドウの高さ
-#define SCREEN_CENTER_X	(SCREEN_WIDTH / 2)	// ウインドウの中心Ｘ座標
-#define SCREEN_CENTER_Y	(SCREEN_HEIGHT / 2)	// ウインドウの中心Ｙ座標
+#define SCREEN_WIDTH	(1280)				 
+#define SCREEN_HEIGHT	(720)				 
+#define SCREEN_CENTER_X	(SCREEN_WIDTH / 2)	 
+#define SCREEN_CENTER_Y	(SCREEN_HEIGHT / 2)	 
 
-#define	NUM_VERTEX		(4)					// 頂点数
+#define	NUM_VERTEX		(4)					 
 
 enum
 {
-	MODE_TITLE = 0,							// タイトル画面
-	MODE_TUTORIAL,							// ゲーム説明画面
-	MODE_GAME,								// ゲーム画面
-	MODE_RESULT,							// リザルト画面
+	MODE_TITLE = 0,							 
+	MODE_TUTORIAL,							 
+	MODE_GAME,								 
+	MODE_RESULT,							 
 	MODE_END
 };
 
-//*****************************************************************************
-// プロトタイプ宣言
-//*****************************************************************************
 long GetMousePosX(void);
 long GetMousePosY(void);
 char* GetDebugStr(void);

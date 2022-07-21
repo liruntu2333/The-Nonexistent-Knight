@@ -1,50 +1,30 @@
-//=============================================================================
-//
-// リザルト画面処理 [result.cpp]
-// Author : LI ZIZHEN liruntu2333@gmail.com
-//
-//=============================================================================
 #include "result.h"
 #include "sprite.h"
 #include "input.h"
 #include "score.h"
 #include "fade.h"
 
-//*****************************************************************************
-// マクロ定義
-//*****************************************************************************
-#define TEXTURE_WIDTH				(SCREEN_WIDTH)	// 背景サイズ
-#define MAP_HEIGHT				(SCREEN_HEIGHT)	//
-#define TEXTURE_MAX					(2)				// テクスチャの数
+#define TEXTURE_WIDTH				(SCREEN_WIDTH)	 
+#define MAP_HEIGHT				(SCREEN_HEIGHT)	
+#define TEXTURE_MAX					(2)				 
 
-//*****************************************************************************
-// プロトタイプ宣言
-//*****************************************************************************
-
-//*****************************************************************************
-// グローバル変数
-//*****************************************************************************
-static ID3D11Buffer* g_VertexBuffer = nullptr;		// 頂点情報
-static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = {nullptr};	// テクスチャ情報
+static ID3D11Buffer* g_VertexBuffer = nullptr;		 
+static ID3D11ShaderResourceView* g_Texture[TEXTURE_MAX] = {nullptr};	 
 
 static char* g_TexturName[TEXTURE_MAX] = {
 	"data/TEXTURE/result.png",
 	"data/TEXTURE/number16x32.png",
 };
 
-static BOOL		g_Load = FALSE;		// 初期化を行ったかのフラグ
+static BOOL		g_Load = FALSE;		 
 static RESULT	g_Result;
 
 static int		g_ResultScore = 0;
 
-//=============================================================================
-// 初期化処理
-//=============================================================================
 HRESULT InitResult(void)
 {
 	ID3D11Device* pDevice = GetDevice();
 
-	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
 		g_Texture[i] = nullptr;
@@ -56,7 +36,6 @@ HRESULT InitResult(void)
 		nullptr);
 	}
 
-	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DYNAMIC;
@@ -65,21 +44,15 @@ HRESULT InitResult(void)
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, nullptr, &g_VertexBuffer);
 
-	// 変数の初期化
 	g_Result.w = TEXTURE_WIDTH;
 	g_Result.h = MAP_HEIGHT;
 	g_Result.pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	g_Result.texNo = 0;
 
-	//	g_ResultScore = GetScore();
-
-	g_Load = TRUE;	// データの初期化を行った
+	g_Load = TRUE;	 
 	return S_OK;
 }
 
-//=============================================================================
-// 終了処理
-//=============================================================================
 void UninitResult(void)
 {
 	if (g_Load == FALSE) return;
@@ -102,16 +75,12 @@ void UninitResult(void)
 	g_Load = FALSE;
 }
 
-//=============================================================================
-// 更新処理
-//=============================================================================
 void UpdateResult(void)
 {
 	if (GetKeyboardTrigger(DIK_RETURN))
-	{// Enter押したら、ステージを切り替える
+	{ 
 		SetFade(FADE_OUT, MODE_TITLE);
 	}
-	// ゲームパッドで入力処理
 	else if (IsButtonTriggered(0, BUTTON_START))
 	{
 		SetFade(FADE_OUT, MODE_TITLE);
@@ -122,47 +91,33 @@ void UpdateResult(void)
 	}
 }
 
-//=============================================================================
-// 描画処理
-//=============================================================================
 void DrawResult(void)
 {
-	// 頂点バッファ設定
 	UINT stride = sizeof(VERTEX_3D);
 	UINT offset = 0;
 	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
 
-	// マトリクス設定
 	SetWorldViewProjection2D();
 
-	// プリミティブトポロジ設定
 	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	// マテリアル設定
 	MATERIAL material;
 	ZeroMemory(&material, sizeof(material));
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 
-	// リザルトの背景を描画
 	{
-		// テクスチャ設定
 		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_Result.texNo]);
 
-		// １枚のポリゴンの頂点とテクスチャ座標を設定
 		SetSpriteLTColor(g_VertexBuffer,
 			g_Result.pos.x, g_Result.pos.y, g_Result.w, g_Result.h,
 			0.0f, 0.0f, 1.0f, 1.0f,
 			D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 
-		// ポリゴン描画
 		GetDeviceContext()->Draw(4, 0);
 	}
 }
 
-//=============================================================================
-// リザルトで表示する点をセット
-//=============================================================================
 void SetResult(int score)
 {
 	g_ResultScore = score;

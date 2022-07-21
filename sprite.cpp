@@ -1,28 +1,5 @@
-//=============================================================================
-//
-// スプライト処理 [sprite.cpp]
-// Author : LI ZIZHEN liruntu2333@gmail.com
-//
-//=============================================================================
 #include "sprite.h"
 
-//*****************************************************************************
-// マクロ定義
-//*****************************************************************************
-
-//*****************************************************************************
-// プロトタイプ宣言
-//*****************************************************************************
-
-//*****************************************************************************
-// グローバル変数
-//*****************************************************************************
-
-//=============================================================================
-// 頂点データ設定
-//=============================================================================
-
-// 指定座標を左上として描画する
 void SetSpriteLTColor(ID3D11Buffer* buf,
 	float X, float Y, float Width, float Height,
 	float U, float V, float UW, float VH,
@@ -33,7 +10,6 @@ void SetSpriteLTColor(ID3D11Buffer* buf,
 
 	VERTEX_3D* vertex = (VERTEX_3D*)msr.pData;
 
-	// 左上を原点として設定するプログラム
 	vertex[0].Position = D3DXVECTOR3(X, Y, 0.0f);
 	vertex[0].Diffuse = color;
 	vertex[0].TexCoord = D3DXVECTOR2(U, V);
@@ -53,7 +29,6 @@ void SetSpriteLTColor(ID3D11Buffer* buf,
 	GetDeviceContext()->Unmap(buf, 0);
 }
 
-// 指定座標を中心として描画する
 void SetSprite(ID3D11Buffer* buf, float X, float Y, float Width, float Height, float U, float V, float UW, float VH)
 {
 	D3D11_MAPPED_SUBRESOURCE msr;
@@ -62,27 +37,21 @@ void SetSprite(ID3D11Buffer* buf, float X, float Y, float Width, float Height, f
 	VERTEX_3D* vertex = (VERTEX_3D*)msr.pData;
 
 	float hw, hh;
-	hw = Width * 0.5f;		// コンピューターは割り算が苦手
-	hh = Height * 0.5f;		// 掛け算の方が処理が速い
+	hw = Width * 0.5f;		 
+	hh = Height * 0.5f;		 
 
-	// 指定された座標を中心に設定するプログラム
-
-	// 頂点０番（左上の頂点）
 	vertex[0].Position = D3DXVECTOR3(X - hw, Y - hh, 0.0f);
 	vertex[0].Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	vertex[0].TexCoord = D3DXVECTOR2(U, V);
 
-	// 頂点１番（右上の頂点）
 	vertex[1].Position = D3DXVECTOR3(X + hw, Y - hh, 0.0f);
 	vertex[1].Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	vertex[1].TexCoord = D3DXVECTOR2(U + UW, V);
 
-	// 頂点２番（左下の頂点）
 	vertex[2].Position = D3DXVECTOR3(X - hw, Y + hh, 0.0f);
 	vertex[2].Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	vertex[2].TexCoord = D3DXVECTOR2(U, V + VH);
 
-	// 頂点３番（右下の頂点）
 	vertex[3].Position = D3DXVECTOR3(X + hw, Y + hh, 0.0f);
 	vertex[3].Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	vertex[3].TexCoord = D3DXVECTOR2(U + UW, V + VH);
@@ -100,27 +69,21 @@ void SetSpriteColor(ID3D11Buffer* buf, float X, float Y, float Width, float Heig
 	VERTEX_3D* vertex = (VERTEX_3D*)msr.pData;
 
 	float hw, hh;
-	hw = Width * 0.5f;		// コンピューターは割り算が苦手
-	hh = Height * 0.5f;		// 掛け算の方が処理が速い
+	hw = Width * 0.5f;		 
+	hh = Height * 0.5f;		 
 
-	// 指定された座標を中心に設定するプログラム
-
-	// 頂点０番（左上の頂点）
 	vertex[0].Position = D3DXVECTOR3(X - hw, Y - hh, 0.0f);
 	vertex[0].Diffuse = color;
 	vertex[0].TexCoord = D3DXVECTOR2(U, V);
 
-	// 頂点１番（右上の頂点）
 	vertex[1].Position = D3DXVECTOR3(X + hw, Y - hh, 0.0f);
 	vertex[1].Diffuse = color;
 	vertex[1].TexCoord = D3DXVECTOR2(U + UW, V);
 
-	// 頂点２番（左下の頂点）
 	vertex[2].Position = D3DXVECTOR3(X - hw, Y + hh, 0.0f);
 	vertex[2].Diffuse = color;
 	vertex[2].TexCoord = D3DXVECTOR2(U, V + VH);
 
-	// 頂点３番（右下の頂点）
 	vertex[3].Position = D3DXVECTOR3(X + hw, Y + hh, 0.0f);
 	vertex[3].Diffuse = color;
 	vertex[3].TexCoord = D3DXVECTOR2(U + UW, V + VH);
@@ -138,15 +101,13 @@ void SetSpriteColorRotation(ID3D11Buffer* buf, float X, float Y, float Width, fl
 	VERTEX_3D* vertex = (VERTEX_3D*)msr.pData;
 
 	float hw, hh;
-	hw = Width * 0.5f;		// コンピューターは割り算が苦手
-	hh = Height * 0.5f;		// 掛け算の方が処理が速い
+	hw = Width * 0.5f;		 
+	hh = Height * 0.5f;		 
 
-	// 指定された座標を中心に回転するプログラム
-	float BaseAngle = atan2f(hh, hw);			// 中心点から頂点に対する角度
+	float BaseAngle = atan2f(hh, hw);			 
 	D3DXVECTOR2 temp = D3DXVECTOR2(hw, hh);
-	float Radius = D3DXVec2Length(&temp);	// 中心点から頂点に対する距離
+	float Radius = D3DXVec2Length(&temp);	 
 
-	// ここでアフィン変換（sincosのやつ）を使って4頂点を回転させる
 	float x = X - cosf(BaseAngle + Rot) * Radius;
 	float y = Y - sinf(BaseAngle + Rot) * Radius;
 	vertex[0].Position = D3DXVECTOR3(x, y, 0.0f);

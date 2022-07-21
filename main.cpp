@@ -1,9 +1,3 @@
-//=============================================================================
-//
-// Main処理 [main.cpp]
-// Author : LI ZIZHEN liruntu2333@gmail.com
-//
-//=============================================================================
 #include "main.h"
 #include "renderer.h"
 #include "camera.h"
@@ -24,19 +18,9 @@
 #include "elevator.h"
 #include "ui.h"
 
-//*****************************************************************************
-// マクロ定義
-//*****************************************************************************
-#define CLASS_NAME			"AppClass"				// ウインドウのクラス名
-#define WINDOW_NAME			"Nonexistent Knight"		// ウインドウのキャプション名
+#define CLASS_NAME			"AppClass"				 
+#define WINDOW_NAME			"Nonexistent Knight"		 
 
-//*****************************************************************************
-// 構造体定義
-//*****************************************************************************
-
-//*****************************************************************************
-// プロトタイプ宣言
-//*****************************************************************************
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow);
 void Uninit(void);
@@ -44,34 +28,24 @@ void Update(void);
 void Draw(void);
 bool CheckGameover();
 
-//*****************************************************************************
-// グローバル変数:
-//*****************************************************************************
 long g_MouseX = 0;
 long g_MouseY = 0;
 
 #ifdef _DEBUG
-int		g_CountFPS;							// FPSカウンタ
-char	g_DebugStr[2048] = WINDOW_NAME;		// デバッグ文字表示用
+int		g_CountFPS;							 
+char	g_DebugStr[2048] = WINDOW_NAME;		 
 
 #endif
 
-int g_Mode = MODE_TITLE;						 // 起動時の画面を設定
-BOOL g_LoadGame = FALSE;					// NewGame
+int g_Mode = MODE_TITLE;						  
+BOOL g_LoadGame = FALSE;					 
 unsigned int g_FPS = 60;
-int g_SMcount = 0;							// use to count down slow motion
+int g_SMcount = 0;							      
 
 DWORD g_dwFrameCount = 0;
 
-//=============================================================================
-// メイン関数
-//=============================================================================
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	//UNREFERENCED_PARAMETER(hPrevInstance);	// 無くても良いけど、警告が出る（未使用宣言）
-	//UNREFERENCED_PARAMETER(lpCmdLine);		// 無くても良いけど、警告が出る（未使用宣言）
-
-	// 時間計測用
 	DWORD dwExecLastTime;
 	DWORD dwFPSLastTime;
 	DWORD dwCurrentTime;
@@ -94,17 +68,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	HWND		hWnd;
 	MSG			msg;
 
-	// ウィンドウクラスの登録
 	RegisterClassEx(&wcex);
 
-	// ウィンドウの作成
 	hWnd = CreateWindow(CLASS_NAME,
 		WINDOW_NAME,
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT,																		// ウィンドウの左座標
-		CW_USEDEFAULT,																		// ウィンドウの上座標
-		SCREEN_WIDTH + GetSystemMetrics(SM_CXDLGFRAME) * 2,									// ウィンドウ横幅
-		SCREEN_HEIGHT + GetSystemMetrics(SM_CXDLGFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION),	// ウィンドウ縦幅
+		CW_USEDEFAULT,																		 
+		CW_USEDEFAULT,																		 
+		SCREEN_WIDTH + GetSystemMetrics(SM_CXDLGFRAME) * 2,									 
+		SCREEN_HEIGHT + GetSystemMetrics(SM_CXDLGFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION),	 
 		NULL,
 		NULL,
 		hInstance,
@@ -134,87 +106,75 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	}
 	}
 
-	// DirectXの初期化(ウィンドウを作成してから行う)
 	if (FAILED(Init(hInstance, hWnd, mode)))
 	{
 		return -1;
 	}
 
-	// フレームカウント初期化
-	timeBeginPeriod(1);	// 分解能を設定
-	dwExecLastTime = dwFPSLastTime = timeGetTime();	// システム時刻をミリ秒単位で取得
+	timeBeginPeriod(1);	 
+	dwExecLastTime = dwFPSLastTime = timeGetTime();	 
 	dwCurrentTime = dwFrameCount = 0;
 
-	// ウインドウの表示(Init()の後に呼ばないと駄目)
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 
-	// メッセージループ
 	while (1)
 	{
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			if (msg.message == WM_QUIT)
-			{// PostQuitMessage()が呼ばれたらループ終了
+			{ 
 				break;
 			}
 			else
 			{
-				// メッセージの翻訳とディスパッチ
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
 		}
 		else
 		{
-			dwCurrentTime = timeGetTime();					// システム時刻を取得
+			dwCurrentTime = timeGetTime();					 
 
-			if ((dwCurrentTime - dwFPSLastTime) >= 1000)	// 1秒ごとに実行
+			if ((dwCurrentTime - dwFPSLastTime) >= 1000)	 
 			{
 #ifdef _DEBUG
 				g_CountFPS = dwFrameCount;
 #endif
-				dwFPSLastTime = dwCurrentTime;				// FPSを測定した時刻を保存
-				dwFrameCount = 0;							// カウントをクリア
+				dwFPSLastTime = dwCurrentTime;				 
+				dwFrameCount = 0;							 
 			}
 
-			if ((dwCurrentTime - dwExecLastTime) >= (1000 / g_FPS))	// 1/60秒ごとに実行
+			if ((dwCurrentTime - dwExecLastTime) >= (1000 / g_FPS))	 
 			{
-				dwExecLastTime = dwCurrentTime;	// 処理した時刻を保存
+				dwExecLastTime = dwCurrentTime;	 
 
-#ifdef _DEBUG	// デバッグ版の時だけFPSを表示する
+#ifdef _DEBUG	 
 				wsprintf(g_DebugStr, WINDOW_NAME);
-				//wsprintf(&g_DebugStr[strlen(g_DebugStr)], " FPS:%d", g_CountFPS);
 #endif
 
-				Update();			// 更新処理
-				Draw();				// 描画処理
+				Update();			 
+				Draw();				 
 
-#ifdef _DEBUG	// デバッグ版の時だけ表示する
-				//wsprintf(&g_DebugStr[strlen(g_DebugStr)], " MX:%d MY:%d", GetMousePosX(), GetMousePosY());
+#ifdef _DEBUG	 
 				SetWindowText(hWnd, g_DebugStr);
 #endif
 
-				dwFrameCount++;		// 処理回数のカウントを加算
+				dwFrameCount++;		 
 				g_dwFrameCount++;
 			}
 		}
 	}
 
-	timeEndPeriod(1);				// 分解能を戻す
+	timeEndPeriod(1);				 
 
-	// ウィンドウクラスの登録を解除
 	UnregisterClass(CLASS_NAME, wcex.hInstance);
 
-	// 終了処理
 	Uninit();
 
 	return (int)msg.wParam;
 }
 
-//=============================================================================
-// プロシージャ
-//=============================================================================
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
@@ -226,8 +186,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
-		case VK_ESCAPE:					// [ESC]キーが押された
-			DestroyWindow(hWnd);		// ウィンドウを破棄するよう指示する
+		case VK_ESCAPE:					 
+			DestroyWindow(hWnd);		 
 			break;
 		}
 		break;
@@ -244,15 +204,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-//=============================================================================
-// 初期化処理
-//=============================================================================
 HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 {
-	// レンダリング処理の初期化
 	InitRenderer(hInstance, hWnd, bWindow);
 
-	// カメラ処理の初期化
 	InitCamera();
 
 	InitInput(hInstance, hWnd);
@@ -261,19 +216,14 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 
 	InitFade();
 
-	// 最初のモードをセットして、この中でInitする
-	SetMode(g_Mode);	// ここはSetModeのままで！
+	SetMode(g_Mode);	 
 
 	return S_OK;
 }
 
-//=============================================================================
-// 終了処理
-//=============================================================================
 void Uninit(void)
 {
-	// ゲーム的な物はこの中でUninitする
-	SetMode(MODE_END);	// ここはSetModeのままで！
+	SetMode(MODE_END);	 
 
 	UninitFade();
 
@@ -281,35 +231,28 @@ void Uninit(void)
 
 	UninitInput();
 
-	// カメラの終了処理
 	UninitCamera();
 
-	// レンダリングの終了処理
 	UninitRenderer();
 }
 
-//=============================================================================
-// 更新処理
-//=============================================================================
 void Update(void)
 {
-	// カメラの更新処理
 	UpdateCamera();
 
 	UpdateInput();
 
-	// モードによって処理を分ける
 	switch (g_Mode)
 	{
-	case MODE_TITLE:		// タイトル画面の更新
+	case MODE_TITLE:		 
 		UpdateTitle();
 		break;
 
-	case MODE_TUTORIAL:		// タイトル画面の更新
+	case MODE_TUTORIAL:		 
 		UpdateTutorial();
 		break;
 
-	case MODE_GAME:			// ゲーム画面の更新
+	case MODE_GAME:			 
 		if (g_SMcount != 0)
 		{
 			g_SMcount--;
@@ -336,44 +279,34 @@ void Update(void)
 	UpdateFade();
 
 #ifdef _DEBUG
-	// デバッグ表示
-	//PrintDebugProc("SMcount: %d \n",g_SMcount);
 #endif
 }
 
-//=============================================================================
-// 描画処理
-//=============================================================================
 void Draw(void)
 {
-	// バックバッファクリア
 	Clear();
 
-	// カメラをセット
 	SetCamera();
 
-	// 2D描画なので深度無効
 	SetDepthEnable(false);
 
-	// モードによって処理を分ける
 	switch (g_Mode)
 	{
-	case MODE_TITLE:		// タイトル画面の描画
+	case MODE_TITLE:		 
 		DrawTitle();
 		break;
 
-	case MODE_TUTORIAL:		// タイトル画面の描画
+	case MODE_TUTORIAL:		 
 		DrawTutorial();
 		break;
 
-	case MODE_GAME:			// ゲーム画面の描画
+	case MODE_GAME:			 
 		DrawBackground();
 		DrawTerrain();
 		DrawElev();
 
 		DrawEnemy();
 		DrawBullet();
-		//		DrawScore();
 		DrawEffect();
 		DrawPlayer();
 		DrawUI();
@@ -381,7 +314,7 @@ void Draw(void)
 		if (g_LoadGame == TRUE)
 		{
 			LoadData();
-			g_LoadGame = FALSE;		// ロードしたからフラグをClearする
+			g_LoadGame = FALSE;		 
 		}
 		break;
 
@@ -393,22 +326,14 @@ void Draw(void)
 	DrawFade();
 
 #ifdef _DEBUG
-	// デバッグ表示
 	DrawDebugProc();
 #endif
 
-	// バックバッファ、フロントバッファ入れ替え
 	Present();
 }
 
-//=============================================================================
-// モードの設定
-//=============================================================================
 void SetMode(int mode)
 {
-	// モードを変える前に全部メモリを解放しちゃう
-
-	// タイトルの終了処理
 	UninitBackground();
 	UninitTitle();
 	UninitElev();
@@ -423,12 +348,11 @@ void SetMode(int mode)
 	UninitUI();
 	StopSound();
 
-	g_Mode = mode;	// 次のモードをセットしている
+	g_Mode = mode;	 
 
 	switch (g_Mode)
 	{
 	case MODE_TITLE:
-		// タイトル画面の初期化
 		InitTitle();
 		PlaySound(SOUND_LABEL_BGM_DrunkStar);
 		break;
@@ -439,7 +363,6 @@ void SetMode(int mode)
 		break;
 
 	case MODE_GAME:
-		// ゲーム画面の初期化
 		InitBackground();
 		InitTerrain();
 		InitElev();
@@ -457,7 +380,6 @@ void SetMode(int mode)
 		PlaySound(SOUND_LABEL_BGM_DrunkStar);
 		break;
 
-		// ゲーム終了時の処理
 	case MODE_END:
 		StopSound();
 		break;
@@ -479,7 +401,6 @@ bool CheckGameover()
 	}
 	if (flag)
 	{
-		//SetResult(GetScore());
 		SetFade(FADE_OUT, MODE_RESULT);
 		return true;
 	}
@@ -503,25 +424,16 @@ DWORD GetFrameCount(void)
 	return g_dwFrameCount;
 }
 
-//=============================================================================
-// ニューゲームかロードゲームかをセットする
-//=============================================================================
 void SetLoadGame(BOOL flg)
 {
 	g_LoadGame = flg;
 }
 
-//=============================================================================
-// モードの取得
-//=============================================================================
 int GetMode(void)
 {
 	return g_Mode;
 }
 
-//=============================================================================
-// マウス座標の取得
-//=============================================================================
 long GetMousePosX(void)
 {
 	return g_MouseX;
